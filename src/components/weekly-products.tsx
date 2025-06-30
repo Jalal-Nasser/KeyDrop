@@ -35,16 +35,25 @@ const GET_PRODUCTS = gql`
 `
 
 export async function WeeklyProducts() {
+  if (!graphqlAPI) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-semibold text-blue-600 mb-8">Weekly Products</h2>
+          <p className="text-red-600">WordPress API not configured</p>
+        </div>
+      </section>
+    )
+  }
+
+  const graphQLClient = new GraphQLClient(graphqlAPI)
   let products = []
 
-  if (graphqlAPI) {
-    const graphQLClient = new GraphQLClient(graphqlAPI)
-    try {
-      const data: any = await graphQLClient.request(GET_PRODUCTS)
-      products = data.products.nodes
-    } catch (error) {
-      console.error("Error fetching products:", error)
-    }
+  try {
+    const data: any = await graphQLClient.request(GET_PRODUCTS)
+    products = data.products.nodes
+  } catch (error) {
+    console.error("Error fetching products:", error)
   }
 
   // Fallback products matching the screenshot
@@ -138,7 +147,7 @@ export async function WeeklyProducts() {
               {/* Product image */}
               <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                 <img
-                  src={product.image?.sourceUrl || product.image}
+                  src={product.image?.sourceUrl || product.image || "/placeholder.svg?height=150&width=150"}
                   alt={product.image?.altText || product.name}
                   className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                 />

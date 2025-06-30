@@ -1,20 +1,29 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type React from "react"
+import "./globals.css"
+import type { Metadata } from "next"
+import { Header } from "@/components/header"
+import { StoreNotice } from "@/components/store-notice"
+import { Footer } from "@/components/footer"
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: "Dropskey",
+  description: "Verified Digital Key Store",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Header />
+        <StoreNotice />
+        {children}
+        <Footer />
+      </body>
     </html>
   )
 }

@@ -1,4 +1,6 @@
 import { GraphQLClient, gql } from "graphql-request"
+import { HeroSlider } from "@/components/hero-slider"
+import { WeeklyProducts } from "@/components/weekly-products"
 
 // Define your WordPress GraphQL endpoint
 const graphqlAPI = process.env.WORDPRESS_API_URL || "http://localhost:8888/wordpress/graphql" // Replace with your actual WordPress URL
@@ -31,6 +33,8 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
+      <HeroSlider />
+      <WeeklyProducts />
       <h1 className="text-5xl font-bold mb-8">Welcome to Dropskey!</h1>
       <p className="text-xl mb-12 text-center max-w-2xl">This content is powered by your Headless WordPress.</p>
 
