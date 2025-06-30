@@ -13,9 +13,9 @@ export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   return (
-    <section className="relative py-0" style={{ backgroundColor: "#f8f9fa" }}>
+    <section className="relative py-0 overflow-hidden" style={{ backgroundColor: "#f8f9fa" }}>
       {/* Image container - spans full width and height of the section */}
-      <div className="relative h-[90vh] w-full flex items-center justify-center">
+      <div className="relative h-[90vh] w-full">
         <Image
           src={slides[currentSlide].image || "/placeholder.svg"}
           alt={slides[currentSlide].caption}
