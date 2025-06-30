@@ -2,6 +2,12 @@
 
 import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import Image from "next/image"
+
+const slides = [
+  { caption: "Just Started", image: "/images/layerslider-02-bear.png" },
+  { caption: "Lets Paint it", image: "/images/layerslider-03-cat.png" },
+]
 
 export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -21,39 +27,25 @@ export function HeroSlider() {
           {/* Slide content - EXACT layout from screenshot */}
           <div className="text-center py-16">
             {/* Cat mascot image area - EXACT styling */}
-            <div className="mb-8">
-              <div className="mx-auto w-80 h-80 flex items-center justify-center">
-                {/* Watercolor cat - EXACT style from screenshot */}
-                <div className="relative w-64 h-64">
-                  {/* Watercolor background effect */}
-                  <div
-                    className="absolute inset-0 rounded-full opacity-40 blur-2xl transform scale-110"
-                    style={{
-                      background: "linear-gradient(135deg, #e6d7ff 0%, #b3d9ff 50%, #ffb3d9 100%)",
-                    }}
-                  ></div>
-
-                  {/* Cat figure with exact styling */}
-                  <div className="relative w-full h-full flex flex-col items-center justify-center">
-                    {/* Professional cat with hat, glasses, bow tie */}
-                    <div className="text-6xl mb-2">🎩</div>
-                    <div className="text-5xl mb-2">😺</div>
-                    <div className="text-3xl absolute top-20">👓</div>
-                    <div className="text-2xl mt-2">🎀</div>
-                  </div>
-                </div>
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="relative mx-auto mb-8 h-80 w-80">
+                <Image
+                  src={slides[currentSlide].image || "/placeholder.svg"}
+                  alt={slides[currentSlide].caption}
+                  fill
+                  style={{ objectFit: "contain" }}
+                  priority
+                />
               </div>
-            </div>
-
-            {/* EXACT text from screenshot */}
-            <h2 className="text-4xl font-light mb-8" style={{ color: "#9c88ff" }}>
-              Just Started
-            </h2>
-
-            {/* Slide indicators - EXACT style */}
-            <div className="flex justify-center space-x-2">
-              <button className="w-3 h-3 rounded-full bg-gray-800"></button>
-              <button className="w-3 h-3 rounded-full bg-gray-300"></button>
+              <h2 className="text-4xl font-light text-purple-500">{slides[currentSlide].caption}</h2>
+              <div className="mt-6 flex justify-center gap-2">
+                {slides.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-2 w-2 rounded-full ${i === currentSlide ? "bg-purple-500" : "bg-gray-300"}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

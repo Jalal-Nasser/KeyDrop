@@ -35,8 +35,6 @@ export default async function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <HeroSlider />
       <WeeklyProducts />
-      <h1 className="text-5xl font-bold mb-8">Welcome to Dropskey!</h1>
-      <p className="text-xl mb-12 text-center max-w-2xl">This content is powered by your Headless WordPress.</p>
 
       <section className="w-full max-w-4xl">
         <h2 className="text-3xl font-semibold mb-6">Latest Posts</h2>
