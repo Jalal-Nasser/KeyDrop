@@ -1,37 +1,87 @@
 export function Footer() {
   return (
-    <footer className="bg-[#1e73be] text-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 sm:grid-cols-4 lg:px-8">
-        <div>
-          <h3 className="mb-4 font-semibold">My account</h3>
-          <a className="block text-sm text-blue-100 hover:text-white" href="#">
-            Register
-          </a>
-        </div>
-        <div>
-          <h3 className="mb-4 font-semibold">Legal</h3>
-          {["Terms and Conditions", "Privacy Policy", "Refund and Returns Policy"].map((t) => (
-            <a key={t} className="block text-sm text-blue-100 hover:text-white" href="#">
-              {t}
-            </a>
-          ))}
-        </div>
-        <div>
-          <h3 className="mb-4 font-semibold">Quick Links</h3>
-          {["Home", "Shop", "About Us", "Contact"].map((t) => (
-            <a key={t} className="block text-sm text-blue-100 hover:text-white" href="#">
-              {t}
-            </a>
-          ))}
-        </div>
-        <div>
-          <h3 className="mb-4 font-semibold">Contact</h3>
-          <p className="text-sm text-blue-100">+1 (310) 777 8808</p>
-          <p className="text-sm text-blue-100">+1 (310) 888 7708</p>
-          <p className="text-sm text-blue-100">support@dropskey.com</p>
+    <footer className="text-white py-12" style={{ backgroundColor: "#1e73be" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* My account - EXACT content */}
+          <div>
+            <h3 className="font-semibold mb-4 text-white">My account</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="/register" className="text-blue-100 hover:text-white transition-colors">
+                  Register
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Terms and Conditions - EXACT content */}
+          <div>
+            <h3 className="font-semibold mb-4 text-white">Legal</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="/terms" className="text-blue-100 hover:text-white transition-colors">
+                  Terms and Conditions
+                </a>
+              </li>
+              <li>
+                <a href="/privacy" className="text-blue-100 hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="/refund" className="text-blue-100 hover:text-white transition-colors">
+                  Refund and Returns Policy
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Links - EXACT content */}
+          <div>
+            <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="/" className="text-blue-100 hover:text-white transition-colors">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/shop" className="text-blue-100 hover:text-white transition-colors">
+                  Shop
+                </a>
+              </li>
+              <li>
+                <a href="/about" className="text-blue-100 hover:text-white transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="text-blue-100 hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info - EXACT content */}
+          <div>
+            <h3 className="font-semibold mb-4 text-white">Contact</h3>
+            <div className="space-y-2 text-sm text-blue-100">
+              <p>+1 (310) 777 8808</p>
+              <p>+1 (310) 888 7708</p>
+              <p>support@dropskey.com</p>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="bg-gray-800 py-4 text-center text-xs text-gray-400">© 2025 Dropskey</div>
+
+      {/* Copyright section - EXACT styling */}
+      <div className="bg-gray-800 mt-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-400">Copyright © 2025 Dropskey</p>
+        </div>
+      </div>
     </footer>
   )
 }

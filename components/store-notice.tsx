@@ -2,10 +2,15 @@ import { X } from "lucide-react"
 
 export function StoreNotice() {
   return (
-    <div className="relative bg-[#dc3545] py-2 text-center text-sm text-white">
-      📋 Start order without waiting approval
-      <button className="absolute right-4 top-1/2 -translate-y-1/2">
-        <X className="h-4 w-4" />
+    <div className="relative py-2 text-center text-sm text-white" style={{ backgroundColor: "#dc3545" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center">
+          <span className="mr-2">📋</span>
+          <span>Start order without waiting approval</span>
+        </div>
+      </div>
+      <button className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-200">
+        <X className="w-4 h-4" />
       </button>
     </div>
   )

@@ -1,13 +1,16 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
 import { Header } from "@/components/header"
 import { StoreNotice } from "@/components/store-notice"
 import { Footer } from "@/components/footer"
 
+const inter = Inter({ subsets: ["latin"] })
+
 export const metadata: Metadata = {
-  title: "Dropskey",
-  description: "Verified Digital Key Store",
+  title: "Dropskey - Authorized Digital Key Store",
+  description: "Authorized Digital Key Store for Windows, Office, and software licenses",
     generator: 'v0.dev'
 }
 
@@ -18,10 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <Header />
         <StoreNotice />
-        {children}
+        <main>{children}</main>
         <Footer />
       </body>
     </html>
