@@ -13,7 +13,9 @@ export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   return (
-    <section className="relative py-20" style={{ backgroundColor: "#f8f9fa" }}>
+    <section className="relative py-10" style={{ backgroundColor: "#f8f9fa" }}>
+      {" "}
+      {/* Reduced vertical padding */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative">
           {/* Navigation arrows - EXACT positioning */}
@@ -25,27 +27,32 @@ export function HeroSlider() {
           </button>
 
           {/* Slide content - EXACT layout from screenshot */}
-          <div className="text-center py-16">
-            {/* Cat mascot image area - EXACT styling */}
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="relative mx-auto mb-8 h-80 w-80">
-                <Image
-                  src={slides[currentSlide].image || "/placeholder.svg"}
-                  alt={slides[currentSlide].caption}
-                  fill
-                  style={{ objectFit: "contain" }}
-                  priority
+          <div className="text-center py-8">
+            {" "}
+            {/* Reduced vertical padding */}
+            {/* Image container - MAXIMIZED SIZE for full image display */}
+            <div className="relative mx-auto mb-8 h-[70vh] w-full max-w-7xl">
+              {" "}
+              {/* Increased height and max-width */}
+              <Image
+                src={slides[currentSlide].image || "/placeholder.svg"}
+                alt={slides[currentSlide].caption}
+                fill
+                style={{ objectFit: "contain" }} // Keep contain to show full image
+                priority
+              />
+            </div>
+            {/* Caption color - EXACT match from screenshot */}
+            <h2 className="text-4xl font-light mb-8" style={{ color: "#9c88ff" }}>
+              {slides[currentSlide].caption}
+            </h2>
+            <div className="mt-6 flex justify-center gap-2">
+              {slides.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-2 w-2 rounded-full ${i === currentSlide ? "bg-purple-500" : "bg-gray-300"}`}
                 />
-              </div>
-              <h2 className="text-4xl font-light text-purple-500">{slides[currentSlide].caption}</h2>
-              <div className="mt-6 flex justify-center gap-2">
-                {slides.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-2 w-2 rounded-full ${i === currentSlide ? "bg-purple-500" : "bg-gray-300"}`}
-                  />
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>

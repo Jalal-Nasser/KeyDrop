@@ -36,26 +36,7 @@ export default async function Home() {
       <HeroSlider />
       <WeeklyProducts />
 
-      <section className="w-full max-w-4xl">
-        <h2 className="text-3xl font-semibold mb-6">Latest Posts</h2>
-        {posts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post: any) => (
-              <div key={post.id} className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold mb-2">{post.title}</h3>
-                <p className="text-gray-700 mb-4" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
-                <a href={post.uri} className="text-blue-600 hover:underline">
-                  Read more
-                </a>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-600">
-            No posts found. Make sure your WordPress is running and WPGraphQL is configured.
-          </p>
-        )}
-      </section>
+      {/* Removed Latest Posts Section */}
     </main>
   )
 }
