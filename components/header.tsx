@@ -4,6 +4,7 @@ import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { StoreNotice } from "@/components/store-notice" // Import StoreNotice
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -175,6 +176,9 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Store Notice will now appear directly below the blue navigation bar */}
+      <StoreNotice />
 
       {/* Mobile menu */}
       {isMenuOpen && (

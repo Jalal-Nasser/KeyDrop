@@ -4,7 +4,6 @@ import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ThemeProvider } from "@/components/theme-provider"
-import { StoreNotice } from "@/components/store-notice"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -30,7 +29,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoreNotice />
           <Header />
           {children}
           <Footer />
