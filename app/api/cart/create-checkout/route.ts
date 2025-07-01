@@ -69,17 +69,14 @@ export async function POST(req: NextRequest) {
 
     console.log("Full response from addCartItems mutation:", JSON.stringify(addCartResponse, null, 2));
 
-    const setCookieHeader = addCartResponse.headers.get('set-cookie');
-    if (!setCookieHeader) {
+    // Use getSetCookie() which correctly handles multiple Set-Cookie headers as an array.
+    const cookies = addCartResponse.headers.getSetCookie();
+    if (!cookies || cookies.length === 0) {
       const errorMessages = (addCartResponse.errors || []).map((e: any) => e.message).join(', ');
-      throw new Error(`Failed to establish a cart session. Server response: ${errorMessages || 'No error message provided.'}`);
+      throw new Error(`Failed to establish a cart session. Server did not return any cookies. Server response: ${errorMessages || 'No error message provided.'}`);
     }
 
-    console.log("Original set-cookie header:", setCookieHeader);
-
-    // Split the header into individual cookie strings.
-    const cookies = setCookieHeader.split(/, (?=[^;]+?=)/);
-    console.log("Parsed cookies array:", cookies);
+    console.log("Received cookies from server:", cookies);
 
     // Find the specific WooCommerce session cookie. This is the key to the session.
     const sessionCookie = cookies.find(cookie => 
@@ -90,7 +87,7 @@ export async function POST(req: NextRequest) {
       console.error("WooCommerce session cookie not found in response. The received cookies were:", cookies);
       return NextResponse.json({ 
         error: 'Failed to establish a checkout session with the server.',
-        details: 'This may be due to a network configuration (like Cloudflare) blocking essential cookies. The required "wp_woocommerce_session_" cookie was not received.'
+        details: 'This may be due to a network configuration or a plugin conflict on your WordPress site. The required "wp_woocommerce_session_" cookie was not received.'
       }, { status: 500 });
     }
 
