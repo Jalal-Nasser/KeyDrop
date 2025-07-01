@@ -74,6 +74,13 @@ const GET_WEEKLY_PRODUCTS_QUERY = gql`
   }
 `;
 
+// Helper function to strip HTML tags
+const stripHtmlTags = (htmlString: string | null | undefined): string => {
+  if (!htmlString) return "";
+  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+  return doc.body.textContent || "";
+};
+
 export function WeeklyProducts({ limit = 8 }) {
   const { addToCart } = useCart()
   const [products, setProducts] = useState<ApiProduct[]>([])
@@ -188,7 +195,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <span>${product.price}</span>
                 </div>
                 <Button
-                  variant="destructive"
+                  variant="default" // Changed to default variant
                   className="w-full mb-3"
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent event from bubbling up
@@ -239,7 +246,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <DialogHeader>
                     <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
                     <DialogDescription className="text-gray-600">
-                      {quickViewProduct.description}
+                      {stripHtmlTags(quickViewProduct.description)} {/* Stripping HTML here */}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="flex items-baseline gap-2">
@@ -260,6 +267,7 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                     <Button 
                       size="lg" 
+                      variant="destructive" // Changed to destructive variant
                       className="flex-grow"
                       onClick={() => {
                         handleAddToCart(quickViewProduct, quantity)
