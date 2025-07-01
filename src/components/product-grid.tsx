@@ -1,12 +1,115 @@
 "use client"
 
-import products from "@/data/products.json"
+import { useState, useEffect } from "react"
 import { useCart } from "@/context/cart-context"
+import { gql } from "graphql-request"
+import { client } from "@/lib/graphql"
+import { Skeleton } from "@/components/ui/skeleton"
+
+// Define the structure of the product data we expect from the API
+interface ApiProduct {
+  id: string; // This will be the base64 encoded ID, e.g., "cHJvZHVjdDo4NA=="
+  name: string;
+  description: string | null;
+  image: {
+    sourceUrl: string;
+  } | null;
+  price: string;
+}
+
+// The GraphQL query to fetch products
+const GET_PRODUCTS_QUERY = gql`
+  query GetProducts($first: Int!) {
+    products(first: $first, where: { featured: true }) {
+      nodes {
+        id
+        name
+        description
+        image {
+          sourceUrl
+          altText
+        }
+        ... on SimpleProduct {
+          price(format: FORMATTED)
+        }
+        ... on VariableProduct {
+          price(format: FORMATTED)
+        }
+      }
+    }
+  }
+`;
 
 export function ProductGrid() {
   const { addToCart } = useCart()
-  // Using local product data instead of fetching from WordPress
-  const displayProducts = products.slice(0, 12)
+  const [products, setProducts] = useState<ApiProduct[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await client.request<{ products: { nodes: ApiProduct[] } }>(GET_PRODUCTS_QUERY, { first: 12 });
+        setProducts(data.products.nodes);
+      } catch (err) {
+        console.error("Failed to fetch products:", err)
+        setError("Could not load products. Please try again later.")
+      } finally {
+        setLoading(false)
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleAddToCart = (product: ApiProduct) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image?.sourceUrl,
+    });
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular digital solutions and software packages
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl p-6 space-y-4">
+                <Skeleton className="aspect-square w-full rounded-lg" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <div className="flex items-center justify-between pt-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-10 w-28" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
+          <p className="text-red-600">{error}</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -18,9 +121,9 @@ export function ProductGrid() {
           </p>
         </div>
 
-        {displayProducts.length > 0 ? (
+        {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayProducts.map((product: any) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
@@ -28,7 +131,7 @@ export function ProductGrid() {
                 <div className="aspect-square bg-gray-100 relative overflow-hidden">
                   {product.image ? (
                     <img
-                      src={Array.isArray(product.image) ? product.image[1] : product.image}
+                      src={product.image.sourceUrl}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -37,18 +140,6 @@ export function ProductGrid() {
                       <div className="text-blue-400 text-4xl">📦</div>
                     </div>
                   )}
-                  <div className="absolute top-4 right-4">
-                    <button className="bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
 
                 <div className="p-6">
@@ -57,9 +148,9 @@ export function ProductGrid() {
                   </h3>
 
                   {product.description && (
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {product.description.replace(/<[^>]*>?/gm, '')}
-                    </p>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2"
+                       dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                   )}
 
                   <div className="flex items-center justify-between">
@@ -69,7 +160,7 @@ export function ProductGrid() {
                       </div>
                     )}
                     <button
-                      onClick={() => addToCart(product)}
+                      onClick={() => handleAddToCart(product)}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                     >
                       Add to Cart
@@ -81,7 +172,7 @@ export function ProductGrid() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No products available at the moment.</p>
+            <p className="text-gray-600 text-lg">No featured products available at the moment.</p>
           </div>
         )}
       </div>
