@@ -23,13 +23,13 @@ export function HeroSlider() {
 	return (
 		<section className="relative py-0 overflow-hidden w-full"> {/* Ensure section is full width */}
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden"> {/* Removed lg:max-w-[1515px] and mx-auto */}
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden">
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
-					style={{ objectFit: "cover" }} // This is correct for dropskey.com
+					style={{ objectFit: "contain" }} // Changed to contain to show the full image
 					priority
 				/>
 
