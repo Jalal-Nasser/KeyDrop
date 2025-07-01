@@ -49,11 +49,11 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-2xl rounded-lg">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Sign in to your account</CardTitle>
-          <CardDescription>Enter your email below to sign in</CardDescription>
+          <CardTitle className="text-3xl font-extrabold text-gray-900">Welcome Back!</CardTitle>
+          <CardDescription className="text-gray-600">Sign in to access your account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -65,7 +65,7 @@ export default function AccountPage() {
                   <FormItem>
                     <FormLabel>Email address</FormLabel>
                     <FormControl>
-                      <Input placeholder="m@example.com" {...field} />
+                      <Input placeholder="your@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
