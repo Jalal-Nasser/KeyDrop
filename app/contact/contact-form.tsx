@@ -25,6 +25,8 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Message must be at least 10 characters." }).max(500),
 });
 
+const inputStyles = "bg-white/5 border-white/20 placeholder:text-white/50 text-white";
+
 export function ContactForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,7 +58,7 @@ export function ContactForm() {
               <FormItem>
                 <FormLabel>First name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <Input placeholder="John" {...field} className={inputStyles} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -69,7 +71,7 @@ export function ContactForm() {
               <FormItem>
                 <FormLabel>Last name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Doe" {...field} />
+                  <Input placeholder="Doe" {...field} className={inputStyles} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -83,7 +85,7 @@ export function ContactForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="john.doe@example.com" {...field} />
+                <Input type="email" placeholder="john.doe@example.com" {...field} className={inputStyles} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,7 +98,7 @@ export function ContactForm() {
             <FormItem>
               <FormLabel>Subject</FormLabel>
               <FormControl>
-                <Input placeholder="Regarding your product..." {...field} />
+                <Input placeholder="Regarding your product..." {...field} className={inputStyles} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,7 +113,7 @@ export function ContactForm() {
               <FormControl>
                 <Textarea
                   placeholder="Tell us how we can help."
-                  className="min-h-[120px]"
+                  className={`min-h-[120px] ${inputStyles}`}
                   {...field}
                 />
               </FormControl>
