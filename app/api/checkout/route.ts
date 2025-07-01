@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
   console.log("NEXT_PUBLIC_WORDPRESS_API_URL:", endpoint); // Added for debugging
 
   if (!endpoint) {
-    console.error("WordPress API URL is not configured in environment variables.");
-    return NextResponse.json({ error: 'The store is not configured for checkout.' }, { status: 500 });
+    const errorMessage = "The WordPress API URL is not configured. Please set the NEXT_PUBLIC_WORDPRESS_API_URL environment variable in your project settings and restart the server.";
+    console.error(errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 
   try {
