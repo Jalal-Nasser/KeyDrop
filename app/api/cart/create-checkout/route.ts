@@ -30,19 +30,13 @@ const CHECKOUT_MUTATION = gql`
 `;
 
 interface CartItem {
-  id: number; // Changed to number
+  id: number;
   quantity: number;
 }
 
-/**
- * Returns the numeric database ID directly, as it's now expected to be a number.
- * @param id The product ID from the cart context (now always a number).
- * @returns The numeric database ID.
- */
 function getDatabaseId(id: number): number {
-  return id; // Simplified, as ID is now always numeric
+  return id;
 }
-
 
 export async function POST(req: NextRequest) {
   if (!endpoint) {
@@ -60,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     const lineItems = items.map(item => ({
-      productId: getDatabaseId(item.id), // Use helper to get correct ID
+      productId: getDatabaseId(item.id),
       quantity: item.quantity,
     }));
 
@@ -75,20 +69,17 @@ export async function POST(req: NextRequest) {
     const setCookieHeader = addCartResponse.headers.get('set-cookie');
     if (!setCookieHeader) {
       const errorMessages = (addCartResponse.errors || []).map((e: any) => e.message).join(', ');
-      console.error("No 'set-cookie' header found in addCartResponse. Errors:", errorMessages);
       throw new Error(`Failed to establish a cart session. Server response: ${errorMessages || 'No error message provided.'}`);
     }
 
     console.log("Original set-cookie header:", setCookieHeader);
 
-    // Split by comma to get individual cookie strings (e.g., "name=value; Path=/", "name2=value2; HttpOnly")
-    const individualCookieStrings = setCookieHeader.split(',');
-
-    // For each cookie string, extract only the "name=value" part (before the first ';')
-    const parsedCookies = individualCookieStrings
-      .map(cookieString => cookieString.split(';')[0].trim())
-      .filter(Boolean) // Remove any empty strings that might result from extra commas
-      .join('; '); // Join them with '; ' for the 'cookie' request header
+    // Robustly parse the 'set-cookie' header. This regex splits cookies while ignoring commas in date attributes.
+    const cookies = setCookieHeader.split(/,(?=\s[a-zA-Z0-9_-]+=)/);
+    const parsedCookies = cookies
+      .map(cookie => cookie.split(';')[0].trim())
+      .filter(Boolean)
+      .join('; ');
 
     console.log("Parsed cookie header for next request:", parsedCookies);
 
