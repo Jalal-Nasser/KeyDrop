@@ -23,7 +23,7 @@ export function HeroSlider() {
 	return (
 		<section className="relative py-0 overflow-hidden w-full">
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white"> {/* Changed back to bg-white */}
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white"> {/* This ensures the background is white */}
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
@@ -33,10 +33,10 @@ export function HeroSlider() {
 					priority
 				/>
 
-				{/* Overlay for text and arrows */}
-				<div className="absolute inset-0 bg-black/20 flex items-center justify-center p-4">
-					{/* Caption */}
-					<h2 className="text-white text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-lg">
+				{/* Overlay for text and arrows - now transparent */}
+				<div className="absolute inset-0 bg-transparent flex items-center justify-center p-4"> {/* Changed to bg-transparent */}
+					{/* Caption - removed drop-shadow */}
+					<h2 className="text-white text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold"> {/* Removed drop-shadow-lg */}
 						{slides[currentSlide].caption}
 					</h2>
 				</div>
