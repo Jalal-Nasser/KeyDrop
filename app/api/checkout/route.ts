@@ -46,10 +46,11 @@ export async function POST(req: NextRequest) {
     const client = new GraphQLClient(endpoint);
 
     // Send the request to the WordPress GraphQL API.
-    // The variable structure { input: { lineItems: ... } } is an assumption.
+    // The variable structure { input: { lineItems: ... } } was causing an error.
+    // Changed 'lineItems' to 'products' as a common alternative for product input.
     const data = await client.request(CREATE_CHECKOUT_MUTATION, {
       input: {
-        lineItems: lineItems,
+        products: lineItems, // Changed 'lineItems' to 'products'
       },
     });
 
