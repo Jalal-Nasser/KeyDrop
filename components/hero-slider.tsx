@@ -1,6 +1,15 @@
 "use client"
 
-import { useEffect, useState } => {
+import { useEffect, useState } from "react" // Corrected this line
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import Image from "next/image"
+
+const slides = [
+	{ caption: "Just Started", image: "/images/layerslider-02-bear.png" },
+	{ caption: "Lets Paint it", image: "/images/layerslider-03-cat.png" },
+]
+
+export function HeroSlider() {
 	const [currentSlide, setCurrentSlide] = useState(0)
 
 	// Auto-slide effect
