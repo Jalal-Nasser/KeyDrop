@@ -4,7 +4,6 @@ import { GraphQLClient, gql } from 'graphql-request';
 const endpoint = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
 
 // Mutation to add multiple items to the server-side cart.
-// This is a common pattern for WooCommerce GraphQL extensions.
 const ADD_ITEMS_TO_CART_MUTATION = gql`
   mutation AddCartItems($input: AddCartItemsInput!) {
     addCartItems(input: $input) {
@@ -12,7 +11,7 @@ const ADD_ITEMS_TO_CART_MUTATION = gql`
       cart {
         contents {
           nodes {
-            key # We can use the key to confirm items were added
+            key
           }
         }
       }
@@ -31,9 +30,42 @@ const CHECKOUT_MUTATION = gql`
 `;
 
 interface CartItem {
-  id: string;
+  id: string | number;
   quantity: number;
 }
+
+/**
+ * Converts a potentially base64-encoded GraphQL ID into a plain database ID.
+ * @param id The product ID from the cart context.
+ * @returns The numeric database ID.
+ */
+function getDatabaseId(id: string | number): number {
+  if (typeof id === 'number') {
+    return id;
+  }
+  // Try to decode from base64, which is a common GraphQL pattern (e.g., 'cHJvZHVjdDo4NA==')
+  try {
+    const decodedId = Buffer.from(id, 'base64').toString('ascii');
+    if (decodedId.includes(':')) {
+      const parts = decodedId.split(':');
+      const numericId = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(numericId)) {
+        return numericId;
+      }
+    }
+  } catch (e) {
+    // Ignore error if it's not a valid base64 string
+  }
+
+  // If not base64 or decoding fails, assume it's a plain numeric string
+  const parsedId = parseInt(id, 10);
+  if (!isNaN(parsedId)) {
+    return parsedId;
+  }
+
+  throw new Error(`Could not parse a valid product ID from "${id}".`);
+}
+
 
 export async function POST(req: NextRequest) {
   if (!endpoint) {
@@ -51,12 +83,11 @@ export async function POST(req: NextRequest) {
     }
 
     const lineItems = items.map(item => ({
-      productId: parseInt(item.id, 10),
+      productId: getDatabaseId(item.id), // Use helper to get correct ID
       quantity: item.quantity,
     }));
 
     // Step 1: Add items to the cart to create a server-side session.
-    // We use rawRequest to access the response headers.
     const addCartResponse = await client.rawRequest(ADD_ITEMS_TO_CART_MUTATION, {
       input: {
         clientMutationId: "dyad-add-to-cart",
@@ -64,11 +95,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Extract the session cookie from the response. This is crucial.
     const setCookieHeader = addCartResponse.headers.get('set-cookie');
     if (!setCookieHeader) {
-      console.error("No session cookie returned after adding items to cart.", addCartResponse.data);
-      // Check for specific errors from the addCartItems mutation
       const errorMessages = (addCartResponse.errors || []).map((e: any) => e.message).join(', ');
       throw new Error(`Failed to establish a cart session. Server response: ${errorMessages || 'No error message provided.'}`);
     }
@@ -81,7 +109,6 @@ export async function POST(req: NextRequest) {
         },
       },
       {
-        // Pass the cookie to maintain the session
         'cookie': setCookieHeader,
       }
     );
@@ -89,8 +116,6 @@ export async function POST(req: NextRequest) {
     const checkoutUrl = checkoutResponse.data?.checkout?.redirect;
 
     if (checkoutUrl) {
-      // On successful checkout creation, we should clear the local cart
-      // as the user is now being redirected to the payment page.
       return NextResponse.json({ checkoutUrl });
     } else {
       console.error("Checkout URL not found in GraphQL response:", checkoutResponse.data);
