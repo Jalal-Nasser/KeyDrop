@@ -125,7 +125,7 @@ export function WeeklyProducts({ limit = 8 }) {
     return (
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-16 h-0.5 mb-8 bg-blue-600"></div>
+          <div className="w-16 h-0.5 mb-8 bg-primary"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="space-y-4">
@@ -157,7 +157,7 @@ export function WeeklyProducts({ limit = 8 }) {
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
+        <div className="w-16 h-0.5 mb-8 bg-primary"></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => {
             const currentCardQuantity = cardQuantities[product.databaseId] || 1;
@@ -168,7 +168,7 @@ export function WeeklyProducts({ limit = 8 }) {
               >
                 {product.onSale && (
                   <div className="absolute top-2 left-2 z-10">
-                    <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                    <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded">
                       SALE
                     </span>
                   </div>
@@ -187,26 +187,25 @@ export function WeeklyProducts({ limit = 8 }) {
                   {product.onSale && product.regularPrice && <span className="text-gray-500 line-through mr-2">${product.regularPrice}</span>}
                   <span>${product.price}</span>
                 </div>
-                <button
-                  className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
-                  style={{ backgroundColor: "#dc3545", color: "white" }}
+                <Button
+                  variant="destructive"
+                  className="w-full mb-3"
                   onClick={() => handleQuickViewOpen(product)}
                 >
                   QUICK VIEW
-                </button>
+                </Button>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center border border-gray-300 rounded">
                     <button onClick={() => handleCardQuantityChange(product.databaseId, currentCardQuantity - 1)} className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
                     <input type="number" value={currentCardQuantity} className="w-12 text-center border-0 text-sm py-1" readOnly />
                     <button onClick={() => handleCardQuantityChange(product.databaseId, currentCardQuantity + 1)} className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
                   </div>
-                  <button
-                    className="text-white p-2 rounded hover:bg-blue-700 transition-colors"
-                    style={{ backgroundColor: "#1e73be" }}
+                  <Button
+                    size="icon"
                     onClick={() => handleAddToCart(product, currentCardQuantity)}
                   >
                     <ShoppingCart className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )
@@ -219,7 +218,7 @@ export function WeeklyProducts({ limit = 8 }) {
                 <div className="relative">
                   {quickViewProduct.onSale && (
                     <div className="absolute top-2 left-2 z-10">
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
+                      <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded">
                         SALE
                       </span>
                     </div>
@@ -257,7 +256,7 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                     <Button 
                       size="lg" 
-                      className="flex-grow bg-[#1e73be] hover:bg-[#1a63a3] text-white"
+                      className="flex-grow"
                       onClick={() => {
                         handleAddToCart(quickViewProduct, quantity)
                         handleQuickViewClose()
