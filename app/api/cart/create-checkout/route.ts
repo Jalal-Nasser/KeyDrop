@@ -88,7 +88,10 @@ export async function POST(req: NextRequest) {
 
     if (!sessionCookie) {
       console.error("WooCommerce session cookie not found in response. The received cookies were:", cookies);
-      throw new Error("Could not find the necessary session cookie to proceed with checkout.");
+      return NextResponse.json({ 
+        error: 'Failed to establish a checkout session with the server.',
+        details: 'This may be due to a network configuration (like Cloudflare) blocking essential cookies. The required "wp_woocommerce_session_" cookie was not received.'
+      }, { status: 500 });
     }
 
     // Extract just the 'key=value' part of the session cookie.

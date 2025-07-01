@@ -43,7 +43,8 @@ export default function CartPage() {
         // Redirect to the WordPress checkout page
         window.location.href = data.checkoutUrl;
       } else {
-        toast.error(data.error || 'Failed to create checkout session.');
+        const errorMessage = data.details ? `${data.error} ${data.details}` : data.error || 'Failed to create checkout session.';
+        toast.error(errorMessage, { duration: 10000 }); // Show for 10 seconds
         setIsCheckingOut(false);
       }
     } catch (error) {
