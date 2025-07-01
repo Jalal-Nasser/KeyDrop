@@ -11,8 +11,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog" // Added more Dialog components
-import { Button } from "@/components/ui/button" // Added Button import
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export function WeeklyProducts({ limit = 8 }) {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
@@ -65,7 +65,8 @@ export function WeeklyProducts({ limit = 8 }) {
               </div>
               {/* Quick view button */}
               <button
-                className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded text-sm font-medium hover:bg-gray-200 transition-colors mb-3"
+                className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
+                style={{ backgroundColor: "#dc3545", color: "white" }}
                 onClick={() => setQuickViewProduct(product)}
               >
                 QUICK VIEW
@@ -90,14 +91,14 @@ export function WeeklyProducts({ limit = 8 }) {
         {/* Quick View Modal */}
         {quickViewProduct && (
           <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
-            <DialogContent className="sm:max-w-[425px]"> {/* Using DialogContent */}
+            <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{quickViewProduct.name}</DialogTitle>
                 <DialogDescription>
                   {quickViewProduct.description}
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col items-center py-4"> {/* Centering content within the dialog */}
+              <div className="flex flex-col items-center py-4">
                 <Image
                   src={quickViewProduct.image || "/placeholder.jpg"}
                   alt={quickViewProduct.name}
