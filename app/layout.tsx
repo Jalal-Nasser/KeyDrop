@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Dropskey",
   description: "Verified Digital Key Store",
   icons: {
-    icon: "/favicon.png", // Pointing to the favicon.png in the public directory
+    icon: "/favicon.ico", // Changed from .png to .ico
   },
 }
 
