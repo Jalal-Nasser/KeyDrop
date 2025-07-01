@@ -21,15 +21,15 @@ export function HeroSlider() {
 	}, [])
 
 	return (
-		<section className="relative py-0 overflow-hidden">
+		<section className="relative py-0 overflow-hidden w-full"> {/* Ensure section is full width */}
 			{/* Main slider container */}
-			<div className="relative w-full max-w-full lg:max-w-[1515px] h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] mx-auto overflow-hidden">
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] lg:max-w-[1515px] mx-auto overflow-hidden"> {/* Removed max-w-[1515px] and mx-auto from here, added to parent section */}
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
-					style={{ objectFit: "contain" }} // This is already set to 'contain'
+					style={{ objectFit: "cover" }} // Changed to cover for full-bleed as seen on dropskey.com
 					priority
 				/>
 
