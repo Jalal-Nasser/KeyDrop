@@ -1,21 +1,29 @@
 "use client"
 import products from "@/data/products.json"
 import Image from "next/image"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Plus, Minus } from "lucide-react"
 import { useState } from "react"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
 export function WeeklyProducts({ limit = 8 }) {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
+  const [quantity, setQuantity] = useState(1)
+
+  const handleQuickViewOpen = (product: any) => {
+    setQuickViewProduct(product)
+    setQuantity(1) // Reset quantity when opening a new modal
+  }
+
+  const handleQuickViewClose = () => {
+    setQuickViewProduct(null)
+  }
+
   // Combine local and WordPress products
   const displayProducts = [...products].slice(0, limit)
 
@@ -67,7 +75,7 @@ export function WeeklyProducts({ limit = 8 }) {
               <button
                 className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
                 style={{ backgroundColor: "#dc3545", color: "white" }}
-                onClick={() => setQuickViewProduct(product)}
+                onClick={() => handleQuickViewOpen(product)}
               >
                 QUICK VIEW
               </button>
@@ -90,33 +98,63 @@ export function WeeklyProducts({ limit = 8 }) {
         </div>
         {/* Quick View Modal */}
         {quickViewProduct && (
-          <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{quickViewProduct.name}</DialogTitle>
-                <DialogDescription>
-                  {quickViewProduct.description}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col items-center py-4">
-                <Image
-                  src={quickViewProduct.image || "/placeholder.jpg"}
-                  alt={quickViewProduct.name}
-                  width={200}
-                  height={200}
-                  className="mb-4 object-contain rounded-lg"
-                />
-                <div className="text-lg font-semibold text-gray-900 mb-4">
-                  <span>{quickViewProduct.price}</span>
+          <Dialog open={!!quickViewProduct} onOpenChange={handleQuickViewClose}>
+            <DialogContent className="sm:max-w-3xl p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column: Image */}
+                <div className="relative">
+                  {quickViewProduct.onSale && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
+                        SALE {quickViewProduct.salePercent || ""}
+                      </span>
+                    </div>
+                  )}
+                  <Image
+                    src={quickViewProduct.image || "/placeholder.jpg"}
+                    alt={quickViewProduct.name}
+                    width={400}
+                    height={400}
+                    className="w-full h-full object-contain rounded-lg"
+                  />
+                </div>
+
+                {/* Right Column: Details */}
+                <div className="flex flex-col justify-center space-y-4">
+                  <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
+                  <div className="flex items-baseline gap-2">
+                    {quickViewProduct.oldPrice && (
+                      <span className="text-xl text-gray-500 line-through">
+                        {quickViewProduct.oldPrice}
+                      </span>
+                    )}
+                    <span className="text-2xl font-semibold text-blue-600">
+                      {quickViewProduct.price}
+                    </span>
+                  </div>
+                  <DialogDescription className="text-gray-600">
+                    {quickViewProduct.description}
+                  </DialogDescription>
+                  
+                  <div className="flex items-center gap-4 pt-4">
+                    <div className="flex items-center border border-gray-300 rounded">
+                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2"><Minus size={16}/></button>
+                      <input type="number" value={quantity} readOnly className="w-12 text-center border-y-0 border-x" />
+                      <button onClick={() => setQuantity(q => q + 1)} className="p-2"><Plus size={16}/></button>
+                    </div>
+                    <Button size="lg" className="flex-grow bg-gray-800 hover:bg-gray-900">
+                      <ShoppingCart className="mr-2" />
+                      ADD TO CART
+                    </Button>
+                  </div>
+
+                  <div className="text-sm text-gray-500 space-y-1 pt-4">
+                    {quickViewProduct.categories && <p><strong>Categories:</strong> {quickViewProduct.categories}</p>}
+                    {quickViewProduct.tags && <p><strong>Tags:</strong> {quickViewProduct.tags}</p>}
+                    {quickViewProduct.brand && <p><strong>Brand:</strong> {quickViewProduct.brand}</p>}
+                  </div>
                 </div>
               </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    Close
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         )}
