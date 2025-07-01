@@ -159,7 +159,7 @@ export function WeeklyProducts({ limit = 8 }) {
                       <input type="number" value={quantity} readOnly className="w-12 text-center border-y-0 border-x" />
                       <button onClick={() => setQuantity(q => q + 1)} className="p-2"><Plus size={16}/></button>
                     </div>
-                    <Button size="lg" className="flex-grow bg-[#1e73be] hover:bg-[#1a63a3]">
+                    <Button size="lg" className="flex-grow bg-[#1e73be] hover:bg-[#1a63a3] text-white">
                       <ShoppingCart className="mr-2" />
                       ADD TO CART
                     </Button>
