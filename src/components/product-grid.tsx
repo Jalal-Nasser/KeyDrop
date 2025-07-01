@@ -1,58 +1,8 @@
-import { GraphQLClient, gql } from "graphql-request"
+import products from "@/data/products.json"
 
-const graphqlAPI = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
-
-const GET_PRODUCTS = gql`
-  query GetProducts {
-    products(first: 12) {
-      nodes {
-        id
-        name
-        slug
-        image {
-          sourceUrl
-          altText
-        }
-        ... on SimpleProduct {
-          price
-          description
-        }
-        ... on VariableProduct {
-          price
-          description
-        }
-        ... on ExternalProduct {
-          price
-          description
-        }
-      }
-    }
-  }
-`
-
-export async function ProductGrid() {
-  if (!graphqlAPI) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
-          <p className="text-red-600">WordPress API not configured</p>
-        </div>
-      </section>
-    )
-  }
-
-  const graphQLClient = new GraphQLClient(graphqlAPI)
-  let products = []
-  let errorFetching = false
-
-  try {
-    const data: any = await graphQLClient.request(GET_PRODUCTS)
-    products = data.products.nodes
-  } catch (error) {
-    console.error("Error fetching products:", error)
-    errorFetching = true
-  }
+export function ProductGrid() {
+  // Using local product data instead of fetching from WordPress
+  const displayProducts = products.slice(0, 12)
 
   return (
     <section className="py-16 bg-gray-50">
@@ -64,13 +14,9 @@ export async function ProductGrid() {
           </p>
         </div>
 
-        {errorFetching ? (
-          <div className="text-center py-12">
-            <p className="text-red-600 text-lg">Failed to load products. Please try again later.</p>
-          </div>
-        ) : products.length > 0 ? (
+        {displayProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product: any) => (
+            {displayProducts.map((product: any) => (
               <div
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
@@ -78,8 +24,8 @@ export async function ProductGrid() {
                 <div className="aspect-square bg-gray-100 relative overflow-hidden">
                   {product.image ? (
                     <img
-                      src={product.image.sourceUrl || "/placeholder.svg"}
-                      alt={product.image.altText || product.name}
+                      src={Array.isArray(product.image) ? product.image[1] : product.image}
+                      alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
@@ -108,22 +54,21 @@ export async function ProductGrid() {
 
                   {product.description && (
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      <span dangerouslySetInnerHTML={{ __html: product.description }} />
+                      {product.description.replace(/<[^>]*>?/gm, '')}
                     </p>
                   )}
 
                   <div className="flex items-center justify-between">
                     {product.price && (
                       <div className="text-lg font-bold text-blue-600">
-                        <span dangerouslySetInnerHTML={{ __html: product.price }} />
+                        <span>{product.price}</span>
                       </div>
                     )}
-                    <a
-                      href={`/products/${product.slug}`}
+                    <button
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                     >
-                      View Details
-                    </a>
+                      Add to Cart
+                    </button>
                   </div>
                 </div>
               </div>
