@@ -1,31 +1,40 @@
-import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Header } from "@/components/header"
-import { StoreNotice } from "@/components/store-notice"
 import { Footer } from "@/components/footer"
+import { ThemeProvider } from "@/components/theme-provider"
+import { StoreNotice } from "@/components/store-notice"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Dropskey - Authorized Digital Key Store",
-  description: "Authorized Digital Key Store for Windows, Office, and software licenses",
-    generator: 'v0.dev'
+  title: "Dropskey",
+  description: "Verified Digital Key Store",
+  icons: {
+    icon: "/favicon.png", // Pointing to the favicon.png in the public directory
+  },
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className={inter.className} suppressHydrationWarning={true}>
-        <Header />
-        <StoreNotice />
-        <main>{children}</main>
-        <Footer />
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <StoreNotice />
+          <Header />
+          {children}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   )
