@@ -56,14 +56,17 @@ const GET_WEEKLY_PRODUCTS_QUERY = gql`
           price(format: FORMATTED)
           regularPrice(format: FORMATTED)
         }
-        productCategories {
-          nodes {
-            name
+        # Add inline fragment for productCategories and productTags
+        ... on Product {
+          productCategories {
+            nodes {
+              name
+            }
           }
-        }
-        productTags {
-          nodes {
-            name
+          productTags {
+            nodes {
+              name
+            }
           }
         }
       }
