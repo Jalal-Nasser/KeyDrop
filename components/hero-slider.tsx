@@ -1,15 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import Image from "next/image"
-
-const slides = [
-	{ caption: "Just Started", image: "/images/layerslider-02-bear.png" },
-	{ caption: "Lets Paint it", image: "/images/layerslider-03-cat.png" },
-]
-
-export function HeroSlider() {
+import { useEffect, useState } => {
 	const [currentSlide, setCurrentSlide] = useState(0)
 
 	// Auto-slide effect
@@ -21,9 +12,9 @@ export function HeroSlider() {
 	}, [])
 
 	return (
-		<section className="relative py-0 overflow-hidden w-full bg-white"> {/* Added bg-white here */}
+		<section className="relative py-0 overflow-hidden w-full"> {/* Removed bg-white from here */}
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden"> {/* Removed bg-white from here */}
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white"> {/* Added bg-white back here */}
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
