@@ -110,7 +110,7 @@ export function Header() {
                   <span>Sign In</span>
                 </button>
                 <span className="text-gray-300">|</span>
-                <button className="relative flex items-center space-x-1 hover:text-blue-600">
+                <Link href="/cart" className="relative flex items-center space-x-1 hover:text-blue-600">
                   <ShoppingCart className="w-4 h-4" />
                   {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
@@ -118,7 +118,7 @@ export function Header() {
                     </span>
                   )}
                   <span>Cart {cartTotal.toFixed(2)} $</span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>
