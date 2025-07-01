@@ -26,7 +26,8 @@ export default function CartPage() {
   const handleCheckout = async () => {
     setIsCheckingOut(true);
     try {
-      const response = await fetch('/api/checkout', {
+      // Call the new endpoint that handles the entire server-side process
+      const response = await fetch('/api/cart/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,6 +38,8 @@ export default function CartPage() {
       const data = await response.json();
 
       if (response.ok && data.checkoutUrl) {
+        // Clear the local cart since we are now handing off to WordPress
+        clearCart();
         // Redirect to the WordPress checkout page
         window.location.href = data.checkoutUrl;
       } else {
