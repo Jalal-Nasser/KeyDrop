@@ -44,11 +44,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       const storedCart = localStorage.getItem("cart")
       if (storedCart) {
-        setCartItems(JSON.parse(storedCart))
+        const parsedCart: CartItem[] = JSON.parse(storedCart)
+        // Check for old placeholder IDs (1, 2, 3) and clear cart if found
+        const hasOldIds = parsedCart.some(item => item.id === 1 || item.id === 2 || item.id === 3);
+        if (hasOldIds) {
+          console.warn("Detected old placeholder product IDs in cart. Clearing cart.");
+          setCartItems([]); // Clear the cart
+          toast.info("Your cart was reset due to outdated product information. Please add items again.");
+        } else {
+          setCartItems(parsedCart);
+        }
       }
     } catch (error) {
-      console.error("Failed to parse cart from localStorage", error)
+      console.error("Failed to parse cart from localStorage or cart data is invalid", error)
       setCartItems([])
+      toast.error("There was an issue loading your cart. It has been reset.");
     }
   }, [])
 
