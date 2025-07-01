@@ -1,11 +1,12 @@
 import { GraphQLClient, gql } from "graphql-request"
 import { ShoppingCart } from "lucide-react"
+import Image from "next/image" // Import Image for optimization
 
 const graphqlAPI = process.env.WORDPRESS_API_URL
 
 const GET_PRODUCTS = gql`
-  query GetProducts {
-    products(first: 8) {
+  query GetProducts($first: Int!) { # Added $first variable
+    products(first: $first) {
       nodes {
         id
         name
@@ -34,7 +35,11 @@ const GET_PRODUCTS = gql`
   }
 `
 
-export async function WeeklyProducts() {
+interface WeeklyProductsProps {
+  limit?: number // Optional prop to control how many products to fetch
+}
+
+export async function WeeklyProducts({ limit = 8 }: WeeklyProductsProps) {
   if (!graphqlAPI) {
     return (
       <section className="py-16 bg-white">
@@ -52,7 +57,7 @@ export async function WeeklyProducts() {
   let products = []
 
   try {
-    const data: any = await graphQLClient.request(GET_PRODUCTS)
+    const data: any = await graphQLClient.request(GET_PRODUCTS, { first: limit }) // Pass limit to query
     products = data.products.nodes
   } catch (error) {
     console.error("Error fetching products:", error)
@@ -136,7 +141,7 @@ export async function WeeklyProducts() {
 
         {/* EXACT 4-column grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayProducts.slice(0, 8).map((product: any) => (
+          {displayProducts.slice(0, limit).map((product: any) => (
             <div
               key={product.id}
               className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
@@ -152,9 +157,11 @@ export async function WeeklyProducts() {
 
               {/* Product image - EXACT styling */}
               <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                <img
+                <Image
                   src={product.image?.sourceUrl || product.image || "/placeholder.svg?height=150&width=150"}
                   alt={product.image?.altText || product.name}
+                  width={150} // Explicit width
+                  height={150} // Explicit height
                   className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                 />
               </div>
