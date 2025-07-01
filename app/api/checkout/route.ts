@@ -30,27 +30,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { items } = (await req.json()) as { items: CartItem[] };
+    // The previous approach of passing items directly to the checkout mutation failed.
+    // This is typical for WooCommerce, which expects items to be in a server-side cart session.
+    // As a diagnostic step, we are now calling checkout without items.
+    // We expect this to either go to an empty checkout page or return a "cart is empty" error.
+    // This will confirm that we need to implement server-side cart synchronization.
 
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
-    }
-
-    // Format the cart items into the structure expected by the GraphQL mutation.
-    // This assumes product IDs in WordPress are integers.
-    const lineItems = items.map(item => ({
-      productId: parseInt(item.id, 10),
-      quantity: item.quantity,
-    }));
+    // const { items } = (await req.json()) as { items: CartItem[] };
+    // if (!items || items.length === 0) {
+    //   return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
+    // }
+    // const lineItems = items.map(item => ({
+    //   productId: parseInt(item.id, 10),
+    //   quantity: item.quantity,
+    // }));
 
     const client = new GraphQLClient(endpoint);
 
-    // Send the request to the WordPress GraphQL API.
-    // The variable structure { input: { lineItems: ... } } was causing an error.
-    // Changed 'lineItems' to 'products' as a common alternative for product input.
     const data = await client.request(CREATE_CHECKOUT_MUTATION, {
       input: {
-        products: lineItems, // Changed 'lineItems' to 'products'
+        // Most WPGraphQL mutations require a clientMutationId.
+        clientMutationId: "dyad-checkout-attempt"
       },
     });
 
@@ -62,10 +62,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ checkoutUrl });
     } else {
       console.error("Checkout URL not found in GraphQL response:", data);
-      return NextResponse.json({ error: 'Could not create a checkout session.' }, { status: 500 });
+      // It's possible the error is inside the data object, e.g., data.checkout.result === 'failure'
+      return NextResponse.json({ error: 'Could not create a checkout session. The server did not provide a redirect URL.' }, { status: 500 });
     }
   } catch (error) {
     console.error('Error creating checkout:', error);
+    // We can inspect the error to see if it's a "cart is empty" error.
+    const errorMessage = error instanceof Error ? error.message : 'An internal server error occurred.';
+    if (errorMessage.toLowerCase().includes("cart is empty")) {
+        return NextResponse.json({ error: "Cannot proceed to checkout because the server-side cart is empty." }, { status: 400 });
+    }
     return NextResponse.json({ error: 'An internal server error occurred while creating checkout.' }, { status: 500 });
   }
 }
