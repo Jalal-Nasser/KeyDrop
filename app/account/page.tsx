@@ -49,8 +49,8 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-600 to-purple-500 p-4">
-      <Card className="w-full max-w-md rounded-2xl border-none bg-card/80 shadow-2xl backdrop-blur-sm">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-2 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
             <Lock className="h-7 w-7 text-blue-600" />
