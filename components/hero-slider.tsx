@@ -21,9 +21,9 @@ export function HeroSlider() {
 	}, [])
 
 	return (
-		<section className="relative py-0 overflow-hidden w-full"> {/* Ensure section is full width */}
+		<section className="relative py-0 overflow-hidden w-full bg-white"> {/* Added bg-white here */}
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white"> {/* Added bg-white here */}
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden"> {/* Removed bg-white from here */}
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
