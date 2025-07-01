@@ -75,16 +75,22 @@ export async function POST(req: NextRequest) {
     const setCookieHeader = addCartResponse.headers.get('set-cookie');
     if (!setCookieHeader) {
       const errorMessages = (addCartResponse.errors || []).map((e: any) => e.message).join(', ');
+      console.error("No 'set-cookie' header found in addCartResponse. Errors:", errorMessages);
       throw new Error(`Failed to establish a cart session. Server response: ${errorMessages || 'No error message provided.'}`);
     }
 
-    // Parse the 'set-cookie' header to create a valid 'cookie' header for the next request.
-    // The 'set-cookie' header can contain multiple cookies and attributes (like expires, path).
-    // The 'cookie' header for a request should only contain the name=value pairs, separated by semicolons.
-    const parsedCookies = setCookieHeader
-      .split(/,(?=\s[a-zA-Z0-9_]+=)/) // Split cookies, avoiding commas in dates
-      .map(cookie => cookie.split(';')[0].trim())
-      .join('; ');
+    console.log("Original set-cookie header:", setCookieHeader);
+
+    // Split by comma to get individual cookie strings (e.g., "name=value; Path=/", "name2=value2; HttpOnly")
+    const individualCookieStrings = setCookieHeader.split(',');
+
+    // For each cookie string, extract only the "name=value" part (before the first ';')
+    const parsedCookies = individualCookieStrings
+      .map(cookieString => cookieString.split(';')[0].trim())
+      .filter(Boolean) // Remove any empty strings that might result from extra commas
+      .join('; '); // Join them with '; ' for the 'cookie' request header
+
+    console.log("Parsed cookie header for next request:", parsedCookies);
 
     // Step 2: Call the checkout mutation, passing the parsed session cookie back.
     const checkoutResponse = await client.rawRequest(CHECKOUT_MUTATION, 
