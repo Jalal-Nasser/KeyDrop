@@ -5,7 +5,7 @@ import { toast } from "sonner"
 
 // Define the types for our products and cart items
 interface Product {
-  id: number | string
+  id: number // Changed to number
   name: string
   price: string // e.g., "$25.00"
   image?: string | string[]
@@ -19,8 +19,8 @@ interface CartItem extends Product {
 interface CartContextType {
   cartItems: CartItem[]
   addToCart: (product: Product, quantity?: number) => void
-  removeFromCart: (productId: number | string) => void
-  updateQuantity: (productId: number | string, quantity: number) => void
+  removeFromCart: (productId: number) => void // Changed to number
+  updateQuantity: (productId: number, quantity: number) => void // Changed to number
   cartCount: number
   cartTotal: number
   clearCart: () => void
@@ -77,13 +77,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // Function to remove a product from the cart
-  const removeFromCart = (productId: number | string) => {
+  const removeFromCart = (productId: number) => { // Changed to number
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId))
     toast.info("Item removed from cart.")
   }
 
   // Function to update the quantity of an item already in the cart
-  const updateQuantity = (productId: number | string, quantity: number) => {
+  const updateQuantity = (productId: number, quantity: number) => { // Changed to number
     if (quantity <= 0) {
       removeFromCart(productId)
     } else {

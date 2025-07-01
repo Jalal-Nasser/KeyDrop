@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 // Define the structure of the product data we expect from the API
 interface ApiProduct {
-  id: string; // This will be the base64 encoded ID, e.g., "cHJvZHVjdDo4NA=="
+  databaseId: number; // Changed from 'id: string' to 'databaseId: number'
   name: string;
   description: string | null;
   image: {
@@ -17,12 +17,12 @@ interface ApiProduct {
   price: string;
 }
 
-// The GraphQL query to fetch products
+// The GraphQL query to fetch products, now requesting 'databaseId'
 const GET_PRODUCTS_QUERY = gql`
   query GetProducts($first: Int!) {
     products(first: $first, where: { featured: true }) {
       nodes {
-        id
+        databaseId # Changed from 'id' to 'databaseId'
         name
         description
         image {
@@ -64,7 +64,7 @@ export function ProductGrid() {
 
   const handleAddToCart = (product: ApiProduct) => {
     addToCart({
-      id: product.id,
+      id: product.databaseId, // Now passing databaseId
       name: product.name,
       price: product.price,
       image: product.image?.sourceUrl,
@@ -125,7 +125,7 @@ export function ProductGrid() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
               <div
-                key={product.id}
+                key={product.databaseId} // Using databaseId as key
                 className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
               >
                 <div className="aspect-square bg-gray-100 relative overflow-hidden">

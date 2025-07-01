@@ -30,40 +30,17 @@ const CHECKOUT_MUTATION = gql`
 `;
 
 interface CartItem {
-  id: string | number;
+  id: number; // Changed to number
   quantity: number;
 }
 
 /**
- * Converts a potentially base64-encoded GraphQL ID into a plain database ID.
- * @param id The product ID from the cart context.
+ * Returns the numeric database ID directly, as it's now expected to be a number.
+ * @param id The product ID from the cart context (now always a number).
  * @returns The numeric database ID.
  */
-function getDatabaseId(id: string | number): number {
-  if (typeof id === 'number') {
-    return id;
-  }
-  // Try to decode from base64, which is a common GraphQL pattern (e.g., 'cHJvZHVjdDo4NA==')
-  try {
-    const decodedId = Buffer.from(id, 'base64').toString('ascii');
-    if (decodedId.includes(':')) {
-      const parts = decodedId.split(':');
-      const numericId = parseInt(parts[parts.length - 1], 10);
-      if (!isNaN(numericId)) {
-        return numericId;
-      }
-    }
-  } catch (e) {
-    // Ignore error if it's not a valid base64 string
-  }
-
-  // If not base64 or decoding fails, assume it's a plain numeric string
-  const parsedId = parseInt(id, 10);
-  if (!isNaN(parsedId)) {
-    return parsedId;
-  }
-
-  throw new Error(`Could not parse a valid product ID from "${id}".`);
+function getDatabaseId(id: number): number {
+  return id; // Simplified, as ID is now always numeric
 }
 
 
