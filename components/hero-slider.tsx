@@ -21,15 +21,29 @@ export function HeroSlider() {
 	}, [])
 
 	return (
-		<section
-			className="relative py-0 overflow-hidden"
-			style={{ backgroundColor: "#f8f9fa" }}
-		>
+		<section className="relative py-0 overflow-hidden">
 			{/* Main slider container */}
-			<div className="relative w-full h-[400px] md:h-[500px] flex items-center">
-				{/* Left Arrow - full height, far left */}
+			<div className="relative w-full max-w-full lg:max-w-[1515px] h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] mx-auto overflow-hidden">
+				{/* Image */}
+				<Image
+					src={slides[currentSlide].image || "/placeholder.svg"}
+					alt={slides[currentSlide].caption}
+					fill
+					style={{ objectFit: "cover" }} // Changed to cover for full-bleed
+					priority
+				/>
+
+				{/* Overlay for text and arrows */}
+				<div className="absolute inset-0 bg-black/20 flex items-center justify-center p-4">
+					{/* Caption */}
+					<h2 className="text-white text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-lg">
+						{slides[currentSlide].caption}
+					</h2>
+				</div>
+
+				{/* Left Arrow */}
 				<button
-					className="absolute left-0 top-0 h-full flex items-center pl-2 z-10 bg-transparent hover:bg-white/40 rounded-none"
+					className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
 					onClick={() =>
 						setCurrentSlide((prev) =>
 							prev === 0 ? slides.length - 1 : prev - 1
@@ -37,21 +51,12 @@ export function HeroSlider() {
 					}
 					aria-label="Previous slide"
 				>
-					<ChevronLeft className="w-8 h-8 text-gray-600" />
+					<ChevronLeft className="w-8 h-8 text-white" />
 				</button>
-				{/* Image wrapper - centered */}
-				<div className="relative w-full max-w-xl h-full mx-auto flex items-center justify-center">
-					<Image
-						src={slides[currentSlide].image || "/placeholder.svg"}
-						alt={slides[currentSlide].caption}
-						fill
-						style={{ objectFit: "contain" }}
-						priority
-					/>
-				</div>
-				{/* Right Arrow - full height, far right */}
+
+				{/* Right Arrow */}
 				<button
-					className="absolute right-0 top-0 h-full flex items-center pr-2 z-10 bg-transparent hover:bg-white/40 rounded-none"
+					className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
 					onClick={() =>
 						setCurrentSlide((prev) =>
 							prev === slides.length - 1 ? 0 : prev + 1
@@ -59,30 +64,22 @@ export function HeroSlider() {
 					}
 					aria-label="Next slide"
 				>
-					<ChevronRight className="w-8 h-8 text-gray-600" />
+					<ChevronRight className="w-8 h-8 text-white" />
 				</button>
 			</div>
 
-			{/* Text content and dots - centered within max-w-7xl, placed below the image */}
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-8">
-				<h2
-					className="text-4xl font-light mb-8"
-					style={{ color: "#9c88ff" }}
-				>
-					{slides[currentSlide].caption}
-				</h2>
-				<div className="mt-6 flex justify-center gap-2">
-					{slides.map((_, i) => (
-						<span
-							key={i}
-							className={`h-2 w-2 rounded-full ${
-								i === currentSlide
-									? "bg-purple-500"
-									: "bg-gray-300"
-							}`}
-						/>
-					))}
-				</div>
+			{/* Dots - kept below the image */}
+			<div className="mt-6 flex justify-center gap-2">
+				{slides.map((_, i) => (
+					<span
+						key={i}
+						className={`h-2 w-2 rounded-full ${
+							i === currentSlide
+								? "bg-purple-500"
+								: "bg-gray-300"
+						}`}
+					/>
+				))}
 			</div>
 		</section>
 	)
