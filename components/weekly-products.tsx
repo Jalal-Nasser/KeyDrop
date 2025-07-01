@@ -3,7 +3,16 @@ import products from "@/data/products.json"
 import Image from "next/image"
 import { ShoppingCart } from "lucide-react"
 import { useState } from "react"
-import { Dialog } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog" // Added more Dialog components
+import { Button } from "@/components/ui/button" // Added Button import
 
 export function WeeklyProducts({ limit = 8 }) {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
@@ -81,8 +90,14 @@ export function WeeklyProducts({ limit = 8 }) {
         {/* Quick View Modal */}
         {quickViewProduct && (
           <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
-            <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg">
-              <div className="flex flex-col items-center">
+            <DialogContent className="sm:max-w-[425px]"> {/* Using DialogContent */}
+              <DialogHeader>
+                <DialogTitle>{quickViewProduct.name}</DialogTitle>
+                <DialogDescription>
+                  {quickViewProduct.description}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col items-center py-4"> {/* Centering content within the dialog */}
                 <Image
                   src={quickViewProduct.image || "/placeholder.jpg"}
                   alt={quickViewProduct.name}
@@ -90,19 +105,18 @@ export function WeeklyProducts({ limit = 8 }) {
                   height={200}
                   className="mb-4 object-contain rounded-lg"
                 />
-                <h2 className="text-xl font-bold mb-2">{quickViewProduct.name}</h2>
                 <div className="text-lg font-semibold text-gray-900 mb-4">
                   <span>{quickViewProduct.price}</span>
                 </div>
-                <p className="mb-4 text-gray-700">{quickViewProduct.description}</p>
-                <button
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  onClick={() => setQuickViewProduct(null)}
-                >
-                  Close
-                </button>
               </div>
-            </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         )}
       </div>
