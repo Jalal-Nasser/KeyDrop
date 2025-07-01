@@ -48,13 +48,13 @@ const GET_WEEKLY_PRODUCTS_QUERY = gql`
         }
         ... on SimpleProduct {
           onSale
-          price(format: FORMATTED)
-          regularPrice(format: FORMATTED)
+          price(format: RAW)
+          regularPrice(format: RAW)
         }
         ... on VariableProduct {
           onSale
-          price(format: FORMATTED)
-          regularPrice(format: FORMATTED)
+          price(format: RAW)
+          regularPrice(format: RAW)
         }
         # Add inline fragment for productCategories and productTags
         ... on Product {
@@ -184,8 +184,8 @@ export function WeeklyProducts({ limit = 8 }) {
                 </div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                 <div className="text-lg font-semibold text-gray-900 mb-4">
-                  {product.onSale && product.regularPrice && <span className="text-gray-500 line-through mr-2">{product.regularPrice}</span>}
-                  <span>{product.price}</span>
+                  {product.onSale && product.regularPrice && <span className="text-gray-500 line-through mr-2">${product.regularPrice}</span>}
+                  <span>${product.price}</span>
                 </div>
                 <button
                   className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
@@ -242,11 +242,11 @@ export function WeeklyProducts({ limit = 8 }) {
                   <div className="flex items-baseline gap-2">
                     {quickViewProduct.onSale && quickViewProduct.regularPrice && (
                       <span className="text-xl text-gray-500 line-through">
-                        {quickViewProduct.regularPrice}
+                        ${quickViewProduct.regularPrice}
                       </span>
                     )}
                     <span className="text-2xl font-semibold text-blue-600">
-                      {quickViewProduct.price}
+                      ${quickViewProduct.price}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 pt-4">
