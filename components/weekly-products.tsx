@@ -6,7 +6,7 @@ import { useState } from "react"
 import {
   Dialog,
   DialogContent,
-  DialogHeader, // Added back
+  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
@@ -24,6 +24,19 @@ export function WeeklyProducts({ limit = 8 }) {
   const handleQuickViewClose = () => {
     setQuickViewProduct(null)
   }
+
+  // Helper function to ensure image paths are correct
+  const getCorrectedImagePath = (path: string | undefined) => {
+    if (!path) {
+      return "/placeholder.jpg";
+    }
+    // If path already starts with /images/ or is an absolute URL, return as is
+    if (path.startsWith('/images/') || path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    // Otherwise, prepend /images/
+    return `/images/${path}`;
+  };
 
   // Combine local and WordPress products
   const displayProducts = [...products].slice(0, limit)
@@ -49,9 +62,9 @@ export function WeeklyProducts({ limit = 8 }) {
               <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                 {Array.isArray(product.image) ? (
                   <picture>
-                    <source srcSet={product.image[0]} type="image/webp" />
+                    <source srcSet={getCorrectedImagePath(product.image[0])} type="image/webp" />
                     <img
-                      src={product.image[1]}
+                      src={getCorrectedImagePath(product.image[1])}
                       alt={product.name}
                       width={150}
                       height={150}
@@ -60,7 +73,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   </picture>
                 ) : (
                   <Image
-                    src={product.image || "/placeholder.jpg"}
+                    src={getCorrectedImagePath(product.image || "/placeholder.jpg")}
                     alt={product.name}
                     width={150}
                     height={150}
@@ -100,7 +113,7 @@ export function WeeklyProducts({ limit = 8 }) {
         {/* Quick View Modal */}
         {quickViewProduct && (
           <Dialog open={!!quickViewProduct} onOpenChange={handleQuickViewClose}>
-            <DialogContent className="sm:max-w-3xl p-8 bg-white"> {/* Added bg-white */}
+            <DialogContent className="sm:max-w-3xl p-8 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column: Image */}
                 <div className="relative">
@@ -112,7 +125,7 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                   )}
                   <Image
-                    src={Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] : quickViewProduct.image || "/placeholder.jpg"}
+                    src={getCorrectedImagePath(Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] : quickViewProduct.image || "/placeholder.jpg")}
                     alt={quickViewProduct.name}
                     width={400}
                     height={400}
@@ -122,7 +135,7 @@ export function WeeklyProducts({ limit = 8 }) {
 
                 {/* Right Column: Details */}
                 <div className="flex flex-col justify-center space-y-4">
-                  <DialogHeader> {/* Wrapped title and description */}
+                  <DialogHeader>
                     <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
                     <DialogDescription className="text-gray-600">
                       {quickViewProduct.description}
