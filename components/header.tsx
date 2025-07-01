@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, MouseEvent } from "react"
-import { Search, Heart, User, ShoppingCart, Menu, X } from "lucide-react"
+import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
@@ -86,11 +86,11 @@ export function Header() {
               {/* Business hours and phone - EXACT from screenshot */}
               <div className="hidden lg:flex items-center space-x-6 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
-                  <span>🌐</span>
+                  <Globe className="w-4 h-4" />
                   <span>Mon - Fri 8:00 Am - 6:00 Pm Sat - Sat Closed</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span>📞</span>
+                  <Phone className="w-4 h-4" />
                   <span>+1 (310) 777 8808, +1 (310) 888 7708</span>
                 </div>
               </div>
