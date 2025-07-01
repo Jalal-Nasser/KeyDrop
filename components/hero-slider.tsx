@@ -29,7 +29,7 @@ export function HeroSlider() {
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
-					style={{ objectFit: "cover" }} // Changed to cover for full-bleed
+					style={{ objectFit: "contain" }} // Changed to contain
 					priority
 				/>
 
