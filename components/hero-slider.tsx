@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react" // Corrected this line
+import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
@@ -21,15 +21,15 @@ export function HeroSlider() {
 	}, [])
 
 	return (
-		<section className="relative py-0 overflow-hidden w-full"> {/* Removed bg-white from here */}
+		<section className="relative py-0 overflow-hidden w-full">
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white"> {/* Added bg-white back here */}
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-lime-400"> {/* Changed to bg-lime-400 for testing */}
 				{/* Image */}
 				<Image
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
-					style={{ objectFit: "contain" }} // Changed to contain to show the full image
+					style={{ objectFit: "contain" }}
 					priority
 				/>
 
