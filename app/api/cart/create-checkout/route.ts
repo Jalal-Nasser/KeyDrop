@@ -74,8 +74,9 @@ export async function POST(req: NextRequest) {
 
     console.log("Original set-cookie header:", setCookieHeader);
 
-    // Robustly parse the 'set-cookie' header. This regex splits cookies while ignoring commas in date attributes.
-    const cookies = setCookieHeader.split(/,(?=\s[a-zA-Z0-9_-]+=)/);
+    // New, more robust regex to split cookies. It splits on a comma that is followed by a sequence
+    // of non-semicolon characters and an equals sign, which reliably identifies the start of a new cookie.
+    const cookies = setCookieHeader.split(/, (?=[^;]+?=)/);
     const parsedCookies = cookies
       .map(cookie => cookie.split(';')[0].trim())
       .filter(Boolean)
