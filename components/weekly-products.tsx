@@ -190,7 +190,11 @@ export function WeeklyProducts({ limit = 8 }) {
                 <Button
                   variant="destructive"
                   className="w-full mb-3"
-                  onClick={() => handleQuickViewOpen(product)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    e.preventDefault(); // Prevent any default button behavior
+                    handleQuickViewOpen(product);
+                  }}
                 >
                   QUICK VIEW
                 </Button>
