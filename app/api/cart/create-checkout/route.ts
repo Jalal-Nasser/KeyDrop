@@ -74,17 +74,25 @@ export async function POST(req: NextRequest) {
 
     console.log("Original set-cookie header:", setCookieHeader);
 
-    // New, more robust regex to split cookies. It splits on a comma that is followed by a sequence
-    // of non-semicolon characters and an equals sign, which reliably identifies the start of a new cookie.
+    // Split the header into individual cookie strings.
     const cookies = setCookieHeader.split(/, (?=[^;]+?=)/);
-    const parsedCookies = cookies
-      .map(cookie => cookie.split(';')[0].trim())
-      .filter(Boolean)
-      .join('; ');
 
-    console.log("Parsed cookie header for next request:", parsedCookies);
+    // Find the specific WooCommerce session cookie. This is the key to the session.
+    const sessionCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('wp_woocommerce_session_')
+    );
 
-    // Step 2: Call the checkout mutation, passing the parsed session cookie back.
+    if (!sessionCookie) {
+      console.error("WooCommerce session cookie not found in response.", cookies);
+      throw new Error("Could not find the necessary session cookie to proceed with checkout.");
+    }
+
+    // Extract just the 'key=value' part of the session cookie.
+    const essentialCookie = sessionCookie.split(';')[0].trim();
+
+    console.log("Found and using essential session cookie:", essentialCookie);
+
+    // Step 2: Call the checkout mutation, passing ONLY the essential session cookie back.
     const checkoutResponse = await client.rawRequest(CHECKOUT_MUTATION, 
       {
         input: {
@@ -92,7 +100,7 @@ export async function POST(req: NextRequest) {
         },
       },
       {
-        'cookie': parsedCookies,
+        'cookie': essentialCookie, // Use only the crucial cookie
       }
     );
 
