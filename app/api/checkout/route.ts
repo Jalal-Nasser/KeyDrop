@@ -21,6 +21,8 @@ interface CartItem {
 }
 
 export async function POST(req: NextRequest) {
+  console.log("NEXT_PUBLIC_WORDPRESS_API_URL:", endpoint); // Added for debugging
+
   if (!endpoint) {
     console.error("WordPress API URL is not configured in environment variables.");
     return NextResponse.json({ error: 'The store is not configured for checkout.' }, { status: 500 });
