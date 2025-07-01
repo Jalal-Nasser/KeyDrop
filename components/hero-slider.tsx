@@ -29,7 +29,7 @@ export function HeroSlider() {
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
-					style={{ objectFit: "contain" }} // Changed to contain
+					style={{ objectFit: "contain" }} // This is already set to 'contain'
 					priority
 				/>
 
