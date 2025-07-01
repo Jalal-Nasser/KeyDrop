@@ -59,12 +59,15 @@ export async function POST(req: NextRequest) {
     }));
 
     // Step 1: Add items to the cart to create a server-side session.
+    console.log("Sending ADD_ITEMS_TO_CART_MUTATION with items:", JSON.stringify(lineItems, null, 2));
     const addCartResponse = await client.rawRequest(ADD_ITEMS_TO_CART_MUTATION, {
       input: {
         clientMutationId: "dyad-add-to-cart",
         items: lineItems,
       },
     });
+
+    console.log("Full response from addCartItems mutation:", JSON.stringify(addCartResponse, null, 2));
 
     const setCookieHeader = addCartResponse.headers.get('set-cookie');
     if (!setCookieHeader) {
@@ -76,6 +79,7 @@ export async function POST(req: NextRequest) {
 
     // Split the header into individual cookie strings.
     const cookies = setCookieHeader.split(/, (?=[^;]+?=)/);
+    console.log("Parsed cookies array:", cookies);
 
     // Find the specific WooCommerce session cookie. This is the key to the session.
     const sessionCookie = cookies.find(cookie => 
@@ -83,7 +87,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (!sessionCookie) {
-      console.error("WooCommerce session cookie not found in response.", cookies);
+      console.error("WooCommerce session cookie not found in response. The received cookies were:", cookies);
       throw new Error("Could not find the necessary session cookie to proceed with checkout.");
     }
 
