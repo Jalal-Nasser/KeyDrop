@@ -111,7 +111,7 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                   )}
                   <Image
-                    src={quickViewProduct.image || "/placeholder.jpg"}
+                    src={Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] : quickViewProduct.image || "/placeholder.jpg"}
                     alt={quickViewProduct.name}
                     width={400}
                     height={400}
