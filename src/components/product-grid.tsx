@@ -1,6 +1,10 @@
+"use client"
+
 import products from "@/data/products.json"
+import { useCart } from "@/context/cart-context"
 
 export function ProductGrid() {
+  const { addToCart } = useCart()
   // Using local product data instead of fetching from WordPress
   const displayProducts = products.slice(0, 12)
 
@@ -65,6 +69,7 @@ export function ProductGrid() {
                       </div>
                     )}
                     <button
+                      onClick={() => addToCart(product)}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                     >
                       Add to Cart
