@@ -78,7 +78,15 @@ export async function POST(req: NextRequest) {
       throw new Error(`Failed to establish a cart session. Server response: ${errorMessages || 'No error message provided.'}`);
     }
 
-    // Step 2: Call the checkout mutation, passing the session cookie back.
+    // Parse the 'set-cookie' header to create a valid 'cookie' header for the next request.
+    // The 'set-cookie' header can contain multiple cookies and attributes (like expires, path).
+    // The 'cookie' header for a request should only contain the name=value pairs, separated by semicolons.
+    const parsedCookies = setCookieHeader
+      .split(/,(?=\s[a-zA-Z0-9_]+=)/) // Split cookies, avoiding commas in dates
+      .map(cookie => cookie.split(';')[0].trim())
+      .join('; ');
+
+    // Step 2: Call the checkout mutation, passing the parsed session cookie back.
     const checkoutResponse = await client.rawRequest(CHECKOUT_MUTATION, 
       {
         input: {
@@ -86,7 +94,7 @@ export async function POST(req: NextRequest) {
         },
       },
       {
-        'cookie': setCookieHeader,
+        'cookie': parsedCookies,
       }
     );
 
@@ -95,8 +103,9 @@ export async function POST(req: NextRequest) {
     if (checkoutUrl) {
       return NextResponse.json({ checkoutUrl });
     } else {
-      console.error("Checkout URL not found in GraphQL response:", checkoutResponse.data);
-      throw new Error('Could not create a checkout session after populating cart.');
+      console.error("Checkout URL not found in GraphQL response:", checkoutResponse);
+      const errorMessages = (checkoutResponse.errors || []).map((e: any) => e.message).join(', ');
+      throw new Error(`Could not create a checkout session. Server response: ${errorMessages || 'No error message provided.'}`);
     }
 
   } catch (error) {
