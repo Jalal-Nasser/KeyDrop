@@ -125,7 +125,7 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                   )}
                   <Image
-                    src={getCorrectedImagePath(Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] : quickViewProduct.image || "/placeholder.jpg")}
+                    src={getCorrectedImagePath(Array.isArray(quickViewProduct.image) ? quickViewProduct.image[0] : quickViewProduct.image || "/placeholder.jpg")}
                     alt={quickViewProduct.name}
                     width={400}
                     height={400}
