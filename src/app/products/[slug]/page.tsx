@@ -1,7 +1,7 @@
 import { GraphQLClient, gql } from "graphql-request"
 import Image from "next/image" // Import Next.js Image component for optimization
 
-const graphqlAPI = process.env.WORDPRESS_API_URL
+const graphqlAPI = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
 
 // GraphQL query to get a single product by its slug
 const GET_PRODUCT_BY_SLUG = gql`

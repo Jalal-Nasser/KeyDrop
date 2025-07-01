@@ -1,152 +1,26 @@
-import { GraphQLClient, gql } from "graphql-request"
+"use client"
+import products from "@/data/products.json"
+import Image from "next/image"
 import { ShoppingCart } from "lucide-react"
-import Image from "next/image" // Import Image for optimization
+import { useState } from "react"
+import { Dialog } from "@/components/ui/dialog"
 
-const graphqlAPI = process.env.WORDPRESS_API_URL
-
-const GET_PRODUCTS = gql`
-  query GetProducts($first: Int!) { # Added $first variable
-    products(first: $first) {
-      nodes {
-        id
-        name
-        slug
-        image {
-          sourceUrl
-          altText
-        }
-        ... on SimpleProduct {
-          price
-          regularPrice
-          salePrice
-        }
-        ... on VariableProduct {
-          price
-          regularPrice
-          salePrice
-        }
-        ... on ExternalProduct {
-          price
-          regularPrice
-          salePrice
-        }
-      }
-    }
-  }
-`
-
-interface WeeklyProductsProps {
-  limit?: number // Optional prop to control how many products to fetch
-}
-
-export async function WeeklyProducts({ limit = 8 }: WeeklyProductsProps) {
-  if (!graphqlAPI) {
-    return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-semibold mb-8" style={{ color: "#1e73be" }}>
-            Weekly Products
-          </h2>
-          <p className="text-red-600">WordPress API not configured</p>
-        </div>
-      </section>
-    )
-  }
-
-  const graphQLClient = new GraphQLClient(graphqlAPI)
-  let products = []
-
-  try {
-    const data: any = await graphQLClient.request(GET_PRODUCTS, { first: limit }) // Pass limit to query
-    products = data.products.nodes
-  } catch (error) {
-    console.error("Error fetching products:", error)
-  }
-
-  // Fallback products - EXACT from screenshot
-  const fallbackProducts = [
-    {
-      id: "1",
-      name: "Windows Server 2022",
-      price: "69.99 $",
-      image: "/placeholder.svg?height=200&width=200&text=Windows+Server+2022",
-      slug: "windows-server-2022",
-    },
-    {
-      id: "2",
-      name: "Windows Server 2019",
-      price: "53.85 $",
-      image: "/placeholder.svg?height=200&width=200&text=Windows+Server+2019",
-      slug: "windows-server-2019",
-    },
-    {
-      id: "3",
-      name: "Windows 11 Pro",
-      price: "28.00 $",
-      image: "/placeholder.svg?height=200&width=200&text=Windows+11+Pro",
-      slug: "windows-11-pro",
-    },
-    {
-      id: "4",
-      name: "Windows 10 Pro",
-      price: "25.00 $ 19.00 $",
-      image: "/placeholder.svg?height=200&width=200&text=Windows+10+Pro",
-      slug: "windows-10-pro",
-      onSale: true,
-    },
-    {
-      id: "5",
-      name: "PIA: Privet Internet Access",
-      price: "79.38 $",
-      image: "/placeholder.svg?height=200&width=200&text=PIA",
-      slug: "pia-private-internet-access",
-      onSale: true,
-      salePercent: "42%",
-    },
-    {
-      id: "6",
-      name: "Office365",
-      price: "39.99 $",
-      image: "/placeholder.svg?height=200&width=200&text=Office365",
-      slug: "office365",
-      onSale: true,
-      salePercent: "11%",
-    },
-    {
-      id: "7",
-      name: "Office 2021 Pro...",
-      price: "45.00 $",
-      image: "/placeholder.svg?height=200&width=200&text=Office+2021",
-      slug: "office-2021-pro",
-    },
-    {
-      id: "8",
-      name: "Office 2019 Plus",
-      price: "49.00 $",
-      image: "/placeholder.svg?height=200&width=200&text=Office+2019",
-      slug: "office-2019-plus",
-    },
-  ]
-
-  const displayProducts = products.length > 0 ? products : fallbackProducts
+export function WeeklyProducts({ limit = 8 }) {
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
+  // Combine local and WordPress products
+  const displayProducts = [...products].slice(0, limit)
 
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* EXACT heading style */}
-        <h2 className="text-2xl font-semibold mb-2" style={{ color: "#1e73be" }}>
-          Weekly Products
-        </h2>
         <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
-
-        {/* EXACT 4-column grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayProducts.slice(0, limit).map((product: any) => (
+          {displayProducts.map((product: any) => (
             <div
               key={product.id}
               className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
             >
-              {/* Sale badge - EXACT styling */}
+              {/* Sale badge */}
               {product.onSale && (
                 <div className="absolute top-2 left-2 z-10">
                   <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
@@ -154,32 +28,40 @@ export async function WeeklyProducts({ limit = 8 }: WeeklyProductsProps) {
                   </span>
                 </div>
               )}
-
-              {/* Product image - EXACT styling */}
               <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                <Image
-                  src={product.image?.sourceUrl || product.image || "/placeholder.svg?height=150&width=150"}
-                  alt={product.image?.altText || product.name}
-                  width={150} // Explicit width
-                  height={150} // Explicit height
-                  className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                />
+                {Array.isArray(product.image) ? (
+                  <picture>
+                    <source srcSet={product.image[0]} type="image/webp" />
+                    <img
+                      src={product.image[1]}
+                      alt={product.name}
+                      width={150}
+                      height={150}
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                  </picture>
+                ) : (
+                  <Image
+                    src={product.image || "/placeholder.jpg"}
+                    alt={product.name}
+                    width={150}
+                    height={150}
+                    className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                  />
+                )}
               </div>
-
-              {/* Product name - EXACT styling */}
               <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-
-              {/* Price - EXACT styling */}
               <div className="text-lg font-semibold text-gray-900 mb-4">
-                <span dangerouslySetInnerHTML={{ __html: product.price }} />
+                <span>{product.price}</span>
               </div>
-
-              {/* Quick view button - EXACT styling */}
-              <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded text-sm font-medium hover:bg-gray-200 transition-colors mb-3">
+              {/* Quick view button */}
+              <button
+                className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded text-sm font-medium hover:bg-gray-200 transition-colors mb-3"
+                onClick={() => setQuickViewProduct(product)}
+              >
                 QUICK VIEW
               </button>
-
-              {/* Quantity and Add to Cart - EXACT layout */}
+              {/* Quantity and Add to Cart */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center border border-gray-300 rounded">
                   <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
@@ -196,6 +78,33 @@ export async function WeeklyProducts({ limit = 8 }: WeeklyProductsProps) {
             </div>
           ))}
         </div>
+        {/* Quick View Modal */}
+        {quickViewProduct && (
+          <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+            <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg">
+              <div className="flex flex-col items-center">
+                <Image
+                  src={quickViewProduct.image || "/placeholder.jpg"}
+                  alt={quickViewProduct.name}
+                  width={200}
+                  height={200}
+                  className="mb-4 object-contain rounded-lg"
+                />
+                <h2 className="text-xl font-bold mb-2">{quickViewProduct.name}</h2>
+                <div className="text-lg font-semibold text-gray-900 mb-4">
+                  <span>{quickViewProduct.price}</span>
+                </div>
+                <p className="mb-4 text-gray-700">{quickViewProduct.description}</p>
+                <button
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  onClick={() => setQuickViewProduct(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Dialog>
+        )}
       </div>
     </section>
   )

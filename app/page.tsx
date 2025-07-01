@@ -3,7 +3,7 @@ import { HeroSlider } from "@/components/hero-slider"
 import { WeeklyProducts } from "@/components/weekly-products"
 
 // Define your WordPress GraphQL endpoint
-const graphqlAPI = process.env.WORDPRESS_API_URL || "http://localhost:8888/wordpress/graphql" // Replace with your actual WordPress URL
+const graphqlAPI = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://localhost:8888/wordpress/graphql" // Replace with your actual WordPress URL
 
 // Define your GraphQL query
 const GET_POSTS = gql`
@@ -34,6 +34,11 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <HeroSlider />
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <h2 className="text-2xl font-semibold mb-8" style={{ color: "#1e73be" }}>
+          Weekly Products
+        </h2>
+      </div>
       <WeeklyProducts />
 
       {/* Removed Latest Posts Section */}

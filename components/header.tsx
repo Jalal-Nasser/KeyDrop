@@ -1,10 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X } from "lucide-react"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const [hovered, setHovered] = useState(false)
+  const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
+  const navRef = useRef<HTMLElement>(null)
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About US" },
+    { href: "/shop", label: "Shop" },
+    { href: "/kaspersky", label: "Kaspersky Endpoint" },
+    { href: "/contact", label: "Contact Us" },
+    { href: "/account", label: "Account" },
+  ]
+
+  const handleMouseEnter = (e: MouseEvent<HTMLAnchorElement>) => {
+    setHovered(true)
+    setHoveredRect(e.currentTarget.getBoundingClientRect())
+  }
+
+  const handleMouseLeave = () => {
+    setHovered(false)
+    setHoveredRect(null)
+  }
 
   return (
     <header>
@@ -97,26 +122,41 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Navigation menu - EXACT items and styling */}
-            <nav className="hidden lg:flex">
-              <div className="flex">
-                <a href="/" className="text-white px-6 py-3 text-sm font-medium" style={{ backgroundColor: "#28a745" }}>
-                  Home
-                </a>
-                <a href="/about" className="text-white px-6 py-3 text-sm font-medium hover:bg-blue-700">
-                  About US
-                </a>
-                <a href="/shop" className="text-white px-6 py-3 text-sm font-medium hover:bg-blue-700">
-                  Shop
-                </a>
-                <a href="/kaspersky" className="text-white px-6 py-3 text-sm font-medium hover:bg-blue-700">
-                  Kaspersky Endpoint
-                </a>
-                <a href="/contact" className="text-white px-6 py-3 text-sm font-medium hover:bg-blue-700">
-                  Contact Us
-                </a>
-                <a href="/account" className="text-white px-6 py-3 text-sm font-medium hover:bg-blue-700">
-                  Account
-                </a>
+            <nav
+              className="hidden lg:flex relative"
+              ref={navRef}
+              onMouseLeave={handleMouseLeave}
+            >
+              {hovered && hoveredRect && navRef.current && (
+                <div
+                  className="absolute bg-blue-700 rounded-md"
+                  style={{
+                    left:
+                      hoveredRect.left -
+                      navRef.current.getBoundingClientRect().left,
+                    top:
+                      hoveredRect.top - navRef.current.getBoundingClientRect().top,
+                    width: hoveredRect.width,
+                    height: hoveredRect.height,
+                    transition: "all 0.2s ease-in-out",
+                  }}
+                />
+              )}
+              <div className="flex relative">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-white px-6 py-3 text-sm font-medium"
+                    style={{
+                      backgroundColor:
+                        pathname === link.href ? "#28a745" : "transparent",
+                    }}
+                    onMouseEnter={handleMouseEnter}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </div>
             </nav>
 
@@ -126,7 +166,10 @@ export function Header() {
             </button>
 
             {/* Mobile menu button */}
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-3 text-white">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-3 text-white"
+            >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
@@ -137,24 +180,19 @@ export function Header() {
       {isMenuOpen && (
         <div className="lg:hidden" style={{ backgroundColor: "#1e73be" }}>
           <div className="px-4 py-2 space-y-1">
-            <a href="/" className="block px-3 py-2 text-white font-medium bg-green-600 rounded">
-              Home
-            </a>
-            <a href="/about" className="block px-3 py-2 text-white hover:bg-blue-700 rounded">
-              About US
-            </a>
-            <a href="/shop" className="block px-3 py-2 text-white hover:bg-blue-700 rounded">
-              Shop
-            </a>
-            <a href="/kaspersky" className="block px-3 py-2 text-white hover:bg-blue-700 rounded">
-              Kaspersky Endpoint
-            </a>
-            <a href="/contact" className="block px-3 py-2 text-white hover:bg-blue-700 rounded">
-              Contact Us
-            </a>
-            <a href="/account" className="block px-3 py-2 text-white hover:bg-blue-700 rounded">
-              Account
-            </a>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block px-3 py-2 text-white font-medium rounded"
+                style={{
+                  backgroundColor:
+                    pathname === link.href ? "#28a745" : "transparent",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       )}

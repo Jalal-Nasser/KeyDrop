@@ -1,6 +1,6 @@
 import { GraphQLClient, gql } from "graphql-request"
 
-const graphqlAPI = process.env.WORDPRESS_API_URL
+const graphqlAPI = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
 
 const GET_PRODUCTS = gql`
   query GetProducts {
