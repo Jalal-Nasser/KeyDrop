@@ -6,6 +6,7 @@ import { useState } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogHeader, // Added back
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
@@ -99,7 +100,7 @@ export function WeeklyProducts({ limit = 8 }) {
         {/* Quick View Modal */}
         {quickViewProduct && (
           <Dialog open={!!quickViewProduct} onOpenChange={handleQuickViewClose}>
-            <DialogContent className="sm:max-w-3xl p-8">
+            <DialogContent className="sm:max-w-3xl p-8 bg-white"> {/* Added bg-white */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column: Image */}
                 <div className="relative">
@@ -121,7 +122,13 @@ export function WeeklyProducts({ limit = 8 }) {
 
                 {/* Right Column: Details */}
                 <div className="flex flex-col justify-center space-y-4">
-                  <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
+                  <DialogHeader> {/* Wrapped title and description */}
+                    <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
+                    <DialogDescription className="text-gray-600">
+                      {quickViewProduct.description}
+                    </DialogDescription>
+                  </DialogHeader>
+                  
                   <div className="flex items-baseline gap-2">
                     {quickViewProduct.oldPrice && (
                       <span className="text-xl text-gray-500 line-through">
@@ -132,9 +139,6 @@ export function WeeklyProducts({ limit = 8 }) {
                       {quickViewProduct.price}
                     </span>
                   </div>
-                  <DialogDescription className="text-gray-600">
-                    {quickViewProduct.description}
-                  </DialogDescription>
                   
                   <div className="flex items-center gap-4 pt-4">
                     <div className="flex items-center border border-gray-300 rounded">
