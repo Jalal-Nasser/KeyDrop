@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from "react"
-// import products from "@/data/products.json"
+import products from "@/data/products.json" // Uncommenting this line
 import Image from "next/image"
 import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
@@ -16,8 +16,8 @@ import {
 import { Button } from "@/components/ui/button"
 
 export function WeeklyProducts({ limit = 8 }) {
-  // const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
-  // const displayProducts = [...products].slice(0, limit)
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null) // Uncommenting this line
+  const displayProducts = [...products].slice(0, limit) // Uncommenting this line
 
   return (
     <div>
