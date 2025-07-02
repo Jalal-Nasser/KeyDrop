@@ -45,7 +45,7 @@ const stripHtmlTags = (htmlString: string | null | undefined): string => {
 export function WeeklyProducts({ limit = 8 }) {
   const { addToCart } = useCart()
   const [products, setProducts] = useState<ApiProduct[]>([])
-  const [loading, setLoading] = true)
+  const [loading, setLoading] = useState(true) // Corrected this line
   const [error, setError] = useState<string | null>(null)
   
   const [quickViewProduct, setQuickViewProduct] = useState<ApiProduct | null>(null)
@@ -176,7 +176,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <Button
                     size="icon"
                     onClick={() => handleAddToCart(product, currentCardQuantity)}
-                  > {/* Corrected: removed self-closing slash */}
+                  >
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </div>
@@ -235,7 +235,7 @@ export function WeeklyProducts({ limit = 8 }) {
                         handleAddToCart(quickViewProduct, quantity)
                         handleQuickViewClose()
                       }}
-                    > {/* Corrected: removed self-closing slash */}
+                    >
                       <ShoppingCart className="mr-2" />
                       ADD TO CART
                     </Button>
