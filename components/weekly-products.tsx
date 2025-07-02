@@ -1,208 +1,108 @@
 "use client"
+import products from "@/data/products.json"
 import Image from "next/image"
-import { ShoppingCart, Plus, Minus } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { useCart } from "@/context/cart-context"
+import { Dialog } from "@/components/ui/dialog"
 
-// Define the structure of the product data from the API
-interface ApiProduct {
-  databaseId: number;
-  name: string;
-  description: string | null;
-  image: {
-    sourceUrl: string;
-  } | null;
-  onSale: boolean;
-  price: string;
-  regularPrice?: string;
-  productCategories: {
-    nodes: { name: string }[];
-  };
-  productTags: {
-    nodes: { name: string }[];
-  };
-}
-
-// Helper function to strip HTML tags from product descriptions
-const stripHtmlTags = (htmlString: string | null | undefined): string => {
-  if (!htmlString) return "";
-  if (typeof window === 'undefined') return htmlString;
-  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-  return doc.body.textContent || "";
-};
-
-export function WeeklyProducts({ initialProducts = [] }: { initialProducts?: ApiProduct[] }) {
-  const { addToCart } = useCart()
-  const [products] = useState<ApiProduct[]>(initialProducts)
-  
-  const [quickViewProduct, setQuickViewProduct] = useState<ApiProduct | null>(null)
-  const [quantity, setQuantity] = useState(1)
-  const [cardQuantities, setCardQuantities] = useState<{[key: number]: number}>({})
-
-  const handleQuickViewOpen = (product: ApiProduct) => {
-    setQuickViewProduct(product)
-    setQuantity(1)
-  }
-
-  const handleQuickViewClose = () => {
-    setQuickViewProduct(null)
-  }
-
-  const handleCardQuantityChange = (productId: number, newQuantity: number) => {
-    setCardQuantities(prev => ({...prev, [productId]: Math.max(1, newQuantity)}))
-  }
-
-  const handleAddToCart = (product: ApiProduct, quantity: number) => {
-    addToCart({
-      id: product.databaseId,
-      name: product.name,
-      price: product.price,
-      image: product.image?.sourceUrl,
-    }, quantity);
-  };
-
-  if (!products || products.length === 0) {
-    return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-gray-600 text-center">No products to display. Try seeding the database.</p>
-        </div>
-      </section>
-    );
-  }
+export function WeeklyProducts({ limit = 8 }) {
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
+  // Combine local and WordPress products
+  const displayProducts = [...products].slice(0, limit)
 
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="w-16 h-0.5 mb-8 bg-primary"></div>
+        <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => {
-            const currentCardQuantity = cardQuantities[product.databaseId] || 1;
-            return (
-              <div
-                key={product.databaseId}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
-              >
-                {product.onSale && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded">
-                      SALE
-                    </span>
-                  </div>
-                )}
-                <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+          {displayProducts.map((product: any) => (
+            <div
+              key={product.id}
+              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
+            >
+              {/* Sale badge */}
+              {product.onSale && (
+                <div className="absolute top-2 left-2 z-10">
+                  <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                    SALE {product.salePercent || ""}
+                  </span>
+                </div>
+              )}
+              <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+                {Array.isArray(product.image) ? (
+                  <picture>
+                    <source srcSet={product.image[0]} type="image/webp" />
+                    <img
+                      src={product.image[1]}
+                      alt={product.name}
+                      width={150}
+                      height={150}
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                    />
+                  </picture>
+                ) : (
                   <Image
-                    src={product.image?.sourceUrl || "/placeholder.jpg"}
+                    src={product.image || "/placeholder.jpg"}
                     alt={product.name}
                     width={150}
                     height={150}
                     className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                   />
+                )}
+              </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+              <div className="text-lg font-semibold text-gray-900 mb-4">
+                <span>{product.price}</span>
+              </div>
+              {/* Quick view button */}
+              <button
+                className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded text-sm font-medium hover:bg-gray-200 transition-colors mb-3"
+                onClick={() => setQuickViewProduct(product)}
+              >
+                QUICK VIEW
+              </button>
+              {/* Quantity and Add to Cart */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center border border-gray-300 rounded">
+                  <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
+                  <input type="number" value="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
+                  <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
                 </div>
-                <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                <div className="text-lg font-semibold text-gray-900 mb-4">
-                  {product.onSale && product.regularPrice && <span className="text-gray-500 line-through mr-2">${product.regularPrice}</span>}
-                  <span>${product.price}</span>
-                </div>
-                <Button
-                  variant="default"
-                  className="w-full mb-3"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    handleQuickViewOpen(product);
-                  }}
+                <button
+                  className="text-white p-2 rounded hover:bg-blue-700 transition-colors"
+                  style={{ backgroundColor: "#1e73be" }}
                 >
-                  QUICK VIEW
-                </Button>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center border border-gray-300 rounded">
-                    <button onClick={() => handleCardQuantityChange(product.databaseId, currentCardQuantity - 1)} className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
-                    <input type="number" value={currentCardQuantity} className="w-12 text-center border-0 text-sm py-1" readOnly />
-                    <button onClick={() => handleCardQuantityChange(product.databaseId, currentCardQuantity + 1)} className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
-                  </div>
-                  <Button
-                    size="icon"
-                    onClick={() => handleAddToCart(product, currentCardQuantity)}
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                  </Button>
-                </div>
+                  <ShoppingCart className="w-4 h-4" />
+                </button>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
+        {/* Quick View Modal */}
         {quickViewProduct && (
-          <Dialog open={!!quickViewProduct} onOpenChange={handleQuickViewClose}>
-            <DialogContent className="sm:max-w-3xl p-8 bg-white">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="relative">
-                  {quickViewProduct.onSale && (
-                    <div className="absolute top-2 left-2 z-10">
-                      <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded">
-                        SALE
-                      </span>
-                    </div>
-                  )}
-                  <Image
-                    src={quickViewProduct.image?.sourceUrl || "/placeholder.jpg"}
-                    alt={quickViewProduct.name}
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-contain rounded-lg"
-                  />
+          <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+            <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg">
+              <div className="flex flex-col items-center">
+                <Image
+                  src={quickViewProduct.image || "/placeholder.jpg"}
+                  alt={quickViewProduct.name}
+                  width={200}
+                  height={200}
+                  className="mb-4 object-contain rounded-lg"
+                />
+                <h2 className="text-xl font-bold mb-2">{quickViewProduct.name}</h2>
+                <div className="text-lg font-semibold text-gray-900 mb-4">
+                  <span>{quickViewProduct.price}</span>
                 </div>
-                <div className="flex flex-col justify-center space-y-4">
-                  <DialogHeader>
-                    <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
-                    <DialogDescription className="text-gray-600">
-                      {stripHtmlTags(quickViewProduct.description)}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex items-baseline gap-2">
-                    {quickViewProduct.onSale && quickViewProduct.regularPrice && (
-                      <span className="text-xl text-gray-500 line-through">
-                        ${quickViewProduct.regularPrice}
-                      </span>
-                    )}
-                    <span className="text-2xl font-semibold text-blue-600">
-                      ${quickViewProduct.price}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 pt-4">
-                    <div className="flex items-center border border-gray-300 rounded">
-                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2"><Minus size={16}/></button>
-                      <input type="number" value={quantity} readOnly className="w-12 text-center border-y-0 border-x" />
-                      <button onClick={() => setQuantity(q => q + 1)} className="p-2"><Plus size={16}/></button>
-                    </div>
-                    <Button 
-                      size="lg" 
-                      variant="destructive"
-                      className="flex-grow"
-                      onClick={() => {
-                        handleAddToCart(quickViewProduct, quantity)
-                        handleQuickViewClose()
-                      }}
-                    >
-                      <ShoppingCart className="mr-2" />
-                      ADD TO CART
-                    </Button>
-                  </div>
-                  <div className="text-sm text-gray-500 space-y-1 pt-4">
-                    <p><strong>Categories:</strong> {quickViewProduct.productCategories.nodes.map(c => c.name).join(', ')}</p>
-                    <p><strong>Tags:</strong> {quickViewProduct.productTags.nodes.map(t => t.name).join(', ')}</p>
-                  </div>
-                </div>
+                <p className="mb-4 text-gray-700">{quickViewProduct.description}</p>
+                <button
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  onClick={() => setQuickViewProduct(null)}
+                >
+                  Close
+                </button>
               </div>
-            </DialogContent>
+            </div>
           </Dialog>
         )}
       </div>

@@ -4,8 +4,7 @@ import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { StoreNotice } from "@/components/store-notice"
-import { useCart } from "@/context/cart-context"
+import { StoreNotice } from "@/components/store-notice" // Import StoreNotice
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -13,7 +12,6 @@ export function Header() {
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
   const navRef = useRef<HTMLElement>(null)
-  const { cartCount, cartTotal } = useCart()
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -110,15 +108,10 @@ export function Header() {
                   <span>Sign In</span>
                 </button>
                 <span className="text-gray-300">|</span>
-                <Link href="/cart" className="relative flex items-center space-x-1 hover:text-blue-600">
+                <button className="flex items-center space-x-1 hover:text-blue-600">
                   <ShoppingCart className="w-4 h-4" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                      {cartCount}
-                    </span>
-                  )}
-                  <span>Cart {cartTotal.toFixed(2)} $</span>
-                </Link>
+                  <span>Cart 0.00 $</span>
+                </button>
               </div>
             </div>
           </div>
