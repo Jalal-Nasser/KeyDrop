@@ -102,29 +102,31 @@ export function WeeklyProducts({ limit = 8 }) {
       <Dialog open={isQuickViewOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedProduct && (
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className="p-6 flex items-center justify-center bg-gray-100 md:rounded-l-lg">
+            <div className="flex flex-col md:flex-row md:gap-8">
+              {/* Image Section */}
+              <div className="md:w-1/2 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-lg p-4">
                 <Image
                   src={getImagePath(selectedProduct.image)}
                   alt={selectedProduct.name}
                   width={400}
                   height={400}
-                  className="object-contain"
+                  className="object-contain max-h-full w-auto"
                 />
               </div>
-              <div className="p-8 flex flex-col">
+              {/* Details Section */}
+              <div className="flex-1 flex flex-col py-4">
                 <DialogHeader className="text-left">
                   <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
-                  <DialogDescription asChild>
-                    <div>
-                      <p className="text-2xl font-semibold text-blue-600 mb-4">{selectedProduct.price}</p>
-                      <div
-                        className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
-                        dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
-                      />
-                    </div>
-                  </DialogDescription>
                 </DialogHeader>
+                
+                <p className="text-2xl font-semibold text-blue-600 mb-4">{selectedProduct.price}</p>
+                
+                <DialogDescription asChild>
+                  <div
+                    className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
+                  />
+                </DialogDescription>
                 
                 <div className="mt-auto pt-6">
                   <div className="flex items-center gap-4">
