@@ -1,25 +1,23 @@
 "use client"
 import React, { useState } from "react"
-// Temporarily commenting out all imports that are not strictly necessary for a minimal component
-// import products from "@/data/products.json"
-// import Image from "next/image"
-// import Link from "next/link"
-// import { ShoppingCart } from "lucide-react"
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogClose,
-// } from "@/components/ui/dialog"
-// import { Button } from "@/components/ui/button"
+import products from "@/data/products.json" // Re-enabling this import
+import Image from "next/image" // Re-enabling this import
+import Link from "next/link" // Re-enabling this import
+import { ShoppingCart } from "lucide-react" // Re-enabling this import
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog" // Re-enabling this import
+import { Button } from "@/components/ui/button" // Re-enabling this import
 
 export function WeeklyProducts({ limit = 8 }) {
-  // Temporarily commenting out state and data
-  // const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
-  // const displayProducts = [...products].slice(0, limit)
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null) // Re-enabling state
+  const displayProducts = [...products].slice(0, limit) // Re-enabling data processing
 
   return (
     <React.Fragment>
