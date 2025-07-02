@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image"
 import { ShoppingCart, Plus, Minus } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
-import { getProductsFromDb } from "@/app/actions/product-actions"
-import { Skeleton } from "@/components/ui/skeleton"
 
 // Define the structure of the product data from the API
 interface ApiProduct {
@@ -36,40 +34,18 @@ interface ApiProduct {
 // Helper function to strip HTML tags from product descriptions
 const stripHtmlTags = (htmlString: string | null | undefined): string => {
   if (!htmlString) return "";
-  // This check is for server-side rendering environments
   if (typeof window === 'undefined') return htmlString;
   const doc = new DOMParser().parseFromString(htmlString, 'text/html');
   return doc.body.textContent || "";
 };
 
-export function WeeklyProducts({ limit = 8, initialProducts }: { limit?: number, initialProducts?: ApiProduct[] }) {
+export function WeeklyProducts({ initialProducts = [] }: { initialProducts?: ApiProduct[] }) {
   const { addToCart } = useCart()
-  const [products, setProducts] = useState<ApiProduct[]>(initialProducts || [])
-  const [loading, setLoading] = useState(!initialProducts)
-  const [error, setError] = useState<string | null>(null)
+  const [products] = useState<ApiProduct[]>(initialProducts)
   
   const [quickViewProduct, setQuickViewProduct] = useState<ApiProduct | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [cardQuantities, setCardQuantities] = useState<{[key: number]: number}>({})
-
-  useEffect(() => {
-    // Only fetch if initialProducts are not provided
-    if (!initialProducts) {
-      const fetchProducts = async () => {
-        setLoading(true);
-        try {
-          const data = await getProductsFromDb({ limit });
-          setProducts(data as ApiProduct[]);
-        } catch (err) {
-          console.error("Failed to fetch weekly products:", err)
-          setError("Could not load products. Please try again later.")
-        } finally {
-          setLoading(false)
-        }
-      };
-      fetchProducts();
-    }
-  }, [limit, initialProducts]);
 
   const handleQuickViewOpen = (product: ApiProduct) => {
     setQuickViewProduct(product)
@@ -93,34 +69,11 @@ export function WeeklyProducts({ limit = 8, initialProducts }: { limit?: number,
     }, quantity);
   };
 
-  if (loading) {
+  if (!products || products.length === 0) {
     return (
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-16 h-0.5 mb-8 bg-primary"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: limit }).map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-6 w-1/4" />
-                <div className="flex justify-between items-center">
-                  <Skeleton className="h-10 w-24" />
-                  <Skeleton className="h-10 w-10" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-red-600 text-center">{error}</p>
+          <p className="text-gray-600 text-center">No products to display. Try seeding the database.</p>
         </div>
       </section>
     );
