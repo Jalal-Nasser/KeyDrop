@@ -33,6 +33,15 @@ interface ApiProduct {
   };
 }
 
+// Helper function to strip HTML tags from product descriptions
+const stripHtmlTags = (htmlString: string | null | undefined): string => {
+  if (!htmlString) return "";
+  // This check is for server-side rendering environments
+  if (typeof window === 'undefined') return htmlString;
+  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+  return doc.body.textContent || "";
+};
+
 export function WeeklyProducts({ limit = 8 }) {
   const { addToCart } = useCart()
   const [products, setProducts] = useState<ApiProduct[]>([])
@@ -148,11 +157,11 @@ export function WeeklyProducts({ limit = 8 }) {
                   <span>${product.price}</span>
                 </div>
                 <Button
-                  variant="default" // Changed to default variant
+                  variant="default"
                   className="w-full mb-3"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent event from bubbling up
-                    e.preventDefault(); // Prevent any default button behavior
+                    e.stopPropagation();
+                    e.preventDefault();
                     handleQuickViewOpen(product);
                   }}
                 >
@@ -167,7 +176,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <Button
                     size="icon"
                     onClick={() => handleAddToCart(product, currentCardQuantity)}
-                  />
+                  >
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </div>
@@ -199,7 +208,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <DialogHeader>
                     <DialogTitle className="text-3xl font-bold">{quickViewProduct.name}</DialogTitle>
                     <DialogDescription className="text-gray-600">
-                      {stripHtmlTags(quickViewProduct.description)} {/* Stripping HTML here */}
+                      {stripHtmlTags(quickViewProduct.description)}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="flex items-baseline gap-2">
@@ -220,13 +229,13 @@ export function WeeklyProducts({ limit = 8 }) {
                     </div>
                     <Button 
                       size="lg" 
-                      variant="destructive" // Changed to destructive variant
+                      variant="destructive"
                       className="flex-grow"
                       onClick={() => {
                         handleAddToCart(quickViewProduct, quantity)
                         handleQuickViewClose()
                       }}
-                    />
+                    >
                       <ShoppingCart className="mr-2" />
                       ADD TO CART
                     </Button>
