@@ -10,8 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
@@ -72,10 +70,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <button
                     className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
                     style={{ backgroundColor: "#dc3545", color: "white" }}
-                    onClick={() => {
-                      console.log("Quick View button clicked for product:", product.name);
-                      setQuickViewProduct(product);
-                    }}
+                    onClick={() => setQuickViewProduct(product)}
                   >
                     QUICK VIEW
                   </button>
@@ -96,34 +91,52 @@ export function WeeklyProducts({ limit = 8 }) {
               </div>
             ))}
           </div>
-          {quickViewProduct && (
-            <>
-              {console.log("Dialog is attempting to render for product:", quickViewProduct.name)}
-              <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)} key={quickViewProduct.id}>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>{quickViewProduct.name}</DialogTitle>
-                    <DialogDescription>
-                      Quick view content will go here.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex flex-col items-center py-4">
-                    {/* Temporarily simplified content */}
-                    <p>Product details for {quickViewProduct.name}</p>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="secondary">
-                        Close
-                      </Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </>
-          )}
         </div>
       </div>
+      {quickViewProduct && (
+        <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+          <DialogContent className="sm:max-w-2xl p-0">
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Image Column */}
+              <div className="p-6 flex items-center justify-center bg-gray-100 rounded-l-lg">
+                <Image
+                  src={Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] || "/placeholder.jpg" : quickViewProduct.image || "/placeholder.jpg"}
+                  alt={quickViewProduct.name}
+                  width={300}
+                  height={300}
+                  className="object-contain"
+                />
+              </div>
+              {/* Details Column */}
+              <div className="p-6 flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl mb-2">{quickViewProduct.name}</DialogTitle>
+                  <DialogDescription className="text-2xl font-semibold text-blue-600 mb-4">
+                    {quickViewProduct.price}
+                  </DialogDescription>
+                </DialogHeader>
+                <div
+                  className="text-sm text-gray-600 mb-4 prose prose-sm max-h-32 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: quickViewProduct.description || '' }}
+                />
+                <div className="mt-auto pt-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center border border-gray-300 rounded-md">
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-lg">-</Button>
+                      <span className="w-12 text-center font-medium">1</span>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-lg">+</Button>
+                    </div>
+                    <Button size="lg" className="flex-1 h-10" style={{ backgroundColor: "#1e73be" }}>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Add to Cart
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }
