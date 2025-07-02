@@ -92,7 +92,7 @@ export function WeeklyProducts({ limit = 8 }) {
           ))}
         </div>
         {quickViewProduct && (
-          <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+          <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)} key={quickViewProduct.id}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{quickViewProduct.name}</DialogTitle>
