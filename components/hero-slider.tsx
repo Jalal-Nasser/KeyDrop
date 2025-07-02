@@ -12,13 +12,13 @@ const slides = [
 export function HeroSlider() {
 	const [currentSlide, setCurrentSlide] = useState(0)
 
-	// Auto-slide effect
-	useEffect(() => {
-		const interval = setInterval(() => {
-			setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
-		}, 4000) // Change slide every 4 seconds
-		return () => clearInterval(interval)
-	}, [])
+	// Auto-slide effect - DISABLED
+	// useEffect(() => {
+	// 	const interval = setInterval(() => {
+	// 		setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
+	// 	}, 4000) // Change slide every 4 seconds
+	// 	return () => clearInterval(interval)
+	// }, [])
 
 	return (
 		<section className="relative py-0 overflow-hidden w-full">
