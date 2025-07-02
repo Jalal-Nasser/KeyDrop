@@ -42,7 +42,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <picture>
                     <source srcSet={product.image[0]} type="image/webp" />
                     <img
-                      src={product.image[1]}
+                      src={product.image[1] || "/placeholder.jpg"} {/* Added fallback here */}
                       alt={product.name}
                       width={150}
                       height={150}
