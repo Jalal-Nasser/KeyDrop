@@ -20,7 +20,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     notFound();
   }
 
-  const primaryImage = Array.isArray(product.image) ? product.image[1] : product.image;
+  let primaryImageSrc: string | undefined;
+  if (Array.isArray(product.image)) {
+    // Prioritize the second image, but fall back to the first if only one exists
+    primaryImageSrc = product.image[1] || product.image[0];
+  } else {
+    // If it's a string, use it directly
+    primaryImageSrc = product.image;
+  }
 
   return (
     <div className="bg-white py-12 sm:py-16">
@@ -30,7 +37,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div>
             <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden mb-4 border">
               <Image
-                src={primaryImage || '/placeholder.jpg'}
+                src={primaryImageSrc || '/placeholder.jpg'}
                 alt={product.name}
                 width={600}
                 height={600}
