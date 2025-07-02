@@ -76,7 +76,8 @@ export function WeeklyProducts({ limit = 8 }) {
                   >
                     QUICK VIEW
                   </button>
-                  <div className="flex items-center border border-gray-300 rounded">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center border border-gray-300 rounded">
                       <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
                       <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
                       <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
