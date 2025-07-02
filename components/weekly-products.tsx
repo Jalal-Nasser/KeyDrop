@@ -1,8 +1,8 @@
 "use client"
+import React, { useState } from "react" // Added React import here
 import products from "@/data/products.json"
 import Image from "next/image"
 import { ShoppingCart } from "lucide-react"
-import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -42,7 +42,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <picture>
                     <source srcSet={product.image[0]} type="image/webp" />
                     <img
-                      src={product.image[1] || "/placeholder.jpg"} {/* Added fallback here */}
+                      src={product.image[1] || "/placeholder.jpg"}
                       alt={product.name}
                       width={150}
                       height={150}
