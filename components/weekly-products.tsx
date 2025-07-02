@@ -42,10 +42,10 @@ const stripHtmlTags = (htmlString: string | null | undefined): string => {
   return doc.body.textContent || "";
 };
 
-export function WeeklyProducts({ limit = 8 }) {
+export function WeeklyProducts({ limit = 8, initialProducts }: { limit?: number, initialProducts?: ApiProduct[] }) {
   const { addToCart } = useCart()
-  const [products, setProducts] = useState<ApiProduct[]>([])
-  const [loading, setLoading] = useState(true) // Corrected this line
+  const [products, setProducts] = useState<ApiProduct[]>(initialProducts || [])
+  const [loading, setLoading] = useState(!initialProducts)
   const [error, setError] = useState<string | null>(null)
   
   const [quickViewProduct, setQuickViewProduct] = useState<ApiProduct | null>(null)
@@ -53,20 +53,23 @@ export function WeeklyProducts({ limit = 8 }) {
   const [cardQuantities, setCardQuantities] = useState<{[key: number]: number}>({})
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getProductsFromDb({ limit });
-        // @ts-ignore
-        setProducts(data);
-      } catch (err) {
-        console.error("Failed to fetch weekly products:", err)
-        setError("Could not load products. Please try again later.")
-      } finally {
-        setLoading(false)
-      }
-    };
-    fetchProducts();
-  }, [limit]);
+    // Only fetch if initialProducts are not provided
+    if (!initialProducts) {
+      const fetchProducts = async () => {
+        setLoading(true);
+        try {
+          const data = await getProductsFromDb({ limit });
+          setProducts(data as ApiProduct[]);
+        } catch (err) {
+          console.error("Failed to fetch weekly products:", err)
+          setError("Could not load products. Please try again later.")
+        } finally {
+          setLoading(false)
+        }
+      };
+      fetchProducts();
+    }
+  }, [limit, initialProducts]);
 
   const handleQuickViewOpen = (product: ApiProduct) => {
     setQuickViewProduct(product)

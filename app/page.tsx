@@ -1,8 +1,11 @@
 import { HeroSlider } from "@/components/hero-slider"
 import { WeeklyProducts } from "@/components/weekly-products"
-import { SeedProductsButton } from "@/components/seed-button" // Import the new button
+import { SeedProductsButton } from "@/components/seed-button"
+import { getProductsFromDb } from "@/app/actions/product-actions"
 
-export default function Home() {
+export default async function Home() {
+  const initialProducts = await getProductsFromDb({ limit: 8 });
+
   return (
     <main className="flex min-h-screen flex-col">
       <HeroSlider />
@@ -10,12 +13,11 @@ export default function Home() {
         <h2 className="text-2xl font-semibold mb-8" style={{ color: "#1e73be" }}>
           Weekly Products
         </h2>
-        {/* Add the SeedProductsButton here */}
         <div className="mb-8">
           <SeedProductsButton />
         </div>
       </div>
-      <WeeklyProducts />
+      <WeeklyProducts initialProducts={initialProducts} />
     </main>
   )
 }
