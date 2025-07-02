@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from "react"
-import products from "@/data/products.json"
+// import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
@@ -16,9 +16,17 @@ import {
 import { Button } from "@/components/ui/button"
 
 export function WeeklyProducts({ limit = 8 }) {
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
-  const displayProducts = [...products].slice(0, limit)
+  // const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
+  // const displayProducts = [...products].slice(0, limit)
 
+  return (
+    <div>
+      <h2>Weekly Products Section</h2>
+      <p>If you see this, the component is now compiling correctly.</p>
+    </div>
+  )
+
+  /*
   return (
     <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +37,6 @@ export function WeeklyProducts({ limit = 8 }) {
               key={product.id}
               className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
             >
-              {/* Sale badge */}
               {product.onSale && (
                 <div className="absolute top-2 left-2 z-10">
                   <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
@@ -125,4 +132,5 @@ export function WeeklyProducts({ limit = 8 }) {
       </div>
     </div>
   )
+  */
 }
