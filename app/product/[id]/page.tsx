@@ -22,8 +22,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   let primaryImageSrc: string | undefined;
   if (Array.isArray(product.image)) {
-    // Prioritize the second image, but fall back to the first if only one exists
-    primaryImageSrc = product.image[1] || product.image[0];
+    // Prioritize the first image in the array, as it's likely the .webp version
+    primaryImageSrc = product.image[0];
   } else {
     // If it's a string, use it directly
     primaryImageSrc = product.image;
@@ -37,7 +37,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div>
             <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden mb-4 border">
               <Image
-                src={primaryImageSrc || '/placeholder.jpg'} // Use the determined primaryImageSrc
+                src={primaryImageSrc || '/placeholder.jpg'}
                 alt={product.name}
                 width={600}
                 height={600}
