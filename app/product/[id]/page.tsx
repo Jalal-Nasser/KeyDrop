@@ -20,13 +20,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     notFound();
   }
 
-  // Original logic for primaryImageSrc (commented out for debugging)
-  // let primaryImageSrc: string | undefined;
-  // if (Array.isArray(product.image)) {
-  //   primaryImageSrc = product.image[1] || product.image[0];
-  // } else {
-  //   primaryImageSrc = product.image;
-  // }
+  let primaryImageSrc: string | undefined;
+  if (Array.isArray(product.image)) {
+    // Prioritize the second image, but fall back to the first if only one exists
+    primaryImageSrc = product.image[1] || product.image[0];
+  } else {
+    // If it's a string, use it directly
+    primaryImageSrc = product.image;
+  }
 
   return (
     <div className="bg-white py-12 sm:py-16">
@@ -36,7 +37,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div>
             <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden mb-4 border">
               <Image
-                src={'/placeholder.jpg'} // FOR DEBUGGING: Temporarily force placeholder image
+                src={primaryImageSrc || '/placeholder.jpg'} // Use the determined primaryImageSrc
                 alt={product.name}
                 width={600}
                 height={600}
