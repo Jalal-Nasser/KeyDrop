@@ -1,7 +1,8 @@
 "use client"
-import React, { useState } from "react" // Added React import here
+import React, { useState } from "react"
 import products from "@/data/products.json"
 import Image from "next/image"
+import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
 import {
   Dialog,
@@ -16,7 +17,6 @@ import { Button } from "@/components/ui/button"
 
 export function WeeklyProducts({ limit = 8 }) {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
-  // Combine local and WordPress products
   const displayProducts = [...products].slice(0, limit)
 
   return (
@@ -27,7 +27,7 @@ export function WeeklyProducts({ limit = 8 }) {
           {displayProducts.map((product: any) => (
             <div
               key={product.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
+              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
             >
               {/* Sale badge */}
               {product.onSale && (
@@ -37,58 +37,61 @@ export function WeeklyProducts({ limit = 8 }) {
                   </span>
                 </div>
               )}
-              <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                {Array.isArray(product.image) ? (
-                  <picture>
-                    <source srcSet={product.image[0]} type="image/webp" />
-                    <img
-                      src={product.image[1] || "/placeholder.jpg"}
+              
+              <Link href={`/product/${product.id}`} className="flex-grow flex flex-col">
+                <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+                  {Array.isArray(product.image) ? (
+                    <picture>
+                      <source srcSet={product.image[0]} type="image/webp" />
+                      <img
+                        src={product.image[1] || "/placeholder.jpg"}
+                        alt={product.name}
+                        width={150}
+                        height={150}
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                    </picture>
+                  ) : (
+                    <Image
+                      src={product.image || "/placeholder.jpg"}
                       alt={product.name}
                       width={150}
                       height={150}
                       className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
-                  </picture>
-                ) : (
-                  <Image
-                    src={product.image || "/placeholder.jpg"}
-                    alt={product.name}
-                    width={150}
-                    height={150}
-                    className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                  />
-                )}
-              </div>
-              <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-              <div className="text-lg font-semibold text-gray-900 mb-4">
-                <span>{product.price}</span>
-              </div>
-              {/* Quick view button */}
-              <button
-                className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
-                style={{ backgroundColor: "#dc3545", color: "white" }}
-                onClick={() => setQuickViewProduct(product)}
-              >
-                QUICK VIEW
-              </button>
-              {/* Quantity and Add to Cart */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center border border-gray-300 rounded">
-                  <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
-                  <input type="number" value="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
-                  <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
+                  )}
+                </div>
+                <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>
+              </Link>
+
+              <div className="mt-auto">
+                <div className="text-lg font-semibold text-gray-900 mb-4">
+                  <span>{product.price}</span>
                 </div>
                 <button
-                  className="text-white p-2 rounded hover:bg-blue-700 transition-colors"
-                  style={{ backgroundColor: "#1e73be" }}
+                  className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
+                  style={{ backgroundColor: "#dc3545", color: "white" }}
+                  onClick={() => setQuickViewProduct(product)}
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  QUICK VIEW
                 </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center border border-gray-300 rounded">
+                    <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">-</button>
+                    <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
+                    <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm">+</button>
+                  </div>
+                  <button
+                    className="text-white p-2 rounded hover:bg-blue-700 transition-colors"
+                    style={{ backgroundColor: "#1e73be" }}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
-        {/* Quick View Modal */}
         {quickViewProduct && (
           <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
             <DialogContent className="sm:max-w-[425px]">
