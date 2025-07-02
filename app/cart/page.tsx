@@ -1,16 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
+import React from "react"
 import Image from "next/image"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
-import { Minus, Plus, Trash2, ShoppingCart, Loader2 } from "lucide-react"
+import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { toast } from "sonner"
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, cartTotal, clearCart } = useCart()
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
 
   // Helper function to ensure image paths are correct
   const getCorrectedImagePath = (path: string | undefined) => {
@@ -21,37 +19,6 @@ export default function CartPage() {
       return path;
     }
     return `/images/${path}`;
-  };
-
-  const handleCheckout = async () => {
-    setIsCheckingOut(true);
-    try {
-      // Call the new endpoint that handles the entire server-side process
-      const response = await fetch('/api/cart/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ items: cartItems }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
-        // Clear the local cart since we are now handing off to WordPress
-        clearCart();
-        // Redirect to the WordPress checkout page
-        window.location.href = data.checkoutUrl;
-      } else {
-        const errorMessage = data.details ? `${data.error} ${data.details}` : data.error || 'Failed to create checkout session.';
-        toast.error(errorMessage, { duration: 10000 }); // Show for 10 seconds
-        setIsCheckingOut(false);
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error('An error occurred while trying to check out.');
-      setIsCheckingOut(false);
-    }
   };
 
   return (
@@ -142,23 +109,18 @@ export default function CartPage() {
               <span>${cartTotal.toFixed(2)}</span>
             </div>
             <div className="text-sm text-gray-600 mb-6">
-              Shipping and taxes calculated at checkout.
+              Shipping and taxes will be calculated later.
             </div>
             <Button 
               size="lg" 
               className="w-full bg-[#1e73be] hover:bg-[#1a63a3] text-white"
-              onClick={handleCheckout}
-              disabled={isCheckingOut}
+              disabled
             >
-              {isCheckingOut ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Redirecting...
-                </>
-              ) : (
-                'Proceed to Checkout'
-              )}
+              Proceed to Checkout
             </Button>
+            <p className="text-center text-xs text-gray-500 mt-2">
+              Checkout will be enabled after our new backend is set up.
+            </p>
           </div>
         </div>
       )}
