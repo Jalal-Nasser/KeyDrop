@@ -20,7 +20,7 @@ export function WeeklyProducts({ limit = 8 }) {
   const displayProducts = [...products].slice(0, limit)
 
   return (
-    <React.Fragment> {/* Added React.Fragment here */}
+    <>
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
@@ -125,6 +125,6 @@ export function WeeklyProducts({ limit = 8 }) {
           )}
         </div>
       </div>
-    </React.Fragment> // Closed React.Fragment here
+    </>
   )
 }
