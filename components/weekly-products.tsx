@@ -13,6 +13,19 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
+// Helper function to format image paths
+const formatImagePath = (filename: string | undefined): string => {
+  if (!filename) {
+    return "/placeholder.jpg";
+  }
+  // If it's already a full URL or starts with /images/, return as is
+  if (filename.startsWith('http://') || filename.startsWith('https://') || filename.startsWith('/images/')) {
+    return filename;
+  }
+  // Otherwise, prepend /images/
+  return `/images/${filename}`;
+};
+
 export function WeeklyProducts({ limit = 8 }) {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
   const displayProducts = [...products].slice(0, limit)
@@ -41,9 +54,9 @@ export function WeeklyProducts({ limit = 8 }) {
                   <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                     {Array.isArray(product.image) ? (
                       <picture>
-                        <source srcSet={product.image[0]} type="image/webp" />
+                        <source srcSet={formatImagePath(product.image[0])} type="image/webp" />
                         <img
-                          src={product.image[1] || "/placeholder.jpg"}
+                          src={formatImagePath(product.image[1])}
                           alt={product.name}
                           width={150}
                           height={150}
@@ -52,7 +65,7 @@ export function WeeklyProducts({ limit = 8 }) {
                       </picture>
                     ) : (
                       <Image
-                        src={product.image || "/placeholder.jpg"}
+                        src={formatImagePath(product.image)}
                         alt={product.name}
                         width={150}
                         height={150}
@@ -100,7 +113,7 @@ export function WeeklyProducts({ limit = 8 }) {
               {/* Image Column */}
               <div className="p-6 flex items-center justify-center bg-gray-100 rounded-l-lg">
                 <Image
-                  src={Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] || "/placeholder.jpg" : quickViewProduct.image || "/placeholder.jpg"}
+                  src={Array.isArray(quickViewProduct.image) ? formatImagePath(quickViewProduct.image[1]) : formatImagePath(quickViewProduct.image)}
                   alt={quickViewProduct.name}
                   width={300}
                   height={300}
