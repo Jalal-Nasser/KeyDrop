@@ -20,7 +20,7 @@ export function WeeklyProducts({ limit = 8 }) {
   const displayProducts = [...products].slice(0, limit)
 
   return (
-    <section className="py-16 bg-white">
+    <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -123,6 +123,6 @@ export function WeeklyProducts({ limit = 8 }) {
           </Dialog>
         )}
       </div>
-    </section>
+    </div>
   )
 }
