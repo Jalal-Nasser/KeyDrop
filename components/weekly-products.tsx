@@ -27,8 +27,19 @@ const formatImagePath = (filename: string | undefined): string => {
 };
 
 export function WeeklyProducts({ limit = 8 }) {
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null)
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null); // Store the selected product
   const displayProducts = [...products].slice(0, limit)
+
+  const handleQuickViewClick = (product: any) => {
+    setSelectedProduct(product);
+    setIsQuickViewOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setIsQuickViewOpen(false);
+    setSelectedProduct(null); // Clear selected product on close
+  };
 
   return (
     <>
@@ -83,7 +94,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <button
                     className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
                     style={{ backgroundColor: "#dc3545", color: "white" }}
-                    onClick={() => setQuickViewProduct(product)}
+                    onClick={() => handleQuickViewClick(product)}
                   >
                     QUICK VIEW
                   </button>
@@ -106,15 +117,15 @@ export function WeeklyProducts({ limit = 8 }) {
           </div>
         </div>
       </div>
-      {quickViewProduct && (
-        <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+      {selectedProduct && (
+        <Dialog open={isQuickViewOpen} onOpenChange={handleDialogClose}>
           <DialogContent className="sm:max-w-2xl p-0">
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Image Column */}
               <div className="p-6 flex items-center justify-center bg-gray-100 rounded-l-lg">
                 <Image
-                  src={Array.isArray(quickViewProduct.image) ? formatImagePath(quickViewProduct.image[1]) : formatImagePath(quickViewProduct.image)}
-                  alt={quickViewProduct.name}
+                  src={Array.isArray(selectedProduct.image) ? formatImagePath(selectedProduct.image[1]) : formatImagePath(selectedProduct.image)}
+                  alt={selectedProduct.name}
                   width={300}
                   height={300}
                   className="object-contain"
@@ -123,14 +134,14 @@ export function WeeklyProducts({ limit = 8 }) {
               {/* Details Column */}
               <div className="p-6 flex flex-col">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl mb-2">{quickViewProduct.name}</DialogTitle>
+                  <DialogTitle className="text-2xl mb-2">{selectedProduct.name}</DialogTitle>
                   <DialogDescription className="text-2xl font-semibold text-blue-600 mb-4">
-                    {quickViewProduct.price}
+                    {selectedProduct.price}
                   </DialogDescription>
                 </DialogHeader>
                 <div
                   className="text-sm text-gray-600 mb-4 prose prose-sm max-h-32 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: quickViewProduct.description || '' }}
+                  dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
                 />
                 <div className="mt-auto pt-4">
                   <div className="flex items-center gap-4 mb-4">
