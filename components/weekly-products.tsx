@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
-import { gql } from "graphql-request"
-import { client } from "@/lib/graphql"
+import { getProductsFromDb } from "@/app/actions/product-actions"
 import { Skeleton } from "@/components/ui/skeleton"
 
 // Define the structure of the product data from the API
@@ -34,53 +33,6 @@ interface ApiProduct {
   };
 }
 
-// GraphQL query to fetch products with all necessary details
-const GET_WEEKLY_PRODUCTS_QUERY = gql`
-  query GetWeeklyProducts($first: Int!) {
-    products(first: $first, where: {orderby: {field: DATE, order: DESC}}) {
-      nodes {
-        databaseId
-        name
-        description(format: RAW)
-        image {
-          sourceUrl
-          altText
-        }
-        ... on SimpleProduct {
-          onSale
-          price(format: RAW)
-          regularPrice(format: RAW)
-        }
-        ... on VariableProduct {
-          onSale
-          price(format: RAW)
-          regularPrice(format: RAW)
-        }
-        # Add inline fragment for productCategories and productTags
-        ... on Product {
-          productCategories {
-            nodes {
-              name
-            }
-          }
-          productTags {
-            nodes {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-// Helper function to strip HTML tags
-const stripHtmlTags = (htmlString: string | null | undefined): string => {
-  if (!htmlString) return "";
-  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-  return doc.body.textContent || "";
-};
-
 export function WeeklyProducts({ limit = 8 }) {
   const { addToCart } = useCart()
   const [products, setProducts] = useState<ApiProduct[]>([])
@@ -94,8 +46,9 @@ export function WeeklyProducts({ limit = 8 }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await client.request<{ products: { nodes: ApiProduct[] } }>(GET_WEEKLY_PRODUCTS_QUERY, { first: limit });
-        setProducts(data.products.nodes);
+        const data = await getProductsFromDb({ limit });
+        // @ts-ignore
+        setProducts(data);
       } catch (err) {
         console.error("Failed to fetch weekly products:", err)
         setError("Could not load products. Please try again later.")
@@ -214,7 +167,7 @@ export function WeeklyProducts({ limit = 8 }) {
                   <Button
                     size="icon"
                     onClick={() => handleAddToCart(product, currentCardQuantity)}
-                  >
+                  />
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </div>
@@ -273,7 +226,7 @@ export function WeeklyProducts({ limit = 8 }) {
                         handleAddToCart(quickViewProduct, quantity)
                         handleQuickViewClose()
                       }}
-                    >
+                    />
                       <ShoppingCart className="mr-2" />
                       ADD TO CART
                     </Button>

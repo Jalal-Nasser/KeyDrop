@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useCart } from "@/context/cart-context"
-import { gql } from "graphql-request"
+import { getProductsFromDb } from "@/app/actions/product-actions"
 import { client } from "@/lib/graphql"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -17,29 +17,6 @@ interface ApiProduct {
   price: string;
 }
 
-// The GraphQL query to fetch products, now requesting 'databaseId'
-const GET_PRODUCTS_QUERY = gql`
-  query GetProducts($first: Int!) {
-    products(first: $first, where: { featured: true }) {
-      nodes {
-        databaseId # Changed from 'id' to 'databaseId'
-        name
-        description
-        image {
-          sourceUrl
-          altText
-        }
-        ... on SimpleProduct {
-          price(format: FORMATTED)
-        }
-        ... on VariableProduct {
-          price(format: FORMATTED)
-        }
-      }
-    }
-  }
-`;
-
 export function ProductGrid() {
   const { addToCart } = useCart()
   const [products, setProducts] = useState<ApiProduct[]>([])
@@ -49,8 +26,9 @@ export function ProductGrid() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await client.request<{ products: { nodes: ApiProduct[] } }>(GET_PRODUCTS_QUERY, { first: 12 });
-        setProducts(data.products.nodes);
+        const data = await getProductsFromDb({ limit: 12, featured: true });
+        // @ts-ignore
+        setProducts(data);
       } catch (err) {
         console.error("Failed to fetch products:", err)
         setError("Could not load products. Please try again later.")
