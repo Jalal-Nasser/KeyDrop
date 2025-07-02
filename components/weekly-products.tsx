@@ -72,7 +72,10 @@ export function WeeklyProducts({ limit = 8 }) {
                   <button
                     className="w-full py-2 px-4 rounded text-sm font-medium transition-colors mb-3 hover:brightness-90"
                     style={{ backgroundColor: "#dc3545", color: "white" }}
-                    onClick={() => setQuickViewProduct(product)}
+                    onClick={() => {
+                      console.log("Quick View button clicked for product:", product.name);
+                      setQuickViewProduct(product);
+                    }}
                   >
                     QUICK VIEW
                   </button>
@@ -94,35 +97,30 @@ export function WeeklyProducts({ limit = 8 }) {
             ))}
           </div>
           {quickViewProduct && (
-            <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)} key={quickViewProduct.id}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>{quickViewProduct.name}</DialogTitle>
-                  <DialogDescription>
-                    {quickViewProduct.description}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex flex-col items-center py-4">
-                  <Image
-                    src={Array.isArray(quickViewProduct.image) ? quickViewProduct.image[1] || "/placeholder.jpg" : quickViewProduct.image || "/placeholder.jpg"}
-                    alt={quickViewProduct.name}
-                    width={200}
-                    height={200}
-                    className="mb-4 object-contain rounded-lg"
-                  />
-                  <div className="text-lg font-semibold text-gray-900 mb-4">
-                    <span>{quickViewProduct.price}</span>
+            <>
+              {console.log("Dialog is attempting to render for product:", quickViewProduct.name)}
+              <Dialog open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)} key={quickViewProduct.id}>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>{quickViewProduct.name}</DialogTitle>
+                    <DialogDescription>
+                      Quick view content will go here.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center py-4">
+                    {/* Temporarily simplified content */}
+                    <p>Product details for {quickViewProduct.name}</p>
                   </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      Close
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">
+                        Close
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </>
           )}
         </div>
       </div>
