@@ -13,6 +13,19 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
+// Helper function to format image paths
+const formatImagePath = (filename: string | undefined): string => {
+  if (!filename) {
+    return "/placeholder.jpg";
+  }
+  // If it's already a full URL (http/https) or already starts with /images/, return as is
+  if (filename.startsWith('http://') || filename.startsWith('https://') || filename.startsWith('/images/')) {
+    return filename;
+  }
+  // Otherwise, prepend /images/
+  return `/images/${filename}`;
+};
+
 export function WeeklyProducts({ limit = 8 }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null); // Store the selected product
@@ -52,9 +65,9 @@ export function WeeklyProducts({ limit = 8 }) {
                   <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                     {Array.isArray(product.image) ? (
                       <picture>
-                        <source srcSet={product.image[0]} type="image/webp" />
+                        <source srcSet={formatImagePath(product.image[0])} type="image/webp" />
                         <img
-                          src={product.image[1] || "/placeholder.jpg"}
+                          src={formatImagePath(product.image[1]) || "/placeholder.jpg"}
                           alt={product.name}
                           width={150}
                           height={150}
@@ -63,7 +76,7 @@ export function WeeklyProducts({ limit = 8 }) {
                       </picture>
                     ) : (
                       <Image
-                        src={product.image || "/placeholder.jpg"}
+                        src={formatImagePath(product.image || "/placeholder.jpg")}
                         alt={product.name}
                         width={150}
                         height={150}
@@ -111,7 +124,7 @@ export function WeeklyProducts({ limit = 8 }) {
               {/* Image Column */}
               <div className="p-6 flex items-center justify-center bg-gray-100 rounded-l-lg">
                 <Image
-                  src={Array.isArray(selectedProduct.image) ? selectedProduct.image[1] : selectedProduct.image}
+                  src={Array.isArray(selectedProduct.image) ? formatImagePath(selectedProduct.image[1]) : formatImagePath(selectedProduct.image)}
                   alt={selectedProduct.name}
                   width={300}
                   height={300}
