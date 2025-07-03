@@ -100,7 +100,7 @@ export function WeeklyProducts({ limit = 8 }) {
       </div>
 
       <Dialog open={isQuickViewOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0">
           {selectedProduct && (
             <div className="flex flex-col md:flex-row md:gap-8 w-full h-full">
               {/* Image Section */}
