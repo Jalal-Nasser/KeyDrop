@@ -26,6 +26,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -39,6 +40,12 @@ const registrationSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   companyName: z.string().optional(),
   vatNumber: z.string().optional(),
+  address_line_1: z.string().optional(),
+  address_line_2: z.string().optional(),
+  city: z.string().optional(),
+  state_province_region: z.string().optional(),
+  postal_code: z.string().optional(),
+  country: z.string().optional(),
 })
 
 interface AuthSheetProps {
@@ -64,6 +71,12 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
       password: "",
       companyName: "",
       vatNumber: "",
+      address_line_1: "",
+      address_line_2: "",
+      city: "",
+      state_province_region: "",
+      postal_code: "",
+      country: "",
     },
   })
 
@@ -102,6 +115,12 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
           last_name: values.lastName,
           company_name: values.companyName,
           vat_number: values.vatNumber,
+          address_line_1: values.address_line_1,
+          address_line_2: values.address_line_2,
+          city: values.city,
+          state_province_region: values.state_province_region,
+          postal_code: values.postal_code,
+          country: values.country,
         },
       },
     })
@@ -116,7 +135,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-md">
+      <SheetContent className="w-full max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-2xl">Welcome</SheetTitle>
           <SheetDescription>
@@ -182,12 +201,39 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
                   <FormField control={registerForm.control} name="password" render={({ field }) => (
                     <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                  
+                  <Separator className="my-4" />
+                  <p className="text-sm text-muted-foreground">Optional Information</p>
+
                   <FormField control={registerForm.control} name="companyName" render={({ field }) => (
-                    <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input placeholder="Acme Inc." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Company Name</FormLabel><FormControl><Input placeholder="Acme Inc." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={registerForm.control} name="vatNumber" render={({ field }) => (
-                    <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input placeholder="GB123456789" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>VAT Number</FormLabel><FormControl><Input placeholder="GB123456789" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                  <FormField control={registerForm.control} name="address_line_1" render={({ field }) => (
+                    <FormItem><FormLabel>Address Line 1</FormLabel><FormControl><Input placeholder="123 Main St" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={registerForm.control} name="address_line_2" render={({ field }) => (
+                    <FormItem><FormLabel>Address Line 2</FormLabel><FormControl><Input placeholder="Apartment, studio, or floor" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={registerForm.control} name="city" render={({ field }) => (
+                      <FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="London" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={registerForm.control} name="state_province_region" render={({ field }) => (
+                      <FormItem><FormLabel>State/Province</FormLabel><FormControl><Input placeholder="N/A" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={registerForm.control} name="postal_code" render={({ field }) => (
+                      <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input placeholder="SW1A 0AA" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={registerForm.control} name="country" render={({ field }) => (
+                      <FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="United Kingdom" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Account
