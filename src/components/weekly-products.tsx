@@ -48,8 +48,8 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
     <>
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
+          <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayProducts.map((product: any) => (
               <div
