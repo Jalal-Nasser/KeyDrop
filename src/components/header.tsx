@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { StoreNotice } from "@/components/store-notice" // Import StoreNotice
 import { useSession } from "@/context/session-context"
+import { AuthSheet } from "@/components/auth-sheet"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
   const pathname = usePathname()
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
@@ -105,10 +107,17 @@ export function Header() {
                   <span>Wishlist</span>
                 </button>
                 <span className="text-gray-300">|</span>
-                <Link href="/account" className="flex items-center space-x-1 hover:text-blue-600">
-                  <User className="w-4 h-4" />
-                  <span>{session ? "Account" : "Sign In"}</span>
-                </Link>
+                {session ? (
+                  <Link href="/account" className="flex items-center space-x-1 hover:text-blue-600">
+                    <User className="w-4 h-4" />
+                    <span>Account</span>
+                  </Link>
+                ) : (
+                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center space-x-1 hover:text-blue-600">
+                    <User className="w-4 h-4" />
+                    <span>Sign In</span>
+                  </button>
+                )}
                 <span className="text-gray-300">|</span>
                 <button className="flex items-center space-x-1 hover:text-blue-600">
                   <ShoppingCart className="w-4 h-4" />
@@ -208,6 +217,7 @@ export function Header() {
           </div>
         </div>
       )}
+      <AuthSheet open={isAuthSheetOpen} onOpenChange={setIsAuthSheetOpen} />
     </header>
   )
 }

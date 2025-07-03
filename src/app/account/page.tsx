@@ -18,31 +18,15 @@ export default function AccountPage() {
   if (!session) {
     return (
       <div className="flex justify-center items-center py-12 px-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl">Login or Sign Up</CardTitle>
+            <CardTitle>Access Denied</CardTitle>
             <CardDescription>
-              Access your account or create a new one to continue.
+              You must be signed in to view this page.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Auth
-              supabaseClient={supabase}
-              appearance={{
-                theme: ThemeSupa,
-                variables: {
-                  default: {
-                    colors: {
-                      brand: "#1e73be",
-                      brandAccent: "#1a62a3",
-                    },
-                  },
-                },
-              }}
-              providers={["google", "github"]}
-              socialLayout="horizontal"
-              theme="light"
-            />
+            <p>Please sign in using the button in the header to access your account details.</p>
           </CardContent>
         </Card>
       </div>
