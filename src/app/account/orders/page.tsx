@@ -57,7 +57,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  };
+  } | null; // Changed to allow single product object or null
 }
 
 const ticketFormSchema = z.object({
