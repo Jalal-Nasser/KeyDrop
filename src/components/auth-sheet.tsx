@@ -145,11 +145,13 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         <div className="py-8">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <Button variant="outline" onClick={() => handleSocialLogin('google')} disabled={loading}>
-              Sign in with Google
+              {/* Assuming you have a Google icon component or can use a generic icon */}
+              <img src="/google-icon.svg" alt="Google" className="mr-2 h-4 w-4" />
+              Google
             </Button>
             <Button variant="outline" onClick={() => handleSocialLogin('github')} disabled={loading}>
               <Github className="mr-2 h-4 w-4" />
-              Sign in with GitHub
+              GitHub
             </Button>
           </div>
           <div className="relative mb-6">
