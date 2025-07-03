@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form" // Added 'from "react-hook-form"'
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { toast } from "sonner"
-import { Github, Loader2 } from "lucide-react"
+import { Github, Loader2, Chrome } from "lucide-react"
 
 import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
@@ -145,8 +145,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         <div className="py-8">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <Button variant="outline" onClick={() => handleSocialLogin('google')} disabled={loading}>
-              {/* Assuming you have a Google icon component or can use a generic icon */}
-              <img src="/google-icon.svg" alt="Google" className="mr-2 h-4 w-4" />
+              <Chrome className="mr-2 h-4 w-4" />
               Google
             </Button>
             <Button variant="outline" onClick={() => handleSocialLogin('github')} disabled={loading}>
