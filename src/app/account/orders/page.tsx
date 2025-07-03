@@ -57,7 +57,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  } | null; // Changed to allow single product object or null
+  }[]; // Changed to array of product objects
 }
 
 const ticketFormSchema = z.object({
@@ -198,7 +198,7 @@ export default function OrdersPage() {
                       <TableCell>
                         {order.order_items.map((item, index) => (
                           <div key={item.id}>
-                            {item.quantity} x {item.products?.name || `Product ${item.product_id}`}
+                            {item.quantity} x {item.products?.[0]?.name || `Product ${item.product_id}`}
                             {index < order.order_items.length - 1 ? ',' : ''}
                           </div>
                         ))}
