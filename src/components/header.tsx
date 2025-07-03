@@ -129,56 +129,56 @@ export function Header() {
               className="hidden lg:flex relative"
               ref={navRef}
               onMouseLeave={handleMouseLeave}
-            />
-            {
-              hovered && hoveredRect && navRef.current && (
-                <div
-                  className="absolute bg-blue-700 rounded-md"
-                  style={{
-                    left:
-                      hoveredRect.left -
-                      navRef.current.getBoundingClientRect().left,
-                    top:
-                      hoveredRect.top - navRef.current.getBoundingClientRect().top,
-                    width: hoveredRect.width,
-                    height: hoveredRect.height,
-                    transition: "all 0.2s ease-in-out",
-                  }}
-                />
-              )
-            }
-            <div className="flex relative">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-white px-6 py-3 text-sm font-medium"
-                  style={{
-                    backgroundColor:
-                      pathname === link.href ? "#28a745" : "transparent",
-                  }}
-                  onMouseEnter={handleMouseEnter}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+            >
+              {
+                hovered && hoveredRect && navRef.current && (
+                  <div
+                    className="absolute bg-blue-700 rounded-md"
+                    style={{
+                      left:
+                        hoveredRect.left -
+                        navRef.current.getBoundingClientRect().left,
+                      top:
+                        hoveredRect.top - navRef.current.getBoundingClientRect().top,
+                      width: hoveredRect.width,
+                      height: hoveredRect.height,
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                  />
+                )
+              }
+              <div className="flex relative">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-white px-6 py-3 text-sm font-medium"
+                    style={{
+                      backgroundColor:
+                        pathname === link.href ? "#28a745" : "transparent",
+                    }}
+                    onMouseEnter={handleMouseEnter}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
 
-          {/* Search icon - EXACT positioning */}
-          <button className="p-3 text-white hover:text-blue-200">
-            <Search className="w-5 h-5" />
-          </button>
+            {/* Search icon - EXACT positioning */}
+            <button className="p-3 text-white hover:text-blue-200">
+              <Search className="w-5 h-5" />
+            </button>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-3 text-white"
-          />
-          {
-            isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />
-          }
-          </button>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-3 text-white"
+            >
+              {
+                isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />
+              }
+            </button>
           </div>
         </div>
       </div>
@@ -199,10 +199,10 @@ export function Header() {
                   backgroundColor:
                     pathname === link.href ? "#28a745" : "transparent",
                 }}
-              />
-              {
-                link.label
-              }
+              >
+                {
+                  link.label
+                }
               </Link>
             ))}
           </div>
