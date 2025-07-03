@@ -7,7 +7,7 @@ import { SessionProvider } from "@/context/session-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Toaster } from "@/components/ui/sonner"
-// Removed: import { StoreNotice } from "@/components/store-notice"
+import { PayPalProvider } from "@/context/paypal-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,12 +31,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SessionProvider>
-            {/* Removed: <StoreNotice /> */}
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </SessionProvider>
+          <PayPalProvider>
+            <SessionProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </SessionProvider>
+          </PayPalProvider>
           <Toaster richColors />
         </ThemeProvider>
       </body>

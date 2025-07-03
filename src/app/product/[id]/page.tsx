@@ -1,23 +1,34 @@
-import Image from "next/image";
-import { notFound } from "next/navigation";
-import products from "@/data/products.json";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+"use client"
 
-// Gets the correct image path from the product data.
+import { useState } from "react"
+import Image from "next/image"
+import { notFound } from "next/navigation"
+import products from "@/data/products.json"
+import { Button } from "@/components/ui/button"
+import { ShoppingCart } from "lucide-react"
+import { PayPalButton } from "@/components/paypal-button"
+import { Product } from "@/types/product"
+
 const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg";
-  // Use the first image if it's an array (assuming it's the primary one).
-  if (Array.isArray(image)) return image[0];
-  return image;
-};
+  if (!image) return "/placeholder.jpg"
+  if (Array.isArray(image)) return image[0]
+  return image
+}
 
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const productId = parseInt(params.id);
-  const product = products.find((p) => p.id === productId);
+  const [quantity, setQuantity] = useState(1)
+
+  const productId = parseInt(params.id)
+  const product: Product | undefined = (products as Product[]).find(
+    (p) => p.id === productId
+  )
 
   if (!product) {
-    notFound();
+    notFound()
+  }
+
+  const handleQuantityChange = (amount: number) => {
+    setQuantity((prev) => Math.max(1, prev + amount))
   }
 
   return (
@@ -50,13 +61,25 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           />
 
           <div className="mt-auto pt-6 border-t border-gray-200">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center border border-gray-300 rounded-md">
-                <Button variant="ghost" size="icon" className="h-12 w-12 text-lg">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 text-lg"
+                  onClick={() => handleQuantityChange(-1)}
+                >
                   -
                 </Button>
-                <span className="w-16 text-center font-medium text-lg">1</span>
-                <Button variant="ghost" size="icon" className="h-12 w-12 text-lg">
+                <span className="w-16 text-center font-medium text-lg">
+                  {quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 text-lg"
+                  onClick={() => handleQuantityChange(1)}
+                >
                   +
                 </Button>
               </div>
@@ -69,9 +92,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 Add to Cart
               </Button>
             </div>
+            <PayPalButton product={product} quantity={quantity} />
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
