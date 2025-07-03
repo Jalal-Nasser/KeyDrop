@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form" // Added 'from "react-hook-form"'
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { toast } from "sonner"
-import { Github, Loader2, Chrome } from "lucide-react"
+import { Github, Loader2, Chrome, Eye, EyeOff } from "lucide-react"
 
 import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
@@ -56,6 +56,8 @@ interface AuthSheetProps {
 export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
   const { supabase } = useSession()
   const [loading, setLoading] = useState(false)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -176,7 +178,19 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={loginForm.control} name="password" render={({ field }) => (
-                    <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type={showLoginPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowLoginPassword(!showLoginPassword)}>
+                            {showLoginPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                            <span className="sr-only">{showLoginPassword ? "Hide password" : "Show password"}</span>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -200,7 +214,19 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={registerForm.control} name="password" render={({ field }) => (
-                    <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type={showRegisterPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
+                            {showRegisterPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                            <span className="sr-only">{showRegisterPassword ? "Hide password" : "Show password"}</span>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   
                   <Separator className="my-4" />
