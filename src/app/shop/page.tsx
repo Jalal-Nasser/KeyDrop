@@ -1,8 +1,12 @@
+"use client"
+
 import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Heart, ShoppingCart } from "lucide-react"
+import { useCart } from "@/context/cart-context"
+import { Product } from "@/types/product"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -11,6 +15,8 @@ const getImagePath = (image: string | string[] | undefined): string => {
 }
 
 export default function ShopPage() {
+  const { addToCart } = useCart()
+
   return (
     <main>
       <section className="py-12 bg-white">
@@ -24,7 +30,7 @@ export default function ShopPage() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {products.map((product: any) => (
+              {(products as Product[]).map((product) => (
                 <div
                   key={product.id}
                   className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300"
@@ -51,7 +57,10 @@ export default function ShopPage() {
                       <div className="text-lg font-bold text-blue-600 mb-4">
                         <span>{product.price}</span>
                       </div>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button 
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        onClick={() => addToCart(product)}
+                      >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Add to Cart
                       </Button>

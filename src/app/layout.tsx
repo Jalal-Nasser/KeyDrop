@@ -8,6 +8,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Toaster } from "@/components/ui/sonner"
 import { PayPalProvider } from "@/context/paypal-provider"
+import { CartProvider } from "@/context/cart-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -33,9 +34,11 @@ export default function RootLayout({
         >
           <PayPalProvider>
             <SessionProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
+              <CartProvider>
+                <Header />
+                <main className="flex-grow">{children}</main>
+                <Footer />
+              </CartProvider>
             </SessionProvider>
           </PayPalProvider>
           <Toaster richColors />

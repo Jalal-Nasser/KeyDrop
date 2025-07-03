@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import { PayPalButton } from "@/components/paypal-button"
 import { Product } from "@/types/product"
+import { useCart } from "@/context/cart-context"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -17,6 +18,7 @@ const getImagePath = (image: string | string[] | undefined): string => {
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
+  const { addToCart } = useCart()
 
   const productId = parseInt(params.id)
   const product: Product | undefined = (products as Product[]).find(
@@ -29,6 +31,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) => Math.max(1, prev + amount))
+  }
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity)
+    }
   }
 
   return (
@@ -87,6 +95,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 size="lg"
                 className="flex-1 h-12 text-base"
                 style={{ backgroundColor: "#1e73be" }}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
