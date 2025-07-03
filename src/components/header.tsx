@@ -108,12 +108,12 @@ export function Header() {
                 </button>
                 <span className="text-gray-300">|</span>
                 {session ? (
-                  <Link href="/account" className="flex items-center space-x-1 hover:text-blue-600">
+                  <Link href="/account" className="flex items-center space-x-1 text-red-600 hover:text-blue-600">
                     <User className="w-4 h-4" />
                     <span>Account</span>
                   </Link>
                 ) : (
-                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center space-x-1 hover:text-blue-600">
+                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center space-x-1 text-red-600 hover:text-blue-600">
                     <User className="w-4 h-4" />
                     <span>Sign In</span>
                   </button>
