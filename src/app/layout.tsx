@@ -7,7 +7,7 @@ import { SessionProvider } from "@/context/session-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Toaster } from "@/components/ui/sonner"
-import { StoreNotice } from "@/components/store-notice"
+// Removed: import { StoreNotice } from "@/components/store-notice"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,7 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-            <StoreNotice />
+            {/* Removed: <StoreNotice /> */}
             <Header />
             <main className="flex-grow">{children}</main>
             <Footer />
