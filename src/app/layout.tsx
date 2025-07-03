@@ -3,18 +3,13 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { ThemeProvider } from "@/components/theme-provider"
-import { StoreNotice } from "@/components/store-notice"
-import { Toaster } from "@/components/ui/sonner"
+import { SessionProvider } from "@/context/session-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Dropskey",
   description: "Verified Digital Key Store",
-  icons: {
-    icon: "/favicon.ico",
-  },
 }
 
 export default function RootLayout({
@@ -23,20 +18,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+    <html lang="en">
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <SessionProvider>
           <Header />
-          {/* <StoreNotice /> */}
-          <main>{children}</main>
+          <main className="flex-grow">{children}</main>
           <Footer />
-          <Toaster />
-        </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )
