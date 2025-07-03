@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import Link from "next/link" // Add this import
 
 export default function AccountPage() {
   const { session, supabase } = useSession()
@@ -44,9 +45,16 @@ export default function AccountPage() {
         </CardHeader>
         <CardContent>
           <p className="mb-4">You are now signed in.</p>
-          <Button onClick={() => supabase.auth.signOut()} className="w-full">
-            Sign Out
-          </Button>
+          <div className="flex flex-col space-y-2"> {/* Add a div for layout */}
+            <Link href="/account/orders" passHref>
+              <Button asChild className="w-full">
+                <a>View Order History</a>
+              </Button>
+            </Link>
+            <Button onClick={() => supabase.auth.signOut()} className="w-full">
+              Sign Out
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
