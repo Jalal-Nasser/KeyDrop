@@ -32,7 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <StoreNotice />
+          {/* <StoreNotice /> */}
           <main>{children}</main>
           <Footer />
           <Toaster />
