@@ -2,8 +2,6 @@
 
 import {
   PayPalButtons,
-  OnApproveData,
-  CreateOrderData,
 } from "@paypal/react-paypal-js"
 import { useSession } from "@/context/session-context"
 import { toast } from "sonner"
@@ -21,7 +19,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     return parseFloat(price.replace(/[^0-9.-]+/g, ""))
   }
 
-  const createOrder = (data: CreateOrderData, actions: any) => {
+  const createOrder = (data: any, actions: any) => { // Changed type from CreateOrderData to any
     if (!session) {
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
@@ -43,7 +41,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     })
   }
 
-  const onApprove = async (data: OnApproveData, actions: any) => {
+  const onApprove = async (data: any, actions: any) => { // Changed type from OnApproveData to any
     if (!actions.order) {
       toast.error("Something went wrong with the PayPal order. Please try again.")
       return Promise.reject(new Error("Order actions not available"))
