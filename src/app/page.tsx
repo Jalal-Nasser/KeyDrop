@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <WeeklyProducts />
+      <WeeklyProducts title="Most Sold Products" />
       <FeaturesSection />
     </>
   )
