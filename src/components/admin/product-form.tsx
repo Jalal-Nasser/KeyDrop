@@ -66,7 +66,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
   const handleDelete = async () => {
     if (!product) return
-    const result = await deleteProduct(product.id)
+    const result = await deleteProduct(product!.id)
     if (result.error) {
       toast.error(result.error)
     } else {
