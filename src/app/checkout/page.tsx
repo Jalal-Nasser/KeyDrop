@@ -18,8 +18,9 @@ import { PayPalCartButton } from "@/components/paypal-cart-button"
 import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+// Removed Checkbox and Label imports as they are no longer needed
+// import { Checkbox } from "@/components/ui/checkbox"
+// import { Label } from "@/components/ui/label"
 
 const checkoutSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -46,7 +47,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { cartItems, cartTotal, cartCount } = useCart()
   const { session, supabase } = useSession()
-  const [addPaymentFee, setAddPaymentFee] = React.useState(false);
+  // Removed addPaymentFee state as it's no longer optional
+  // const [addPaymentFee, setAddPaymentFee] = React.useState(false);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -91,7 +93,9 @@ export default function CheckoutPage() {
     fetchProfile()
   }, [session, supabase, form])
 
-  const finalCartTotal = addPaymentFee ? cartTotal * 1.15 : cartTotal;
+  // Calculate the processing fee and final total
+  const processingFee = cartTotal * 0.15;
+  const finalCartTotal = cartTotal + processingFee;
 
   if (cartCount === 0) {
     return (
@@ -194,6 +198,15 @@ export default function CheckoutPage() {
                   ))}
                 </div>
                 <Separator className="my-4" />
+                <div className="flex justify-between text-base">
+                  <span>Subtotal</span>
+                  <span>${cartTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-base">
+                  <span>Process Fees 15%</span>
+                  <span>${processingFee.toFixed(2)}</span>
+                </div>
+                <Separator className="my-4" />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
                   <span>${finalCartTotal.toFixed(2)}</span>
@@ -214,24 +227,13 @@ export default function CheckoutPage() {
                     <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
                   </div>
                 ) : (
-                  <>
-                    <div className="flex items-center space-x-2 mb-4">
-                      <Checkbox
-                        id="payment-fee"
-                        checked={addPaymentFee}
-                        onCheckedChange={(checked) => setAddPaymentFee(checked as boolean)}
-                      />
-                      <Label htmlFor="payment-fee">
-                        Add 15% Payment Processing Fee
-                      </Label>
-                    </div>
-                    <PayPalCartButton 
-                      cartTotal={finalCartTotal} 
-                      cartItems={cartItems}
-                      billingDetails={form.watch()}
-                      isFormValid={form.formState.isValid}
-                    />
-                  </>
+                  // Removed the Checkbox and Label for optional fee
+                  <PayPalCartButton 
+                    cartTotal={finalCartTotal} 
+                    cartItems={cartItems}
+                    billingDetails={form.watch()}
+                    isFormValid={form.formState.isValid}
+                  />
                 )}
               </CardContent>
             </Card>
