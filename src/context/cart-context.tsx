@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { toast } from "sonner"
 import { Product } from "@/types/product"
 import { CartItem } from "@/types/cart"
+import { useRouter } from "next/navigation" // Import useRouter
 
 interface CartContextType {
   cartItems: CartItem[]
@@ -19,6 +20,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const router = useRouter() // Initialize useRouter
 
   useEffect(() => {
     try {
@@ -44,16 +46,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id)
+      let newQuantityInCart = quantity; // This will be the quantity after this operation
+      const toastId = `cart-add-${product.id}`; // Unique ID for this product's toast
+
       if (existingItem) {
-        const updatedItems = prevItems.map(item =>
+        newQuantityInCart = existingItem.quantity + quantity;
+        toast.success(`${product.name} quantity updated`, {
+          id: toastId,
+          description: `Your cart now has ${newQuantityInCart} item(s) of ${product.name}.`,
+          action: {
+            label: "View Cart",
+            onClick: () => router.push("/cart"),
+          },
+          duration: 3000,
+        });
+        return prevItems.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQuantityInCart }
             : item
         )
-        toast.success(`${product.name} quantity updated in cart.`)
-        return updatedItems
       } else {
-        toast.success(`${product.name} added to cart.`)
+        toast.success(`${product.name} added to cart`, {
+          id: toastId,
+          description: `Your cart now has ${newQuantityInCart} item(s) of ${product.name}.`,
+          action: {
+            label: "View Cart",
+            onClick: () => router.push("/cart"),
+          },
+          duration: 3000,
+        });
         return [...prevItems, { ...product, quantity }]
       }
     })
@@ -63,7 +84,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCartItems(prevItems => {
       const itemToRemove = prevItems.find(item => item.id === productId)
       if (itemToRemove) {
-        toast.success(`${itemToRemove.name} removed from cart.`)
+        toast.info(`${itemToRemove.name} removed from cart.`, {
+          duration: 2000, // Shorter duration for removal
+        });
       }
       return prevItems.filter(item => item.id !== productId)
     })
@@ -74,16 +97,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeFromCart(productId)
       return
     }
-    setCartItems(prevItems =>
-      prevItems.map(item =>
+    setCartItems(prevItems => {
+      const updatedItems = prevItems.map(item =>
         item.id === productId ? { ...item, quantity } : item
-      )
-    )
+      );
+      // No toast here, as addToCart handles updates and this is for direct quantity changes
+      return updatedItems;
+    });
   }
 
   const clearCart = () => {
     setCartItems([])
-    toast.info("Cart cleared.")
+    toast.info("Your cart has been cleared.", {
+      duration: 2000,
+    })
   }
 
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
