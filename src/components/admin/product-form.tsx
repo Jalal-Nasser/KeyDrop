@@ -65,17 +65,14 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (!product) return // If product is undefined, exit early
-
-    // Explicitly assign product to a non-nullable local variable
-    const productToDelete = product; 
-
-    const result = await deleteProduct(productToDelete.id) // Use the non-nullable local variable
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success("Product deleted successfully!")
-      setIsOpen(false)
+    if (product) { // Ensure product is defined before proceeding
+      const result = await deleteProduct(product.id)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success("Product deleted successfully!")
+        setIsOpen(false)
+      }
     }
   }
 
@@ -108,7 +105,7 @@ export function ProductForm({ product }: ProductFormProps) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel> {/* Corrected closing tag here */}
+                  <FormLabel>Price</FormLabel>
                   <FormControl><Input {...field} placeholder="$XX.XX" /></FormControl>
                   <FormMessage />
                 </FormItem>
