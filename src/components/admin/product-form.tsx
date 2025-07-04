@@ -65,8 +65,12 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (!product) return
-    const result = await deleteProduct(product!.id)
+    if (!product) return // If product is undefined, exit early
+
+    // Explicitly assign product to a non-nullable local variable
+    const productToDelete = product; 
+
+    const result = await deleteProduct(productToDelete.id) // Use the non-nullable local variable
     if (result.error) {
       toast.error(result.error)
     } else {
