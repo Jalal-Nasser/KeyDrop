@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
 
 export default async function ProductsPage() {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = createServerComponentClient({ cookies }, {
+    supabaseUrl: "https://notncpmpmgostfxesrvk.supabase.co",
+    supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s",
+  })
   const { data: products, error } = await supabase
     .from("products")
     .select("*")

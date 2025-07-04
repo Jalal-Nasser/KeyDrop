@@ -53,8 +53,14 @@ export function ProductForm({ product }: ProductFormProps) {
   })
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    const action = product ? updateProduct : createProduct
-    const result = await action(product?.id, values)
+    let result;
+    if (product) {
+      // If product exists, it's an update operation
+      result = await updateProduct(product.id, values);
+    } else {
+      // If product does not exist, it's a create operation
+      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+    }
 
     if (result.error) {
       toast.error(result.error)
@@ -65,7 +71,7 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (product) { // Ensure product is defined before proceeding
+    if (product) { // This check ensures 'product' is defined before proceeding
       const result = await deleteProduct(product.id)
       if (result.error) {
         toast.error(result.error)
