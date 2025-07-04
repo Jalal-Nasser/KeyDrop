@@ -1,18 +1,20 @@
 "use client"
 
-import Image from "next/image"
-import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
   SheetFooter,
+  SheetClose,
 } from "@/components/ui/sheet"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useCart } from "@/context/cart-context"
+import { ShoppingCart, Trash2 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
+import { Separator } from "./ui/separator"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -20,88 +22,87 @@ const getImagePath = (image: string | string[] | undefined): string => {
   return image
 }
 
-export function CartSheet({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart()
+interface CartSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function CartSheet({ open, onOpenChange }: CartSheetProps) {
+  const { cartItems, cartCount, cartTotal, removeFromCart, clearCart } = useCart()
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="relative">
+          <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {cartCount}
+            </span>
+          )}
+        </Button>
+      </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
-          <SheetTitle>Shopping Cart</SheetTitle>
+          <SheetTitle>Shopping Cart ({cartCount})</SheetTitle>
         </SheetHeader>
-        {cartItems.length > 0 ? (
+        {cartCount > 0 ? (
           <>
-            <ScrollArea className="flex-grow pr-4 -mr-6">
+            <div className="flex-1 overflow-y-auto pr-4 -mr-4">
               <div className="space-y-4">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-md overflow-hidden border">
+                    <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white">
                       <Image
                         src={getImagePath(item.image)}
                         alt={item.name}
                         fill
-                        className="object-contain"
+                        className="object-contain p-1"
                       />
                     </div>
-                    <div className="flex-grow">
-                      <p className="font-medium text-sm line-clamp-2">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.price}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          -
-                        </Button>
-                        <span className="text-sm">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          +
-                        </Button>
-                      </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-g.-]+/g, "")).toFixed(2)}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-muted-foreground hover:text-red-500"
                       onClick={() => removeFromCart(item.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
                 ))}
               </div>
-            </ScrollArea>
-            <SheetFooter className="mt-auto pt-4 border-t">
-              <div className="w-full space-y-4">
-                <div className="flex justify-between font-semibold">
-                  <span>Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
-                </div>
-                <Button asChild className="w-full" size="lg">
-                  <Link href="/checkout" onClick={() => onOpenChange(false)}>Checkout</Link>
-                </Button>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  size="sm"
-                  onClick={clearCart}
-                >
+            </div>
+            <Separator />
+            <SheetFooter className="space-y-4">
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span>${cartTotal.toFixed(2)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <SheetClose asChild>
+                  <Button asChild>
+                    <Link href="/cart">View Cart</Link>
+                  </Button>
+                </SheetClose>
+                <Button variant="outline" onClick={clearCart}>
                   Clear Cart
                 </Button>
               </div>
             </SheetFooter>
           </>
         ) : (
-          <div className="flex-grow flex flex-col items-center justify-center text-center">
+          <div className="flex flex-col items-center justify-center h-full text-center">
             <p className="text-muted-foreground">Your cart is empty.</p>
-            <Button variant="link" className="mt-2" onClick={() => onOpenChange(false)}>Continue Shopping</Button>
+            <SheetClose asChild>
+              <Button asChild variant="link" className="mt-4">
+                <Link href="/shop">Start Shopping</Link>
+              </Button>
+            </SheetClose>
           </div>
         )}
       </SheetContent>

@@ -178,7 +178,10 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
               </Card>
-              <PromoCodeForm />
+              <Card>
+                <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+                <CardContent><PromoCodeForm /></CardContent>
+              </Card>
             </div>
             <div className="lg:col-span-2 space-y-8">
               <Card>
@@ -263,7 +266,10 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
               </CardContent>
             </Card>
-            <PromoCodeForm />
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
             <Card>
               <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
               <CardContent>
