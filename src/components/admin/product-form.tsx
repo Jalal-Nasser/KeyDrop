@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -23,12 +23,10 @@ import {
 } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
-import dynamic from "next/dynamic"
-import "react-quill/dist/quill.snow.css"
+import { RichTextEditor } from "./rich-text-editor"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -43,7 +41,6 @@ interface ProductFormProps {
 
 export function ProductForm({ product }: ProductFormProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const ReactQuill = useMemo(() => dynamic(() => import("react-quill"), { ssr: false }), [])
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -131,7 +128,7 @@ export function ProductForm({ product }: ProductFormProps) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <ReactQuill theme="snow" value={field.value} onChange={field.onChange} />
+                    <RichTextEditor value={field.value || ""} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
