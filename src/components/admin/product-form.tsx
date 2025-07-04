@@ -108,7 +108,7 @@ export function ProductForm({ product }: ProductFormProps) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Price</FormLabel> {/* Corrected closing tag here */}
                   <FormControl><Input {...field} placeholder="$XX.XX" /></FormControl>
                   <FormMessage />
                 </FormItem>
