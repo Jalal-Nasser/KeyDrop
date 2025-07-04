@@ -85,7 +85,7 @@ export function CartSheet({ open, onOpenChange }: { open: boolean, onOpenChange:
                   <span>${cartTotal.toFixed(2)}</span>
                 </div>
                 <Button asChild className="w-full" size="lg">
-                  <Link href="/checkout">Checkout</Link>
+                  <Link href="/checkout" onClick={() => onOpenChange(false)}>Checkout</Link>
                 </Button>
                 <Button
                   className="w-full"
