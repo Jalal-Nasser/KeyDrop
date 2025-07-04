@@ -55,8 +55,10 @@ export function ProductForm({ product }: ProductFormProps) {
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     let result;
     if (product) {
-      // If product exists, it's an update operation
-      result = await updateProduct(product.id, values);
+      // If product exists, it's an update operation.
+      // Using '!' here to assert that 'product' is not undefined,
+      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
+      result = await updateProduct(product!.id, values);
     } else {
       // If product does not exist, it's a create operation
       result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
