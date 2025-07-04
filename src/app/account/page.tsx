@@ -22,16 +22,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import Link from "next/link"
 
 const profileSchema = z.object({
-  first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
-  company_name: z.string().optional(),
-  vat_number: z.string().optional(),
-  address_line_1: z.string().min(1, "Address is required"),
-  address_line_2: z.string().optional(),
-  city: z.string().min(1, "City is required"),
-  state_province_region: z.string().min(1, "State/Province/Region is required"),
-  postal_code: z.string().min(1, "Postal code is required"),
-  country: z.string().min(1, "Country is required"),
+  first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
+  last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
+  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  address_line_1: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Address is required")),
+  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  city: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "City is required")),
+  state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
+  postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
+  country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
