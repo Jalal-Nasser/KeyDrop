@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "esnext", // Use modern JavaScript features
+    "lib": ["dom", "dom.iterable", "esnext"], // Include DOM APIs and modern JS features
     "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
+    "skipLibCheck": true, // Skip type checking of declaration files (important for large node_modules)
+    "strict": true, // Enable all strict type-checking options
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
+    "noEmit": true, // Do not emit output (Next.js handles compilation)
+    "esModuleInterop": true, // Allow default imports from modules with no default export
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler", // Use bundler module resolution strategy
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
+    "isolatedModules": true, // Ensure each file can be compiled independently
+    "jsx": "preserve", // Preserve JSX for Next.js's build step
     "incremental": true,
     "plugins": [
       {
