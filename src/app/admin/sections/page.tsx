@@ -5,7 +5,7 @@ export default function AdminSections() {
     <div className="max-w-4xl mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Manage Section Content</h1>
       {/* Section content management UI will go here */}
-      <p>Coming soon: Edit About, Store Notice, etc.</p>
+      <p>Coming soon: View and manage contact form messages.</p>
     </div>
   )
 }

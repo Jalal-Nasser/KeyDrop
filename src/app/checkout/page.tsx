@@ -295,6 +295,670 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user view
+  return (
+    <div className="bg-muted/40">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="mx-auto max-w-4xl text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
+          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
+                      </div>
+                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-4" />
+                <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base"><span>Process Fees 15%</span><span>${processingFee.toFixed(2)}</span></div>
+                <Separator className="my-4" />
+                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
+              <CardContent><PromoCodeForm /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+              <CardContent>
+                {!session ? (
+                  <div className="text-center text-destructive">
+                    <p>You must be signed in to complete your purchase.</p>
+                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                  </div>
+                ) : (
+                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
