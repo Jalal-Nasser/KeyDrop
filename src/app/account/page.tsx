@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useSession } from "@/context/session-context"
 import { useForm } from "react-hook-form"
@@ -38,6 +38,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>
 
 export default function AccountPage() {
   const { session, supabase } = useSession()
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -66,6 +67,7 @@ export default function AccountPage() {
 
         if (data) {
           form.reset(data)
+          setIsAdmin(data.is_admin || false)
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -177,6 +179,11 @@ export default function AccountPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
                 <Button type="submit" className="w-full sm:w-auto">Update Profile</Button>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                   {isAdmin && (
+                    <Button asChild className="w-full sm:w-auto">
+                      <Link href="/admin">Admin Panel</Link>
+                    </Button>
+                  )}
                    <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/account/orders">View Order History</Link>
                   </Button>
