@@ -118,6 +118,10 @@ export default function CheckoutPage() {
   const finalCartTotal = cartTotal + processingFee
   const isProfileValid = checkoutSchema.safeParse(profile).success
 
+  const parsePrice = (price: string): number => {
+    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
+  }
+
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
   }
@@ -172,7 +176,9 @@ export default function CheckoutPage() {
                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                           </div>
                         </div>
-                        <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">
+                          ${((item.is_on_sale && item.sale_price ? parsePrice(item.sale_price) : parsePrice(item.price)) * item.quantity).toFixed(2)}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -255,7 +261,9 @@ export default function CheckoutPage() {
                         <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
-                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">
+                        ${((item.is_on_sale && item.sale_price ? parsePrice(item.sale_price) : parsePrice(item.price)) * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   ))}
                 </div>

@@ -1,12 +1,10 @@
-"use client"
-
-import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, ShoppingCart } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -14,8 +12,23 @@ const getImagePath = (image: string | string[] | undefined): string => {
   return image
 }
 
-export default function ShopPage() {
-  const { addToCart } = useCart()
+export default async function ShopPage() {
+  const supabase = createSupabaseServerClient()
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("id", { ascending: true })
+
+  if (error) {
+    console.error("Error fetching products:", error)
+    // You might want to display an error message to the user or a fallback UI
+    return (
+      <main className="container mx-auto text-center py-20">
+        <h1 className="text-2xl font-bold mb-4">Error Loading Products</h1>
+        <p className="text-muted-foreground">Failed to fetch products. Please try again later.</p>
+      </main>
+    )
+  }
 
   return (
     <main>
@@ -28,7 +41,7 @@ export default function ShopPage() {
             </p>
           </div>
 
-          {products.length > 0 ? (
+          {products && products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {(products as Product[]).map((product) => (
                 <div
@@ -43,6 +56,13 @@ export default function ShopPage() {
                         fill
                         className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                       />
+                      {product.is_on_sale && (
+                        <div className="absolute top-2 left-2 z-10">
+                          <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                            SALE {product.sale_percent ? `${product.sale_percent.toFixed(0)}%` : ""}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </Link>
 
@@ -55,15 +75,17 @@ export default function ShopPage() {
                     
                     <div className="mt-auto">
                       <div className="text-lg font-bold text-blue-600 mb-4">
-                        <span>{product.price}</span>
+                        {product.is_on_sale && product.sale_price ? (
+                          <>
+                            <span className="text-gray-500 line-through mr-2">{product.price}</span>
+                            <span>{product.sale_price}</span>
+                          </>
+                        ) : (
+                          <span>{product.price}</span>
+                        )}
                       </div>
-                      <Button 
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                        onClick={() => addToCart(product)}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
+                      {/* Add to Cart button is a client component, so it needs to be wrapped or passed as a prop */}
+                      <AddToCartButton product={product} />
                     </div>
                   </div>
                 </div>
@@ -78,4 +100,18 @@ export default function ShopPage() {
       </section>
     </main>
   )
+}
+
+// Client component for Add to Cart button
+function AddToCartButton({ product }: { product: Product }) {
+  const { addToCart } = useCart();
+  return (
+    <Button 
+      className="w-full bg-blue-600 hover:bg-blue-700"
+      onClick={() => addToCart(product)}
+    >
+      <ShoppingCart className="w-4 h-4 mr-2" />
+      Add to Cart
+    </Button>
+  );
 }

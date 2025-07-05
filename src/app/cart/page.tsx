@@ -57,6 +57,10 @@ export default function CartPage() {
   const router = useRouter()
   const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart } = useCart()
 
+  const parsePrice = (price: string): number => {
+    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
+  }
+
   if (cartCount === 0) {
     return (
       <div className="container mx-auto text-center py-20">
@@ -100,7 +104,16 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium">${parseFloat(item.price.replace(/[^0-9.-]+/g, "")).toFixed(2)}</div>
+                    <div className="font-medium">
+                      {item.is_on_sale && item.sale_price ? (
+                        <>
+                          <span className="text-gray-500 line-through mr-1">${parsePrice(item.price).toFixed(2)}</span>
+                          <span>${parsePrice(item.sale_price).toFixed(2)}</span>
+                        </>
+                      ) : (
+                        <span>${parsePrice(item.price).toFixed(2)}</span>
+                      )}
+                    </div>
                     <div>
                       <div className="flex items-center border rounded-md w-fit">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -117,7 +130,9 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium text-right">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
+                    <div className="font-medium text-right">
+                      ${((item.is_on_sale && item.sale_price ? parsePrice(item.sale_price) : parsePrice(item.price)) * item.quantity).toFixed(2)}
+                    </div>
                   </div>
                 ))}
               </div>

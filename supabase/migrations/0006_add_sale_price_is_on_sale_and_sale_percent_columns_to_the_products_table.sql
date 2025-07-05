@@ -1,0 +1,4 @@
+ALTER TABLE public.products
+ADD COLUMN sale_price NUMERIC,
+ADD COLUMN is_on_sale BOOLEAN DEFAULT FALSE,
+ADD COLUMN sale_percent NUMERIC;

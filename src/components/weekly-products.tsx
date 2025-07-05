@@ -1,6 +1,5 @@
 "use client"
 import React, { useState } from "react"
-import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
@@ -24,14 +23,13 @@ const getImagePath = (image: string | string[] | undefined): string => {
 }
 
 interface WeeklyProductsProps {
-  limit?: number;
-  title?: string; // New title prop
+  products: Product[]; // Now receives products as a prop
+  title?: string;
 }
 
-export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
+export function WeeklyProducts({ products, title }: WeeklyProductsProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const displayProducts = [...products].slice(0, limit)
   const { addToCart } = useCart()
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
 
@@ -54,62 +52,76 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(displayProducts as Product[]).map((product) => (
-              <div
-                key={product.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
-              >
-                {(product as any).onSale && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
-                      SALE {(product as any).salePercent || ""}
-                    </span>
-                  </div>
-                )}
-                
-                <Link href={`/product/${product.id}`} className="flex-grow flex flex-col">
-                  <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <Image
-                      src={getImagePath(product.image)}
-                      alt={product.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>
-                </Link>
-
-                <div className="mt-auto">
-                  <div className="text-lg font-semibold text-gray-900 mb-4">
-                    <span>{product.price}</span>
-                  </div>
-                  <Button
-                    className="w-full mb-3 hover:brightness-90"
-                    style={{ backgroundColor: "#dc3545", color: "white" }}
-                    onClick={() => handleQuickViewClick(product)}
-                  >
-                    QUICK VIEW
-                  </Button>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center border border-gray-300 rounded">
-                      <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>-</button>
-                      <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
-                      <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>+</button>
+          {products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
+                >
+                  {product.is_on_sale && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                        SALE {product.sale_percent ? `${product.sale_percent.toFixed(0)}%` : ""}
+                      </span>
                     </div>
-                    <Button 
-                      size="icon" 
-                      style={{ backgroundColor: "#1e73be" }}
-                      onClick={() => addToCart(product)}
+                  )}
+                  
+                  <Link href={`/product/${product.id}`} className="flex-grow flex flex-col">
+                    <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={getImagePath(product.image)}
+                        alt={product.name}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>
+                  </Link>
+
+                  <div className="mt-auto">
+                    <div className="text-lg font-semibold text-gray-900 mb-4">
+                      {product.is_on_sale && product.sale_price ? (
+                        <>
+                          <span className="text-gray-500 line-through mr-2">{product.price}</span>
+                          <span>{product.sale_price}</span>
+                        </>
+                      ) : (
+                        <span>{product.price}</span>
+                      )}
+                    </div>
+                    <Button
+                      className="w-full mb-3 hover:brightness-90"
+                      style={{ backgroundColor: "#dc3545", color: "white" }}
+                      onClick={() => handleQuickViewClick(product)}
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      QUICK VIEW
                     </Button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center border border-gray-300 rounded">
+                        {/* These buttons are disabled as quantity is managed in cart or quick view */}
+                        <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>-</button>
+                        <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
+                        <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>+</button>
+                      </div>
+                      <Button 
+                        size="icon" 
+                        style={{ backgroundColor: "#1e73be" }}
+                        onClick={() => addToCart(product)}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">No products available at the moment.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -131,7 +143,16 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
                   <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
                 </DialogHeader>
                 
-                <p className="text-2xl font-semibold text-blue-600 mb-4">{selectedProduct.price}</p>
+                <p className="text-2xl font-semibold text-blue-600 mb-4">
+                  {selectedProduct.is_on_sale && selectedProduct.sale_price ? (
+                    <>
+                      <span className="text-gray-500 line-through mr-3 text-xl">{selectedProduct.price}</span>
+                      <span>{selectedProduct.sale_price}</span>
+                    </>
+                  ) : (
+                    <span>{selectedProduct.price}</span>
+                  )}
+                </p>
                 
                 <DialogDescription asChild>
                   <div

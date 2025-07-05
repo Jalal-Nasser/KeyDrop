@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -27,12 +27,15 @@ import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  price: z.string().min(1, "Price is required"),
+  price: z.string().min(1, "Price is required").regex(/^\$?\d+(\.\d{1,2})?$/, "Invalid price format"),
   description: z.string().optional(),
   image: z.string().optional(),
+  sale_price: z.string().optional().nullable().transform(e => e === "" ? null : e), // Allow empty string to be null
+  is_on_sale: z.boolean().optional(),
 })
 
 interface ProductFormProps {
@@ -49,19 +52,43 @@ export function ProductForm({ product }: ProductFormProps) {
       price: product?.price || "",
       description: product?.description || "",
       image: Array.isArray(product?.image) ? product.image[0] : product?.image || "",
+      sale_price: product?.sale_price || "",
+      is_on_sale: product?.is_on_sale || false,
     },
   })
 
+  // Watch for changes in is_on_sale and sale_price
+  const is_on_sale = form.watch("is_on_sale");
+  const sale_price = form.watch("sale_price");
+  const original_price = form.watch("price");
+
+  useEffect(() => {
+    if (!is_on_sale) {
+      form.setValue("sale_price", ""); // Clear sale price if not on sale
+    }
+  }, [is_on_sale, form]);
+
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     let result;
+    // Ensure price and sale_price are numbers for calculation, but pass as strings to action
+    const originalPriceNum = parseFloat(values.price.replace(/[^0-9.-]+/g, ""));
+    const salePriceNum = values.sale_price ? parseFloat(values.sale_price.replace(/[^0-9.-]+/g, "")) : null;
+
+    if (values.is_on_sale && salePriceNum !== null && (isNaN(originalPriceNum) || isNaN(salePriceNum) || salePriceNum >= originalPriceNum)) {
+      toast.error("Sale price must be a valid number and less than the original price when on sale.");
+      return;
+    }
+
+    const dataToSend = {
+      ...values,
+      sale_price: values.sale_price || undefined, // Ensure empty string becomes undefined for Supabase
+      is_on_sale: values.is_on_sale || false,
+    };
+
     if (product) {
-      // If product exists, it's an update operation.
-      // Using '!' here to assert that 'product' is not undefined,
-      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
-      result = await updateProduct(product!.id, values);
+      result = await updateProduct(product.id, dataToSend);
     } else {
-      // If product does not exist, it's a create operation
-      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+      result = await createProduct(undefined, dataToSend);
     }
 
     if (result.error) {
@@ -73,7 +100,7 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (product) { // This check ensures 'product' is defined before proceeding
+    if (product) {
       const result = await deleteProduct(product.id)
       if (result.error) {
         toast.error(result.error)
@@ -83,6 +110,17 @@ export function ProductForm({ product }: ProductFormProps) {
       }
     }
   }
+
+  const calculateSalePercent = () => {
+    const originalPriceNum = parseFloat(original_price.replace(/[^0-9.-]+/g, ""));
+    const salePriceNum = sale_price ? parseFloat(sale_price.replace(/[^0-9.-]+/g, "")) : null;
+
+    if (is_on_sale && !isNaN(originalPriceNum) && originalPriceNum > 0 && salePriceNum !== null && !isNaN(salePriceNum) && salePriceNum < originalPriceNum) {
+      const percent = ((originalPriceNum - salePriceNum) / originalPriceNum) * 100;
+      return ` (${percent.toFixed(0)}% off)`;
+    }
+    return "";
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -113,12 +151,45 @@ export function ProductForm({ product }: ProductFormProps) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Original Price</FormLabel>
                   <FormControl><Input {...field} placeholder="$XX.XX" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="is_on_sale"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Product is on sale
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            {is_on_sale && (
+              <FormField
+                control={form.control}
+                name="sale_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale Price {calculateSalePercent()}</FormLabel>
+                    <FormControl><Input {...field} value={field.value || ""} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="image"

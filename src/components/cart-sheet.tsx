@@ -29,6 +29,10 @@ interface CartSheetProps {
 export function CartSheet({ open, onOpenChange }: CartSheetProps) {
   const { cartItems, cartCount, cartTotal, removeFromCart, clearCart } = useCart()
 
+  const parsePrice = (price: string): number => {
+    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex flex-col">
@@ -52,7 +56,9 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-g.-]+/g, "")).toFixed(2)}
+                        {item.quantity} x ${
+                          (item.is_on_sale && item.sale_price ? parsePrice(item.sale_price) : parsePrice(item.price)).toFixed(2)
+                        }
                       </p>
                     </div>
                     <Button

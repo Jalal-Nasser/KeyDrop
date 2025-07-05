@@ -19,14 +19,18 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     return parseFloat(price.replace(/[^0-9.-]+/g, ""))
   }
 
-  const createOrder = (data: any, actions: any) => { // Changed type from CreateOrderData to any
+  const createOrder = (data: any, actions: any) => {
     if (!session) {
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
     }
 
-    const price = parsePrice(product.price)
-    const totalValue = (price * quantity).toFixed(2)
+    // Use sale_price if available and product is on sale, otherwise use original price
+    const effectivePrice = product.is_on_sale && product.sale_price
+      ? parsePrice(product.sale_price)
+      : parsePrice(product.price);
+      
+    const totalValue = (effectivePrice * quantity).toFixed(2)
 
     return actions.order.create({
       purchase_units: [
@@ -41,15 +45,19 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     })
   }
 
-  const onApprove = async (data: any, actions: any) => { // Changed type from OnApproveData to any
+  const onApprove = async (data: any, actions: any) => {
     if (!actions.order) {
       toast.error("Something went wrong with the PayPal order. Please try again.")
       return Promise.reject(new Error("Order actions not available"))
     }
 
     const details = await actions.order.capture()
-    const price = parsePrice(product.price)
-    const total = price * quantity
+    
+    // Use sale_price if available and product is on sale, otherwise use original price
+    const effectivePrice = product.is_on_sale && product.sale_price
+      ? parsePrice(product.sale_price)
+      : parsePrice(product.price);
+    const total = effectivePrice * quantity
 
     if (details.status === "COMPLETED") {
       toast.success("Payment successful! Your order is being processed.")
@@ -76,7 +84,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
           order_id: orderData.id,
           product_id: product.id,
           quantity: quantity,
-          price_at_purchase: price,
+          price_at_purchase: effectivePrice, // Use effective price here
         })
 
         if (itemError) {

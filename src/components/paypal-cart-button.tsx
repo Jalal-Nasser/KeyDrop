@@ -99,7 +99,8 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
-          price_at_purchase: parsePrice(item.price),
+          // Use sale_price if available and product is on sale, otherwise use original price
+          price_at_purchase: item.is_on_sale && item.sale_price ? parsePrice(item.sale_price) : parsePrice(item.price),
         }))
 
         const { error: itemError } = await supabase
