@@ -1,4 +1,13 @@
 {
+  "name": "keydrop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@paypal/react-paypal-js": "^8.8.3",
@@ -48,10 +57,10 @@
     "graphql-request": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "15.2.4",
+    "next": "^14.0.0",
     "next-themes": "^0.4.4",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-day-picker": "^9.7.0",
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
@@ -65,8 +74,8 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
