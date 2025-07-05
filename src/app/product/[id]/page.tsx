@@ -1,68 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { notFound } from "next/navigation"
+import products from "@/data/products.json"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Loader2 } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { PayPalButton } from "@/components/paypal-button"
 import { Product } from "@/types/product"
 import { useCart } from "@/context/cart-context"
-import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import client-side Supabase client
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
-  const imgPath = Array.isArray(image) ? image[0] : image;
-  // Check if it's already a full URL or starts with /
-  if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('/')) {
-    return imgPath;
-  }
-  // Assume it's a filename in public/images
-  return `/images/${imgPath}`;
+  if (Array.isArray(image)) return image[0]
+  return image
 }
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = createSupabaseBrowserClient()
 
   const productId = parseInt(params.id)
+  const product: Product | undefined = (products as Product[]).find(
+    (p) => p.id === productId
+  )
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single()
-
-      if (error) {
-        console.error("Error fetching product:", error)
-        setError(error.message)
-        setProduct(null)
-      } else {
-        setProduct(data as Product)
-      }
-      setLoading(false)
-    }
-    fetchProduct()
-  }, [productId, supabase])
-
-  if (loading) {
-    return (
-      <div className="container mx-auto flex justify-center items-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading product details...</p>
-      </div>
-    )
-  }
-
-  if (error || !product) {
-    notFound() // Use Next.js notFound to render 404 page
+  if (!product) {
+    notFound()
   }
 
   const handleQuantityChange = (amount: number) => {
@@ -75,23 +39,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
   }
 
-  const displayPrice = product.is_on_sale && product.sale_price
-    ? parseFloat(product.sale_price).toFixed(2)
-    : parseFloat(product.price).toFixed(2);
-
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md relative">
-        {/* Sale Badge for single product page */}
-        {product.is_on_sale && product.sale_percent && (
-          <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
-            <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
-              SALE {product.sale_percent}%
-            </div>
-          </div>
-        )}
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md">
         {/* Product Image */}
-        <div className="md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4 relative">
+        <div className="md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4">
           <Image
             src={getImagePath(product.image)}
             alt={product.name}
@@ -107,16 +59,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {product.name}
           </h1>
 
-          <div className="text-3xl font-semibold text-blue-600 mb-6">
-            {product.is_on_sale && product.sale_price ? (
-              <>
-                <span className="line-through text-gray-500 mr-3 text-2xl">${parseFloat(product.price).toFixed(2)}</span>
-                <span>${displayPrice}</span>
-              </>
-            ) : (
-              <span>${displayPrice}</span>
-            )}
-          </div>
+          <p className="text-3xl font-semibold text-blue-600 mb-6">
+            {product.price}
+          </p>
 
           <div
             className="text-base text-gray-700 mb-8 prose prose-lg max-h-60 overflow-y-auto"

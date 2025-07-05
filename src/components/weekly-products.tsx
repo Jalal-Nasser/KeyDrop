@@ -1,8 +1,9 @@
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
+import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingCart, Loader2 } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,18 +14,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
-import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import client-side Supabase client
 
 // Gets the correct image path from the product data.
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg";
-  const imgPath = Array.isArray(image) ? image[0] : image;
-  // Check if it's already a full URL or starts with /
-  if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('/')) {
-    return imgPath;
-  }
-  // Assume it's a filename in public/images
-  return `/images/${imgPath}`;
+  // Use the first image if it's an array (assuming it's the primary one).
+  if (Array.isArray(image)) return image[0];
+  return image;
 }
 
 interface WeeklyProductsProps {
@@ -35,32 +31,9 @@ interface WeeklyProductsProps {
 export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const displayProducts = [...products].slice(0, limit)
   const { addToCart } = useCart()
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = createSupabaseBrowserClient()
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("id", { ascending: false }) // Order by ID descending to get "most sold" or recent
-        .limit(limit)
-
-      if (error) {
-        console.error("Error fetching products:", error)
-        setError(error.message)
-      } else {
-        setProducts(data as Product[])
-      }
-      setLoading(false)
-    }
-    fetchProducts()
-  }, [limit, supabase])
 
   const handleQuickViewClick = (product: Product) => {
     setSelectedProduct(product);
@@ -75,23 +48,6 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto flex justify-center items-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading products...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto text-center py-20">
-        <p className="text-red-500">Error: {error}</p>
-      </div>
-    )
-  }
-
   return (
     <>
       <div className="py-16 bg-white">
@@ -99,16 +55,16 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {(displayProducts as Product[]).map((product) => (
               <div
                 key={product.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
               >
-                {product.is_on_sale && product.sale_percent && (
-                  <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
-                    <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
-                      SALE {product.sale_percent}%
-                    </div>
+                {(product as any).onSale && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                      SALE {(product as any).salePercent || ""}
+                    </span>
                   </div>
                 )}
                 
@@ -127,14 +83,7 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
 
                 <div className="mt-auto">
                   <div className="text-lg font-semibold text-gray-900 mb-4">
-                    {product.is_on_sale && product.sale_price ? (
-                      <>
-                        <span className="line-through text-gray-500 mr-2 text-base">${parseFloat(product.price).toFixed(2)}</span>
-                        <span>${parseFloat(product.sale_price).toFixed(2)}</span>
-                      </>
-                    ) : (
-                      <span>${parseFloat(product.price).toFixed(2)}</span>
-                    )}
+                    <span>{product.price}</span>
                   </div>
                   <Button
                     className="w-full mb-3 hover:brightness-90"
@@ -165,73 +114,55 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
       </div>
 
       <Dialog open={isQuickViewOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl p-0 gap-0 max-h-[90vh] overflow-y-auto relative">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl p-0 gap-0 max-h-[90vh] overflow-y-auto">
           {selectedProduct && (
-            <>
-              {selectedProduct.is_on_sale && selectedProduct.sale_percent && (
-                <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
-                  <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
-                    SALE {selectedProduct.sale_percent}%
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-col md:flex-row md:gap-8 h-full">
-                <div className="flex-1 flex-shrink-0 flex items-center justify-center bg-gray-100 p-4 md:rounded-l-lg">
-                  <Image
-                    src={getImagePath(selectedProduct.image)}
-                    alt={selectedProduct.name}
-                    width={400}
-                    height={400}
-                    className="object-contain max-h-full w-auto"
+            <div className="flex flex-col md:flex-row md:gap-8 h-full">
+              <div className="flex-1 flex-shrink-0 flex items-center justify-center bg-gray-100 p-4 md:rounded-l-lg">
+                <Image
+                  src={getImagePath(selectedProduct.image)}
+                  alt={selectedProduct.name}
+                  width={400}
+                  height={400}
+                  className="object-contain max-h-full w-auto"
+                />
+              </div>
+              <div className="flex-1 flex flex-col p-8">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
+                </DialogHeader>
+                
+                <p className="text-2xl font-semibold text-blue-600 mb-4">{selectedProduct.price}</p>
+                
+                <DialogDescription asChild>
+                  <div
+                    className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
                   />
-                </div>
-                <div className="flex-1 flex flex-col p-8">
-                  <DialogHeader className="text-left">
-                    <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
-                  </DialogHeader>
-                  
-                  <div className="text-2xl font-semibold text-blue-600 mb-4">
-                    {selectedProduct.is_on_sale && selectedProduct.sale_price ? (
-                      <>
-                        <span className="line-through text-gray-500 mr-3 text-xl">${parseFloat(selectedProduct.price).toFixed(2)}</span>
-                        <span>${parseFloat(selectedProduct.sale_price).toFixed(2)}</span>
-                      </>
-                    ) : (
-                      <span>${parseFloat(selectedProduct.price).toFixed(2)}</span>
-                    )}
-                  </div>
-                  
-                  <DialogDescription asChild>
-                    <div
-                      className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
-                      dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
-                    />
-                  </DialogDescription>
-                  
-                  <div className="mt-auto pt-6">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center border border-gray-300 rounded-md">
-                        <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => Math.max(1, q - 1))}>-</Button>
-                        <span className="w-16 text-center font-medium text-lg">{quickViewQuantity}</span>
-                        <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => q + 1)}>+</Button>
-                      </div>
-                      <Button 
-                        size="lg" 
-                        className="flex-1 h-12 text-base" 
-                        style={{ backgroundColor: "#1e73be" }}
-                        onClick={() => {
-                          addToCart(selectedProduct, quickViewQuantity)
-                          handleOpenChange(false)
-                        }}
-                      >
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Add to Cart
-                      </Button>
+                </DialogDescription>
+                
+                <div className="mt-auto pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center border border-gray-300 rounded-md">
+                      <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => Math.max(1, q - 1))}>-</Button>
+                      <span className="w-16 text-center font-medium text-lg">{quickViewQuantity}</span>
+                      <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => q + 1)}>+</Button>
                     </div>
+                    <Button 
+                      size="lg" 
+                      className="flex-1 h-12 text-base" 
+                      style={{ backgroundColor: "#1e73be" }}
+                      onClick={() => {
+                        addToCart(selectedProduct, quickViewQuantity)
+                        handleOpenChange(false)
+                      }}
+                    >
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      Add to Cart
+                    </Button>
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>

@@ -7,11 +7,8 @@ import { revalidatePath } from "next/cache"
 interface ProductData {
   name: string
   price: string
-  description?: string | null
-  image?: string | null
-  is_on_sale?: boolean | null
-  sale_price?: string | null
-  sale_percent?: number | null
+  description?: string
+  image?: string
 }
 
 export async function createProduct(_: any, formData: ProductData) {
@@ -22,11 +19,10 @@ export async function createProduct(_: any, formData: ProductData) {
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")
-  revalidatePath("/") // Revalidate home page for WeeklyProducts
   return { error: null }
 }
 
-export async function updateProduct(id: number, formData: ProductData) {
+export async function updateProduct(id: number | undefined, formData: ProductData) {
   if (!id) return { error: "Product ID is missing." }
   const supabase = createServerActionClient({ cookies })
   const { error } = await supabase.from("products").update(formData).eq("id", id)
@@ -36,7 +32,6 @@ export async function updateProduct(id: number, formData: ProductData) {
   revalidatePath("/admin/products")
   revalidatePath(`/product/${id}`)
   revalidatePath("/shop")
-  revalidatePath("/") // Revalidate home page for WeeklyProducts
   return { error: null }
 }
 
@@ -48,6 +43,5 @@ export async function deleteProduct(id: number) {
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")
-  revalidatePath("/") // Revalidate home page for WeeklyProducts
   return { error: null }
 }
