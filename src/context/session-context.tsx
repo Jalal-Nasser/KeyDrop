@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { type SupabaseClient, type Session } from "@supabase/supabase-js"
+import { type SupabaseClient, type Session, type AuthChangeEvent } from "@supabase/supabase-js"
 import { supabase } from "@/integrations/supabase/client"
 
 type SessionContextType = {
@@ -16,19 +16,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const getSession = async () => {
+    const getInitialSession = async () => {
       const {
-        data: { session },
+        data: { session: initialSession },
       } = await supabase.auth.getSession()
-      setSession(session)
+      setSession(initialSession)
       setLoading(false)
     }
 
-    getSession()
+    getInitialSession()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setSession(session)
     })
 
