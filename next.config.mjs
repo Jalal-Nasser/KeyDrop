@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Enables static HTML export
+  // Removed 'output: 'export'' to enable Server Actions.
   basePath: '/KeyDrop', // Set to your GitHub repository name
   eslint: {
     ignoreDuringBuilds: true,
