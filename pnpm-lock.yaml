@@ -11,6 +11,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.60.0(react@18.3.1))
+      '@netlify/next':
+        specifier: ^1.4.9
+        version: 1.4.9(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@paypal/react-paypal-js':
         specifier: ^8.8.3
         version: 8.8.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -268,6 +271,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
+
+  '@netlify/next@1.4.9':
+    resolution: {integrity: sha512-lrbY+CEhS9x0jV7oXVYi/rqxZ6ht5KeLGNZsgIPI34kpDaBuD/EfsyKa28BWeSrFalxRZmkMxQYRSTa82v3roQ==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      next: '>=12.2.0'
 
   '@next/env@14.2.30':
     resolution: {integrity: sha512-KBiBKrDY6kxTQWGzKjQB7QirL3PiiOkV7KW98leHFjtVRKtft76Ra5qSA/SL75xT44dp6hOcqiiJ6iievLOYug==}
@@ -2287,6 +2296,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
+
+  '@netlify/next@1.4.9(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+    dependencies:
+      next: 14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@next/env@14.2.30': {}
 
