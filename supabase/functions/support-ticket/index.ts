@@ -1,16 +1,13 @@
-// @ts-ignore
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-
-// TODO: Replace this with your actual admin email address.
-const ADMIN_EMAIL = "admin@example.com"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { Resend } from 'https://esm.sh/resend@4.0.0' // Import Resend
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req: Request) => { // Added type for req
-  // This is needed to invoke the function from a browser.
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -25,6 +22,15 @@ serve(async (req: Request) => { // Added type for req
       })
     }
 
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const adminEmail = Deno.env.get('ADMIN_EMAIL') || 'support@yourdomain.com' // Fallback if ADMIN_EMAIL not set
+
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not set in environment variables.')
+    }
+
+    const resend = new Resend(resendApiKey)
+
     const emailSubject = `New Support Ticket for Order: ${orderId.substring(0, 8)}...`
     const emailBody = `
       <h1>New Support Ticket</h1>
@@ -37,22 +43,18 @@ serve(async (req: Request) => { // Added type for req
       <p>${message}</p>
     `
 
-    // --- Placeholder for actual email sending logic ---
-    // In a real application, you would integrate a service like Resend or SendGrid here.
-    // You would set their API key as a secret in your Supabase project settings.
-    console.log("--- Email to be sent ---")
-    console.log(`To: ${ADMIN_EMAIL}`)
-    console.log(`Subject: ${emailSubject}`)
-    console.log(`Body: \n${emailBody}`)
-    console.log("------------------------")
-    // Example: await sendEmailWithResend(ADMIN_EMAIL, emailSubject, emailBody);
-    // ----------------------------------------------------
+    await resend.emails.send({
+      from: 'onboarding@resend.dev', // Use a verified sender from your Resend account
+      to: adminEmail,
+      subject: emailSubject,
+      html: emailBody,
+    })
 
     return new Response(JSON.stringify({ message: 'Ticket submitted successfully!' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
-  } catch (error: any) { // Added type for error
+  } catch (error: any) {
     console.error('Error processing request:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
