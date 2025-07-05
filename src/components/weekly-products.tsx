@@ -38,6 +38,7 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
   const handleQuickViewClick = (product: Product) => {
     setSelectedProduct(product);
     setQuickViewQuantity(1);
+    setIsQuickViewOpen(true);
   };
 
   const handleOpenChange = (open: boolean) => {

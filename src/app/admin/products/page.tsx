@@ -39,7 +39,7 @@ export default async function ProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(products as Product[])?.map((product) => (
+            {(products as Product[])?.map((product: Product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.id}</TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>

@@ -195,7 +195,9 @@ export default function OrdersPage() {
                       </TableCell>
                       <TableCell>{format(new Date(order.created_at), 'PPP')}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell>
-                      <TableCell>{order.status}</TableCell>
+                      <TableCell>
+                        {order.status}
+                      </TableCell>
                       <TableCell>
                         {order.order_items.map((item: OrderItem, index: number) => (
                           <div key={item.id}>

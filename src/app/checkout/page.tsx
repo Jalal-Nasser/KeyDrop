@@ -133,7 +133,6 @@ export default function CheckoutPage() {
           <p className="ml-4">Loading your details...</p>
         </div>
       )
-    )
     }
 
     if (!isProfileValid) {
