@@ -28,7 +28,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         <div className="py-4">
           <Auth
             supabaseClient={supabase}
-            providers={[]}
+            providers={['google', 'github']}
             appearance={{
               theme: ThemeSupa,
               variables: {

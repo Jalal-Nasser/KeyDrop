@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createSupabaseServerClient } from "@/lib/supabaseServer" // New import
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createSupabaseServerClient()
+  const supabase = createSupabaseServerClient() // Use the new utility function
 
   const {
     data: { session },

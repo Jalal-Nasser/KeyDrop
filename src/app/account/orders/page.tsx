@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
+import { useEffect, useState } from "react"
 import { useSession } from "@/context/session-context"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,7 +9,7 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { toast } from "sonner"
 
-import { Button, type ButtonProps } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -70,11 +70,11 @@ const ticketFormSchema = z.object({
 
 export default function OrdersPage() {
   const { session, supabase } = useSession()
-  const [orders, setOrders]: [Order[], Dispatch<SetStateAction<Order[]>>] = useState<Order[]>([])
-  const [loading, setLoading]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(true)
-  const [error, setError]: [string | null, Dispatch<SetStateAction<string | null>>] = useState<string | null>(null)
-  const [isTicketDialogOpen, setIsTicketDialogOpen]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false)
-  const [selectedOrder, setSelectedOrder]: [Order | null, Dispatch<SetStateAction<Order | null>>] = useState<Order | null>(null)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   const form = useForm<z.infer<typeof ticketFormSchema>>({
     resolver: zodResolver(ticketFormSchema),
@@ -82,7 +82,7 @@ export default function OrdersPage() {
   })
 
   useEffect(() => {
-    const fetchOrders = async (): Promise<void> => {
+    const fetchOrders = async () => {
       if (!session?.user?.id) {
         setLoading(false)
         setError("User not authenticated.")
@@ -90,7 +90,7 @@ export default function OrdersPage() {
       }
 
       try {
-        const { data, error: fetchError } = await supabase
+        const { data, error } = await supabase
           .from('orders')
           .select(`
             id, created_at, total, status,
@@ -99,11 +99,11 @@ export default function OrdersPage() {
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
 
-        if (fetchError) throw fetchError
+        if (error) throw error
         setOrders(data as Order[])
       } catch (err: any) {
         console.error("Error fetching orders:", err)
-        setError((err as Error).message || "Failed to fetch orders.")
+        setError(err.message || "Failed to fetch orders.")
       } finally {
         setLoading(false)
       }
@@ -118,7 +118,7 @@ export default function OrdersPage() {
     form.reset()
   }
 
-  const onSubmit = async (values: z.infer<typeof ticketFormSchema>): Promise<void> => {
+  const onSubmit = async (values: z.infer<typeof ticketFormSchema>) => {
     if (!selectedOrder || !session?.user?.email) {
       toast.error("Could not submit ticket. User or order not found.")
       return
@@ -126,7 +126,7 @@ export default function OrdersPage() {
     const toastId = toast.loading("Submitting ticket...")
 
     try {
-      const { error: invokeError } = await supabase.functions.invoke('support-ticket', {
+      const { error } = await supabase.functions.invoke('support-ticket', {
         body: {
           orderId: selectedOrder.id,
           userEmail: session.user.email,
@@ -134,13 +134,13 @@ export default function OrdersPage() {
         },
       })
 
-      if (invokeError) throw new Error(invokeError.message)
+      if (error) throw new Error(error.message)
 
       toast.success("Support ticket submitted successfully!", { id: toastId })
       setIsTicketDialogOpen(false)
     } catch (error: any) {
       console.error("Failed to submit ticket:", error)
-      toast.error(`Failed to submit ticket: ${(error as Error).message}`, { id: toastId })
+      toast.error(`Failed to submit ticket: ${error.message}`, { id: toastId })
     }
   }
 
@@ -185,7 +185,7 @@ export default function OrdersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order: Order) => (
+                  {orders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">
                         <Link href={`/account/orders/${order.id}`} className="text-blue-600 hover:underline">
@@ -194,11 +194,9 @@ export default function OrdersPage() {
                       </TableCell>
                       <TableCell>{format(new Date(order.created_at), 'PPP')}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell>
+                      <TableCell>{order.status}</TableCell>
                       <TableCell>
-                        {order.status}
-                      </TableCell>
-                      <TableCell>
-                        {order.order_items.map((item: OrderItem, index: number) => (
+                        {order.order_items.map((item, index) => (
                           <div key={item.id}>
                             {item.quantity} x {item.products?.[0]?.name || `Product ${item.product_id}`}
                             {index < order.order_items.length - 1 ? ',' : ''}
@@ -206,7 +204,7 @@ export default function OrdersPage() {
                         ))}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => handleOpenTicketDialog(order) as unknown as ButtonProps}>
+                        <Button variant="outline" size="sm" onClick={() => handleOpenTicketDialog(order)}>
                           Open a Ticket
                         </Button>
                       </TableCell>

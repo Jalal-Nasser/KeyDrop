@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent, type Editor } from "@tiptap/react"
+import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { Toolbar } from "./editor-toolbar"
 
@@ -10,23 +10,13 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
-  const editor: Editor | null = useEditor({
-    extensions: [
-      StarterKit.configure({
-        // Explicitly enable all features used in the toolbar to ensure types are picked up
-        bold: true,
-        italic: true,
-        bulletList: true,
-        orderedList: true,
-        heading: {
-          levels: [2], // Only allow H2 as per toolbar
-        },
-        codeBlock: true,
-        blockquote: true,
-        history: true, // For undo/redo
-        horizontalRule: true,
-      }),
-    ],
+  const editor = useEditor({
+    extensions: [StarterKit.configure({
+      // Exclude heading levels that are not in the toolbar
+      heading: {
+        levels: [2],
+      },
+    })],
     content: value,
     editorProps: {
       attributes: {
@@ -34,8 +24,8 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           "prose dark:prose-invert prose-sm sm:prose-base max-w-none rounded-md border min-h-[150px] border-input bg-background px-3 py-2 focus:outline-none",
       },
     },
-    onUpdate({ editor: updatedEditor }) {
-      onChange(updatedEditor.getHTML())
+    onUpdate({ editor }) {
+      onChange(editor.getHTML())
     },
   })
 

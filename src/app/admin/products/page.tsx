@@ -7,11 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ProductForm } from "@/components/admin/product-form"
+import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createSupabaseServerClient } from "@/lib/supabaseServer" // New import
 
 export default async function ProductsPage() {
-  const supabase = createSupabaseServerClient()
+  const supabase = createSupabaseServerClient() // Use the new utility function
   const { data: products, error } = await supabase
     .from("products")
     .select("*")
@@ -38,7 +39,7 @@ export default async function ProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(products as Product[])?.map((product: Product) => (
+            {(products as Product[])?.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.id}</TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>

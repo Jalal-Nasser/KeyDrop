@@ -5,13 +5,12 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
   SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
-import { ShoppingCart, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "./ui/separator"
@@ -32,16 +31,6 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
-          {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {cartCount}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Shopping Cart ({cartCount})</SheetTitle>
