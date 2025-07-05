@@ -1,4 +1,4 @@
-# WordPress
+# eCommerce Store
 
 *Automatically synced with your [v0.dev](https://v0.dev) deployments*
 
@@ -8,19 +8,11 @@
 ## Overview
 
 This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+Switched to Dyad APP
 
 ## Deployment
+Local Desktop APP Dyad
 
-Your project is live at:
-
-**[https://vercel.com/installify/v0-word-press](https://vercel.com/installify/v0-word-press)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/qArvQn0u6ak](https://v0.dev/chat/projects/qArvQn0u6ak)**
 
 ## How It Works
 
