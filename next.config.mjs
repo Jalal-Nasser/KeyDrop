@@ -6,7 +6,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Removed images: { unoptimized: true } as it's not needed for server-rendered builds
+  output: 'export', // Ensures a static HTML export for Netlify
 }
 
 export default nextConfig
