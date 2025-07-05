@@ -66,8 +66,12 @@ export default function AccountPage() {
           .single()
 
         if (data) {
-          form.reset(data)
-          setIsAdmin(data.is_admin || false)
+          // Explicitly convert nulls to empty strings for form fields
+          const cleanedData = Object.fromEntries(
+            Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
+          ) as ProfileFormValues; // Cast back to ProfileFormValues
+          form.reset(cleanedData);
+          setIsAdmin(data.is_admin || false);
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
