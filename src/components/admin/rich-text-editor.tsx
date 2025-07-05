@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent, type Editor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
-import { Toolbar } from "./editor-toolbar"
+import { Toolbar } from "./editor-toolbar" // Corrected import path
 
 interface RichTextEditorProps {
   value: string

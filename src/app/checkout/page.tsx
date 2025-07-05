@@ -118,7 +118,7 @@ export default function CheckoutPage() {
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
-  const isProfileValid = checkoutSchema.safeParse(profile).success
+  const isProfileValid = profile ? checkoutSchema.safeParse(profile).success : false; // Ensure profile is not null
 
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
@@ -198,7 +198,14 @@ export default function CheckoutPage() {
               <Card>
                 <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
                 <CardContent>
-                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                  {!session ? (
+                    <div className="text-center text-destructive">
+                      <p>You must be signed in to complete your purchase.</p>
+                      <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                    </div>
+                  ) : (
+                    <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                  )}
                 </CardContent>
               </Card>
             </div>
