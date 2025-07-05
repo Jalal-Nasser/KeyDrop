@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Removed 'output: 'export'' to enable Server Actions.
-  basePath: '/KeyDrop', // Set to your GitHub repository name
+  // Removed basePath to fix 404 in Dyad preview.
   eslint: {
     ignoreDuringBuilds: true,
   },
