@@ -18,9 +18,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import cl
 // Gets the correct image path from the product data.
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg";
-  // Use the first image if it's an array (assuming it's the primary one).
-  if (Array.isArray(image)) return image[0];
-  return image;
+  const imgPath = Array.isArray(image) ? image[0] : image;
+  // Check if it's already a full URL or starts with /
+  if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('/')) {
+    return imgPath;
+  }
+  // Assume it's a filename in public/images
+  return `/images/${imgPath}`;
 }
 
 interface WeeklyProductsProps {
@@ -98,11 +102,11 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative pt-6" // Added relative and pt-6
               >
                 {product.is_on_sale && product.sale_percent && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                  <div className="absolute top-0 left-0 right-0 text-center py-1" style={{ backgroundColor: "#dc3545" }}>
+                    <span className="text-white text-xs font-semibold">
                       SALE {product.sale_percent}%
                     </span>
                   </div>
@@ -163,7 +167,14 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
       <Dialog open={isQuickViewOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl p-0 gap-0 max-h-[90vh] overflow-y-auto">
           {selectedProduct && (
-            <div className="flex flex-col md:flex-row md:gap-8 h-full">
+            <div className="flex flex-col md:flex-row md:gap-8 h-full relative pt-8"> {/* Added relative and pt-8 */}
+              {selectedProduct.is_on_sale && selectedProduct.sale_percent && (
+                <div className="absolute top-0 left-0 right-0 text-center py-2 rounded-t-lg" style={{ backgroundColor: "#dc3545" }}>
+                  <span className="text-white text-sm font-semibold">
+                    SALE {selectedProduct.sale_percent}%
+                  </span>
+                </div>
+              )}
               <div className="flex-1 flex-shrink-0 flex items-center justify-center bg-gray-100 p-4 md:rounded-l-lg">
                 <Image
                   src={getImagePath(selectedProduct.image)}

@@ -12,8 +12,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import cl
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
-  if (Array.isArray(image)) return image[0]
-  return image
+  const imgPath = Array.isArray(image) ? image[0] : image;
+  // Check if it's already a full URL or starts with /
+  if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('/')) {
+    return imgPath;
+  }
+  // Assume it's a filename in public/images
+  return `/images/${imgPath}`;
 }
 
 export default function ProductPage({ params }: { params: { id: string } }) {
@@ -76,7 +81,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md">
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md relative pt-10"> {/* Added relative and pt-10 */}
+        {/* Sale Badge for single product page */}
+        {product.is_on_sale && product.sale_percent && (
+          <div className="absolute top-0 left-0 right-0 text-center py-2 rounded-t-lg" style={{ backgroundColor: "#dc3545" }}>
+            <span className="text-white text-sm font-semibold">
+              SALE {product.sale_percent}%
+            </span>
+          </div>
+        )}
         {/* Product Image */}
         <div className="md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4 relative">
           <Image
@@ -86,13 +99,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             height={500}
             className="object-contain max-h-[500px] w-full"
           />
-          {product.is_on_sale && product.sale_percent && (
-            <div className="absolute top-4 left-4 z-10">
-              <span className="text-white text-sm px-3 py-1 rounded-full font-semibold" style={{ backgroundColor: "#dc3545" }}>
-                SALE {product.sale_percent}%
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Product Details */}
