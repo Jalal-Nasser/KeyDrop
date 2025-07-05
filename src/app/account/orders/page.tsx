@@ -8,6 +8,7 @@ import * as z from "zod"
 import { format } from "date-fns"
 import Link from "next/link"
 import { toast } from "sonner"
+import type { ChangeEvent } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -90,7 +91,7 @@ export default function OrdersPage() {
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('orders')
           .select(`
             id, created_at, total, status,
@@ -99,7 +100,7 @@ export default function OrdersPage() {
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (fetchError) throw fetchError
         setOrders(data as Order[])
       } catch (err: any) {
         console.error("Error fetching orders:", err)
@@ -126,7 +127,7 @@ export default function OrdersPage() {
     const toastId = toast.loading("Submitting ticket...")
 
     try {
-      const { error } = await supabase.functions.invoke('support-ticket', {
+      const { error: invokeError } = await supabase.functions.invoke('support-ticket', {
         body: {
           orderId: selectedOrder.id,
           userEmail: session.user.email,
@@ -134,7 +135,7 @@ export default function OrdersPage() {
         },
       })
 
-      if (error) throw new Error(error.message)
+      if (invokeError) throw new Error(invokeError.message)
 
       toast.success("Support ticket submitted successfully!", { id: toastId })
       setIsTicketDialogOpen(false)
@@ -185,7 +186,7 @@ export default function OrdersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => (
+                  {orders.map((order: Order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">
                         <Link href={`/account/orders/${order.id}`} className="text-blue-600 hover:underline">
@@ -196,7 +197,7 @@ export default function OrdersPage() {
                       <TableCell>${order.total.toFixed(2)}</TableCell>
                       <TableCell>{order.status}</TableCell>
                       <TableCell>
-                        {order.order_items.map((item, index) => (
+                        {order.order_items.map((item: OrderItem, index: number) => (
                           <div key={item.id}>
                             {item.quantity} x {item.products?.[0]?.name || `Product ${item.product_id}`}
                             {index < order.order_items.length - 1 ? ',' : ''}

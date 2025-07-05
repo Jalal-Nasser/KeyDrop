@@ -31,14 +31,13 @@ interface WeeklyProductsProps {
 export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const displayProducts = [...products].slice(0, limit)
+  const displayProducts: Product[] = [...(products as Product[])].slice(0, limit)
   const { addToCart } = useCart()
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
 
   const handleQuickViewClick = (product: Product) => {
     setSelectedProduct(product);
     setQuickViewQuantity(1);
-    setIsQuickViewOpen(true);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -55,7 +54,7 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(displayProducts as Product[]).map((product) => (
+            {displayProducts.map((product: Product) => (
               <div
                 key={product.id}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
@@ -75,7 +74,7 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
                       alt={product.name}
                       width={200}
                       height={200}
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      className="object-contain w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
                     />
                   </div>
                   <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>

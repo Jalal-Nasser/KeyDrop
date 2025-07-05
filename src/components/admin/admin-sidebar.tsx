@@ -2,13 +2,19 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package } from "lucide-react"
+import { Home, Package, LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
 
 export function AdminSidebar() {
   const pathname = usePathname()
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { href: "/admin", label: "Dashboard", icon: Home },
     { href: "/admin/products", label: "Products", icon: Package },
   ]
@@ -19,7 +25,7 @@ export function AdminSidebar() {
         <h2 className="text-2xl font-bold text-primary">Admin Panel</h2>
       </div>
       <nav className="flex flex-col p-4 space-y-2">
-        {navItems.map((item) => (
+        {navItems.map((item: NavItem) => (
           <Link
             key={item.href}
             href={item.href}

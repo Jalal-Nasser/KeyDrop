@@ -4,7 +4,12 @@ import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
-const slides = [
+interface Slide {
+  caption: string;
+  image: string;
+}
+
+const slides: Slide[] = [
 	{ caption: "Just Started", image: "/images/layerslider-02-bear.png" },
 	{ caption: "Lets Paint it", image: "/images/layerslider-03-cat.png" },
 ]
@@ -46,7 +51,7 @@ export function HeroSlider() {
 				<button
 					className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
 					onClick={() =>
-						setCurrentSlide((prev) =>
+						setCurrentSlide((prev: number) =>
 							prev === 0 ? slides.length - 1 : prev - 1
 						)
 					}
@@ -59,7 +64,7 @@ export function HeroSlider() {
 				<button
 					className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
 					onClick={() =>
-						setCurrentSlide((prev) =>
+						setCurrentSlide((prev: number) =>
 							prev === slides.length - 1 ? 0 : prev + 1
 						)
 					}
@@ -71,7 +76,7 @@ export function HeroSlider() {
 
 			{/* Dots - kept below the image */}
 			<div className="mt-6 flex justify-center gap-2">
-				{slides.map((_, i) => (
+				{slides.map((_: Slide, i: number) => (
 					<span
 						key={i}
 						className={`h-2 w-2 rounded-full ${

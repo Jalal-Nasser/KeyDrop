@@ -14,6 +14,7 @@ import { Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "./ui/separator"
+import type { CartItem } from "@/types/cart"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -39,7 +40,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
           <>
             <div className="flex-1 overflow-y-auto pr-4 -mr-4">
               <div className="space-y-4">
-                {cartItems.map(item => (
+                {cartItems.map((item: CartItem) => (
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white">
                       <Image
@@ -52,7 +53,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-g.-]+/g, "")).toFixed(2)}
+                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-9.-]+/g, "")).toFixed(2)}
                       </p>
                     </div>
                     <Button

@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Trash2, Minus, Plus, ShieldCheck } from "lucide-react"
+import type { ChangeEvent } from "react"
+import type { Product } from "@/types/product"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -19,11 +21,11 @@ const getImagePath = (image: string | string[] | undefined): string => {
 }
 
 const Stepper = ({ step }: { step: number }) => {
-  const steps = ["Shopping Cart", "Checkout", "Order Status"]
+  const steps: string[] = ["Shopping Cart", "Checkout", "Order Status"]
   return (
     <div className="flex items-center justify-center w-full py-8">
       <div className="flex items-center justify-between w-full max-w-2xl">
-        {steps.map((name, index) => (
+        {steps.map((name: string, index: number) => (
           <React.Fragment key={name}>
             <div className="flex flex-col items-center text-center">
               <div
@@ -109,7 +111,7 @@ export default function CartPage() {
                         <Input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => updateQuantity(item.id, parseInt(e.target.value, 10) || 1)}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => updateQuantity(item.id, parseInt(e.target.value, 10) || 1)}
                           className="w-12 h-8 text-center border-x border-y-0 focus-visible:ring-0"
                         />
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
@@ -117,7 +119,7 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium text-right">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
+                    <div className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
                   </div>
                 ))}
               </div>

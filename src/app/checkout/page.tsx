@@ -19,18 +19,20 @@ import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
 import { Loader2 } from "lucide-react"
+import type { ControllerRenderProps } from "react-hook-form"
+import type { Product } from "@/types/product"
 
 const checkoutSchema = z.object({
-  first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
-  last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
-  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  address_line_1: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Address is required")),
-  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  city: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "City is required")),
-  state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
-  postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
-  country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
+  first_name: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "First name is required")),
+  last_name: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Last name is required")),
+  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
+  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
+  address_line_1: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Address is required")),
+  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
+  city: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "City is required")),
+  state_province_region: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "State/Province/Region is required")),
+  postal_code: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Postal code is required")),
+  country: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Country is required")),
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
@@ -42,11 +44,11 @@ const getImagePath = (image: string | string[] | undefined): string => {
 }
 
 const Stepper = ({ step }: { step: number }) => {
-  const steps = ["Shopping Cart", "Checkout", "Order Status"]
+  const steps: string[] = ["Shopping Cart", "Checkout", "Order Status"]
   return (
     <div className="flex items-center justify-center w-full py-4">
       <div className="flex items-center justify-between w-full max-w-md">
-        {steps.map((name, index) => (
+        {steps.map((name: string, index: number) => (
           <React.Fragment key={name}>
             <div className="flex flex-col items-center text-center">
               <div
@@ -100,8 +102,8 @@ export default function CheckoutPage() {
           .single()
 
         if (data) {
-          form.reset(data)
-          setProfile(data)
+          form.reset(data as CheckoutFormValues)
+          setProfile(data as CheckoutFormValues)
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -131,6 +133,7 @@ export default function CheckoutPage() {
           <p className="ml-4">Loading your details...</p>
         </div>
       )
+    )
     }
 
     if (!isProfileValid) {
@@ -222,22 +225,22 @@ export default function CheckoutPage() {
                 <Form {...form}>
                   <form className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="first_name" render={({ field }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="last_name" render={({ field }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "first_name"> }) => (<FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "last_name"> }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="company_name" render={({ field }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="vat_number" render={({ field }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "company_name"> }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "vat_number"> }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
-                    <FormField control={form.control} name="address_line_1" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="address_line_2" render={({ field }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_1"> }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "address_line_2"> }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="state_province_region" render={({ field }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "city"> }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "state_province_region"> }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="postal_code" render={({ field }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "postal_code"> }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<CheckoutFormValues, "country"> }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                   </form>
                 </Form>

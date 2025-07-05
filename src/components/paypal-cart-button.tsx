@@ -5,6 +5,7 @@ import { useSession } from "@/context/session-context"
 import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
+import type { CreateOrderActions, OnApproveActions, OnApproveData } from "@paypal/react-paypal-js"
 
 interface PayPalCartButtonProps {
   cartTotal: number
@@ -21,7 +22,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
     return parseFloat(price.replace(/[^0-9.-]+/g, ""))
   }
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async (): Promise<void> => {
     if (!session) return
 
     const { error } = await supabase
@@ -37,7 +38,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
     }
   }
 
-  const createOrder = async (data: any, actions: any) => {
+  const createOrder = async (data: Record<string, unknown>, actions: CreateOrderActions) => {
     if (!session) {
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
@@ -66,7 +67,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
     })
   }
 
-  const onApprove = async (data: any, actions: any) => {
+  const onApprove = async (data: OnApproveData, actions: OnApproveActions) => {
     if (!actions.order) {
       toast.error("Something went wrong with the PayPal order. Please try again.")
       return Promise.reject(new Error("Order actions not available"))
@@ -95,7 +96,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           return
         }
 
-        const orderItems = cartItems.map(item => ({
+        const orderItems = cartItems.map((item: CartItem) => ({
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
@@ -118,7 +119,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
     }
   }
 
-  const onError = (err: any) => {
+  const onError = (err: Record<string, unknown>) => {
     toast.error("An error occurred during the transaction. Please try again.")
     console.error("PayPal Error:", err)
   }

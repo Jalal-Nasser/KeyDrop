@@ -27,6 +27,7 @@ import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
+import type { ControllerRenderProps } from "react-hook-form"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,6 +36,8 @@ const productSchema = z.object({
   image: z.string().optional(),
 })
 
+type ProductFormValues = z.infer<typeof productSchema>
+
 interface ProductFormProps {
   product?: Product
 }
@@ -42,7 +45,7 @@ interface ProductFormProps {
 export function ProductForm({ product }: ProductFormProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const form = useForm<z.infer<typeof productSchema>>({
+  const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || "",
@@ -52,16 +55,14 @@ export function ProductForm({ product }: ProductFormProps) {
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    let result;
+  const onSubmit = async (values: ProductFormValues) => {
+    let result: { error: string | null };
     if (product) {
       // If product exists, it's an update operation.
-      // Using '!' here to assert that 'product' is not undefined,
-      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
-      result = await updateProduct(product!.id, values);
+      result = await updateProduct(product.id, values);
     } else {
       // If product does not exist, it's a create operation
-      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+      result = await createProduct(undefined, values);
     }
 
     if (result.error) {
@@ -74,7 +75,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
   const handleDelete = async () => {
     if (product) { // This check ensures 'product' is defined before proceeding
-      const result = await deleteProduct(product.id)
+      const result: { error: string | null } = await deleteProduct(product.id)
       if (result.error) {
         toast.error(result.error)
       } else {
@@ -100,7 +101,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <FormField
               control={form.control}
               name="name"
-              render={({ field }) => (
+              render={({ field }: { field: ControllerRenderProps<ProductFormValues, "name"> }) => (
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
                   <FormControl><Input {...field} /></FormControl>
@@ -111,7 +112,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <FormField
               control={form.control}
               name="price"
-              render={({ field }) => (
+              render={({ field }: { field: ControllerRenderProps<ProductFormValues, "price"> }) => (
                 <FormItem>
                   <FormLabel>Price</FormLabel>
                   <FormControl><Input {...field} placeholder="$XX.XX" /></FormControl>
@@ -122,7 +123,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => (
+              render={({ field }: { field: ControllerRenderProps<ProductFormValues, "image"> }) => (
                 <FormItem>
                   <FormLabel>Image URL</FormLabel>
                   <FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl>
@@ -133,7 +134,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <FormField
               control={form.control}
               name="description"
-              render={({ field }) => (
+              render={({ field }: { field: ControllerRenderProps<ProductFormValues, "description"> }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
