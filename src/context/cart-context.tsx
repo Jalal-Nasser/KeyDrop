@@ -115,11 +115,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
   const cartTotal = cartItems.reduce((total, item) => {
-    // Use sale_price if available and product is on sale, otherwise use original price
-    const effectivePrice = item.is_on_sale && item.sale_price
-      ? parsePrice(item.sale_price)
-      : parsePrice(item.price);
-    return total + effectivePrice * item.quantity
+    const price = parsePrice(item.price)
+    return total + price * item.quantity
   }, 0)
 
   return (

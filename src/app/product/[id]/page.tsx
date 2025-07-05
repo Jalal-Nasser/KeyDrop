@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { notFound } from "next/navigation"
+import products from "@/data/products.json"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Loader2 } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { PayPalButton } from "@/components/paypal-button"
 import { Product } from "@/types/product"
 import { useCart } from "@/context/cart-context"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -19,31 +19,15 @@ const getImagePath = (image: string | string[] | undefined): string => {
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClientComponentClient()
 
   const productId = parseInt(params.id)
+  const product: Product | undefined = (products as Product[]).find(
+    (p) => p.id === productId
+  )
 
-  useEffect(() => {
-    async function fetchProduct() {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single()
-
-      if (error || !data) {
-        console.error("Error fetching product:", error)
-        notFound() // Redirect to 404 if product not found or error
-      } else {
-        setProduct(data as Product)
-      }
-      setLoading(false)
-    }
-    fetchProduct()
-  }, [productId, supabase])
+  if (!product) {
+    notFound()
+  }
 
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) => Math.max(1, prev + amount))
@@ -55,26 +39,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="container mx-auto flex justify-center items-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading product details...</p>
-      </div>
-    )
-  }
-
-  if (!product) {
-    return null // Should be handled by notFound() above, but for safety
-  }
-
-  const displayPrice = product.is_on_sale && product.sale_price ? product.sale_price : product.price;
-
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md">
         {/* Product Image */}
-        <div className="md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4 relative">
+        <div className="md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4">
           <Image
             src={getImagePath(product.image)}
             alt={product.name}
@@ -82,13 +51,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             height={500}
             className="object-contain max-h-[500px] w-full"
           />
-          {product.is_on_sale && (
-            <div className="absolute top-4 left-4 z-10">
-              <span className="text-white text-sm px-3 py-1 rounded-full font-semibold" style={{ backgroundColor: "#dc3545" }}>
-                SALE {product.sale_percent ? `${product.sale_percent.toFixed(0)}% OFF` : ""}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Product Details */}
@@ -98,14 +60,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </h1>
 
           <p className="text-3xl font-semibold text-blue-600 mb-6">
-            {product.is_on_sale && product.sale_price ? (
-              <>
-                <span className="text-gray-500 line-through mr-3 text-2xl">{product.price}</span>
-                <span>{product.sale_price}</span>
-              </>
-            ) : (
-              <span>{product.price}</span>
-            )}
+            {product.price}
           </p>
 
           <div
