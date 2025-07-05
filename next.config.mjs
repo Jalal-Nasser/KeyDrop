@@ -7,6 +7,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   output: 'export', // Ensures a static HTML export for Netlify
+  images: {
+    unoptimized: true, // Disable image optimization for static export
+  },
 }
 
 export default nextConfig
