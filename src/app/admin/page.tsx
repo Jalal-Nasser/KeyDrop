@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
 
 export default function AdminDashboardPage() {
   return (
@@ -31,14 +30,6 @@ export default function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
-      <div className="max-w-4xl mx-auto py-10">
-        <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
-        <ul className="space-y-4">
-          <li><Link href="/admin/products" className="text-blue-600 underline">Manage Products</Link></li>
-          <li><Link href="/admin/sections" className="text-blue-600 underline">Manage Section Content</Link></li>
-          <li><Link href="/admin/contact-submissions" className="text-blue-600 underline">View Contact Submissions</Link></li>
-        </ul>
       </div>
     </div>
   )

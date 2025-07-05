@@ -1,13 +1,7 @@
-import { Shield, Zap, Users, Award, LucideIcon } from "lucide-react"
-
-interface Feature {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}
+import { Shield, Zap, Users, Award } from "lucide-react"
 
 export function FeaturesSection() {
-  const features: Feature[] = [
+  const features = [
     {
       icon: Shield,
       title: "Secure & Reliable",
@@ -41,7 +35,7 @@ export function FeaturesSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature: Feature, index: number) => (
+          {features.map((feature, index) => (
             <div key={index} className="text-center group">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6 group-hover:bg-blue-600 transition-colors">
                 <feature.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors" />

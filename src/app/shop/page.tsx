@@ -28,9 +28,9 @@ export default function ShopPage() {
             </p>
           </div>
 
-          {(products as Product[]).length > 0 ? (
+          {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {(products as Product[]).map((product: Product) => (
+              {(products as Product[]).map((product) => (
                 <div
                   key={product.id}
                   className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300"

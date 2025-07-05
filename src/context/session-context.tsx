@@ -17,23 +17,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        setSession(session)
-      } catch (error: any) {
-        console.error("Error fetching session:", error)
-      } finally {
-        setLoading(false)
-      }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      setSession(session)
+      setLoading(false)
     }
 
     getSession()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
 
@@ -42,7 +37,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionContext.Provider value={{ session, supabase }}>
-      {!loading ? children : null}
+      {!loading && children}
     </SessionContext.Provider>
   )
 }

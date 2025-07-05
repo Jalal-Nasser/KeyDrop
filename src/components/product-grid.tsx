@@ -1,9 +1,8 @@
 import products from "@/data/products.json"
-import type { Product } from "@/types/product"
 
 export function ProductGrid() {
   // Using local product data instead of fetching from WordPress
-  const displayProducts: Product[] = (products as Product[]).slice(0, 12)
+  const displayProducts = products.slice(0, 12)
 
   return (
     <section className="py-16 bg-gray-50">
@@ -17,7 +16,7 @@ export function ProductGrid() {
 
         {displayProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayProducts.map((product: Product) => (
+            {displayProducts.map((product: any) => (
               <div
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
@@ -59,18 +58,18 @@ export function ProductGrid() {
                     </p>
                   )}
 
-                  {product.price && (
-                    <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
+                    {product.price && (
                       <div className="text-lg font-bold text-blue-600">
                         <span>{product.price}</span>
                       </div>
-                      <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  )}
+                    )}
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

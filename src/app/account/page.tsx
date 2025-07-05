@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Image from "next/image"
 import { useSession } from "@/context/session-context"
 import { useForm } from "react-hook-form"
@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
 import md5 from "crypto-js/md5"
-import type { ControllerRenderProps } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,23 +22,22 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import Link from "next/link"
 
 const profileSchema = z.object({
-  first_name: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "First name is required")),
-  last_name: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Last name is required")),
-  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
-  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
-  address_line_1: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Address is required")),
-  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val as string),
-  city: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "City is required")),
-  state_province_region: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "State/Province/Region is required")),
-  postal_code: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Postal code is required")),
-  country: z.string().nullable().transform(val => val === null ? "" : val as string).pipe(z.string().min(1, "Country is required")),
+  first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
+  last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
+  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  address_line_1: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Address is required")),
+  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val),
+  city: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "City is required")),
+  state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
+  postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
+  country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
 
 export default function AccountPage() {
   const { session, supabase } = useSession()
-  const [isAdmin, setIsAdmin] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -67,12 +65,7 @@ export default function AccountPage() {
           .single()
 
         if (data) {
-          // Explicitly convert nulls to empty strings for form fields
-          const cleanedData = Object.fromEntries(
-            Object.entries(data).map(([key, value]: [string, any]) => [key, value === null ? "" : value])
-          ) as ProfileFormValues; // Cast back to ProfileFormValues
-          form.reset(cleanedData);
-          setIsAdmin(data.is_admin || false);
+          form.reset(data)
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -98,7 +91,7 @@ export default function AccountPage() {
   }
 
   const getGravatarUrl = (email: string) => {
-    const hash = md5(email.trim().toLowerCase()).toString();
+    const hash = md5(email.trim().toLowerCase());
     return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=64`;
   };
 
@@ -144,51 +137,46 @@ export default function AccountPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="first_name" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "first_name"> }) => (
+                <FormField control={form.control} name="first_name" render={({ field }) => (
                   <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="last_name" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "last_name"> }) => (
+                <FormField control={form.control} name="last_name" render={({ field }) => (
                   <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="company_name" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "company_name"> }) => (
+                <FormField control={form.control} name="company_name" render={({ field }) => (
                   <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="vat_number" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "vat_number"> }) => (
+                <FormField control={form.control} name="vat_number" render={({ field }) => (
                   <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <FormField control={form.control} name="address_line_1" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "address_line_1"> }) => (
+              <FormField control={form.control} name="address_line_1" render={({ field }) => (
                 <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="address_line_2" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "address_line_2"> }) => (
+              <FormField control={form.control} name="address_line_2" render={({ field }) => (
                 <FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="city" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "city"> }) => (
+                <FormField control={form.control} name="city" render={({ field }) => (
                   <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="state_province_region" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "state_province_region"> }) => (
+                <FormField control={form.control} name="state_province_region" render={({ field }) => (
                   <FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="postal_code" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "postal_code"> }) => (
+                <FormField control={form.control} name="postal_code" render={({ field }) => (
                   <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="country" render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "country"> }) => (
+                <FormField control={form.control} name="country" render={({ field }) => (
                   <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
                 <Button type="submit" className="w-full sm:w-auto">Update Profile</Button>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                   {isAdmin && (
-                    <Button asChild className="w-full sm:w-auto">
-                      <Link href="/admin">Admin Panel</Link>
-                    </Button>
-                  )}
                    <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/account/orders">View Order History</Link>
                   </Button>

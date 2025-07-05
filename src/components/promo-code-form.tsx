@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import type { ControllerRenderProps } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,7 +35,7 @@ export function PromoCodeForm() {
         <FormField
           control={form.control}
           name="promo_code"
-          render={({ field }: { field: ControllerRenderProps<PromoCodeFormValues, "promo_code"> }) => (
+          render={({ field }) => (
             <FormItem className="flex-grow">
               <FormLabel className="sr-only">Promo Code</FormLabel>
               <FormControl>

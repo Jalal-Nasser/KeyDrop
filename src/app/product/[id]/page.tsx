@@ -22,7 +22,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const productId = parseInt(params.id)
   const product: Product | undefined = (products as Product[]).find(
-    (p: Product) => p.id === productId
+    (p) => p.id === productId
   )
 
   if (!product) {
@@ -30,7 +30,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   }
 
   const handleQuantityChange = (amount: number) => {
-    setQuantity((prev: number) => Math.max(1, prev + amount))
+    setQuantity((prev) => Math.max(1, prev + amount))
   }
 
   const handleAddToCart = () => {

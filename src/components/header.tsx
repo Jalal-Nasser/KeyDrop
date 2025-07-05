@@ -10,11 +10,6 @@ import { AuthSheet } from "@/components/auth-sheet"
 import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
 
-interface NavLink {
-  href: string;
-  label: string;
-}
-
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
@@ -26,7 +21,7 @@ export function Header() {
   const { session } = useSession()
   const { cartCount, cartTotal } = useCart()
 
-  const navLinks: NavLink[] = [
+  const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About US" },
     { href: "/shop", label: "Shop" },
@@ -155,7 +150,7 @@ export function Header() {
                 />
               )}
               <div className="flex relative">
-                {navLinks.map((link: NavLink) => (
+                {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
@@ -184,14 +179,11 @@ export function Header() {
 
       <StoreNotice />
 
-      {/* White banner below the red Store Notice */}
-      <div style={{ height: 40, background: 'white' }} />
-
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="lg:hidden" style={{ backgroundColor: "#1e73be" }}>
           <div className="px-4 py-2 space-y-1">
-            {navLinks.map((link: NavLink) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

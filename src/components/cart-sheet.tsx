@@ -5,16 +5,16 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
   SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
-import { Trash2 } from "lucide-react"
+import { ShoppingCart, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "./ui/separator"
-import type { CartItem } from "@/types/cart"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -32,6 +32,16 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="relative">
+          <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {cartCount}
+            </span>
+          )}
+        </Button>
+      </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Shopping Cart ({cartCount})</SheetTitle>
@@ -40,7 +50,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
           <>
             <div className="flex-1 overflow-y-auto pr-4 -mr-4">
               <div className="space-y-4">
-                {cartItems.map((item: CartItem) => (
+                {cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white">
                       <Image
@@ -53,7 +63,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-9.-]+/g, "")).toFixed(2)}
+                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-g.-]+/g, "")).toFixed(2)}
                       </p>
                     </div>
                     <Button
