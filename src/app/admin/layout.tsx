@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { cookies } from "next/headers" // Import cookies here to log them
 
 export default async function AdminLayout({
   children,
@@ -9,22 +10,29 @@ export default async function AdminLayout({
 }) {
   const supabase = createSupabaseServerClient()
 
-  let session = null;
+  // Log raw cookies to see if they are present
+  const allCookies = cookies().getAll();
+  console.log("AdminLayout: All cookies:", allCookies.map(c => c.name));
+  const sbCookie = allCookies.find(c => c.name.startsWith('sb-') && c.name.endsWith('-access-token'));
+  console.log("AdminLayout: Supabase access token cookie found:", !!sbCookie);
+
+
+  let user = null;
   try {
-    const { data: { session: fetchedSession }, error } = await supabase.auth.getSession();
+    const { data: { user: fetchedUser }, error } = await supabase.auth.getUser();
     if (error) throw error;
-    session = fetchedSession;
-    console.log("AdminLayout: Session fetched:", session ? "Exists" : "Null");
-    if (session) {
-      console.log("AdminLayout: Session user ID:", session.user.id);
+    user = fetchedUser;
+    console.log("AdminLayout: User fetched:", user ? "Exists" : "Null");
+    if (user) {
+      console.log("AdminLayout: User ID:", user.id);
     }
   } catch (error) {
-    console.error("AdminLayout: Error fetching session:", error);
-    redirect("/account"); // Redirect to account page on session fetch error
+    console.error("AdminLayout: Error fetching user:", error);
+    redirect("/account"); // Redirect to account page on user fetch error
   }
 
-  if (!session) {
-    console.log("AdminLayout: No session, redirecting to /account");
+  if (!user) {
+    console.log("AdminLayout: No user, redirecting to /account");
     redirect("/account");
   }
 
@@ -33,7 +41,7 @@ export default async function AdminLayout({
     const { data: fetchedProfile, error } = await supabase
       .from("profiles")
       .select("is_admin")
-      .eq("id", session.user.id)
+      .eq("id", user.id) // Use user.id here
       .single();
     if (error) throw error;
     profile = fetchedProfile;
