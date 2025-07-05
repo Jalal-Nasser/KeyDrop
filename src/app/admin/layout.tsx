@@ -14,12 +14,17 @@ export default async function AdminLayout({
     const { data: { session: fetchedSession }, error } = await supabase.auth.getSession();
     if (error) throw error;
     session = fetchedSession;
+    console.log("AdminLayout: Session fetched:", session ? "Exists" : "Null");
+    if (session) {
+      console.log("AdminLayout: Session user ID:", session.user.id);
+    }
   } catch (error) {
-    console.error("Error fetching session in AdminLayout:", error);
+    console.error("AdminLayout: Error fetching session:", error);
     redirect("/account"); // Redirect to account page on session fetch error
   }
 
   if (!session) {
+    console.log("AdminLayout: No session, redirecting to /account");
     redirect("/account");
   }
 
@@ -32,13 +37,15 @@ export default async function AdminLayout({
       .single();
     if (error) throw error;
     profile = fetchedProfile;
+    console.log("AdminLayout: Profile fetched:", profile);
   } catch (error) {
-    console.error("Error fetching profile in AdminLayout:", error);
+    console.error("AdminLayout: Error fetching profile:", error);
     // If profile fetch fails, assume not admin or redirect to account
     redirect("/account");
   }
 
   if (!profile?.is_admin) {
+    console.log("AdminLayout: User is not admin, showing access denied.");
     return (
       <div className="container mx-auto py-20 text-center">
         <h1 className="text-2xl font-bold">Access Denied</h1>
