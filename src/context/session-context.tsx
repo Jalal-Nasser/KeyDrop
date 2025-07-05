@@ -17,11 +17,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      setSession(session)
-      setLoading(false)
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        setSession(session)
+      } catch (error) {
+        console.error("Error fetching session:", error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getSession()
@@ -37,7 +42,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionContext.Provider value={{ session, supabase }}>
-      {!loading && children}
+      {!loading ? children : null}
     </SessionContext.Provider>
   )
 }
