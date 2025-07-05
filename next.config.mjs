@@ -6,7 +6,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: 'export', // Ensures a static HTML export for Netlify
+  // Removed 'output: 'export'' to allow API routes to function
   images: {
     unoptimized: true, // Disable image optimization for static export
   },
