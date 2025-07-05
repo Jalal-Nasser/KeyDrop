@@ -1,27 +1,42 @@
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
-import { createSupabaseServerClient } from "@/lib/supabaseServer" // New import
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createSupabaseServerClient() // Use the new utility function
+  const supabase = createSupabaseServerClient()
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) {
-    redirect("/account")
+  let session = null;
+  try {
+    const { data: { session: fetchedSession }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    session = fetchedSession;
+  } catch (error) {
+    console.error("Error fetching session in AdminLayout:", error);
+    redirect("/account"); // Redirect to account page on session fetch error
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", session.user.id)
-    .single()
+  if (!session) {
+    redirect("/account");
+  }
+
+  let profile = null;
+  try {
+    const { data: fetchedProfile, error } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .single();
+    if (error) throw error;
+    profile = fetchedProfile;
+  } catch (error) {
+    console.error("Error fetching profile in AdminLayout:", error);
+    // If profile fetch fails, assume not admin or redirect to account
+    redirect("/account");
+  }
 
   if (!profile?.is_admin) {
     return (
