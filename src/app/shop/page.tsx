@@ -1,12 +1,13 @@
 "use client"
 
-import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, ShoppingCart } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
+import { useEffect, useState } from "react"
+import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import client-side Supabase client
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -16,6 +17,45 @@ const getImagePath = (image: string | string[] | undefined): string => {
 
 export default function ShopPage() {
   const { addToCart } = useCart()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const supabase = createSupabaseBrowserClient()
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", { ascending: true })
+
+      if (error) {
+        console.error("Error fetching products:", error)
+        setError(error.message)
+      } else {
+        setProducts(data as Product[])
+      }
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [supabase])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto text-center py-20">
+        <p>Loading products...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto text-center py-20">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    )
+  }
 
   return (
     <main>
@@ -30,7 +70,7 @@ export default function ShopPage() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {(products as Product[]).map((product) => (
+              {products.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300"
@@ -44,6 +84,13 @@ export default function ShopPage() {
                         className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
+                    {product.is_on_sale && product.sale_percent && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                          SALE {product.sale_percent}%
+                        </span>
+                      </div>
+                    )}
                   </Link>
 
                   <div className="p-4 flex flex-col flex-grow">
@@ -55,7 +102,14 @@ export default function ShopPage() {
                     
                     <div className="mt-auto">
                       <div className="text-lg font-bold text-blue-600 mb-4">
-                        <span>{product.price}</span>
+                        {product.is_on_sale && product.sale_price ? (
+                          <>
+                            <span className="line-through text-gray-500 mr-2">${parseFloat(product.price).toFixed(2)}</span>
+                            <span>${parseFloat(product.sale_price).toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <span>${parseFloat(product.price).toFixed(2)}</span>
+                        )}
                       </div>
                       <Button 
                         className="w-full bg-blue-600 hover:bg-blue-700"

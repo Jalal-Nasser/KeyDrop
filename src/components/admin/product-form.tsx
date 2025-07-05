@@ -20,6 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription, // Added this import
 } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,12 +28,22 @@ import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  price: z.string().min(1, "Price is required"),
+  price: z.string().min(1, "Price is required").regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number with up to 2 decimal places."),
   description: z.string().optional(),
   image: z.string().optional(),
+  is_on_sale: z.boolean().default(false).optional(),
+  sale_price: z.string().optional().nullable().refine(
+    (val) => val === null || val === undefined || val === "" || /^\d+(\.\d{1,2})?$/.test(val),
+    "Sale price must be a valid number with up to 2 decimal places."
+  ),
+  sale_percent: z.preprocess(
+    (val) => (val === "" ? null : Number(val)),
+    z.number().min(0).max(100).nullable().optional()
+  ),
 })
 
 interface ProductFormProps {
@@ -49,19 +60,26 @@ export function ProductForm({ product }: ProductFormProps) {
       price: product?.price || "",
       description: product?.description || "",
       image: Array.isArray(product?.image) ? product.image[0] : product?.image || "",
+      is_on_sale: product?.is_on_sale || false,
+      sale_price: product?.sale_price || "",
+      sale_percent: product?.sale_percent || null,
     },
   })
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     let result;
+    const dataToSave = {
+      ...values,
+      // Ensure sale_price is null if not on sale or empty
+      sale_price: values.is_on_sale && values.sale_price ? values.sale_price : null,
+      // Ensure sale_percent is null if not on sale or empty
+      sale_percent: values.is_on_sale && values.sale_percent ? values.sale_percent : null,
+    };
+
     if (product) {
-      // If product exists, it's an update operation.
-      // Using '!' here to assert that 'product' is not undefined,
-      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
-      result = await updateProduct(product!.id, values);
+      result = await updateProduct(product.id, dataToSave);
     } else {
-      // If product does not exist, it's a create operation
-      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+      result = await createProduct(undefined, dataToSave);
     }
 
     if (result.error) {
@@ -73,7 +91,7 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (product) { // This check ensures 'product' is defined before proceeding
+    if (product) {
       const result = await deleteProduct(product.id)
       if (result.error) {
         toast.error(result.error)
@@ -83,6 +101,8 @@ export function ProductForm({ product }: ProductFormProps) {
       }
     }
   }
+
+  const isOnSale = form.watch("is_on_sale");
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -125,7 +145,7 @@ export function ProductForm({ product }: ProductFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image URL</FormLabel>
-                  <FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl>
+                  <FormControl><Input {...field} placeholder="https://example.com/image.webp" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -143,6 +163,54 @@ export function ProductForm({ product }: ProductFormProps) {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="is_on_sale"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Product is on Sale
+                    </FormLabel>
+                    <FormDescription>
+                      Check this box if the product is currently on sale.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            {isOnSale && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="sale_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sale Price</FormLabel>
+                      <FormControl><Input {...field} placeholder="$XX.XX" value={field.value ?? ""} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sale_percent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sale Percentage (%)</FormLabel>
+                      <FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))} placeholder="e.g., 25" value={field.value === null ? "" : String(field.value)} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             <DialogFooter className="pt-8">
               {product && (
                 <Button type="button" variant="destructive" onClick={handleDelete}>

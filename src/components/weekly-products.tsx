@@ -1,9 +1,8 @@
 "use client"
-import React, { useState } from "react"
-import products from "@/data/products.json"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
+import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser" // Import client-side Supabase client
 
 // Gets the correct image path from the product data.
 const getImagePath = (image: string | string[] | undefined): string => {
@@ -31,9 +31,32 @@ interface WeeklyProductsProps {
 export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const displayProducts = [...products].slice(0, limit)
   const { addToCart } = useCart()
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const supabase = createSupabaseBrowserClient()
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", { ascending: false }) // Order by ID descending to get "most sold" or recent
+        .limit(limit)
+
+      if (error) {
+        console.error("Error fetching products:", error)
+        setError(error.message)
+      } else {
+        setProducts(data as Product[])
+      }
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [limit, supabase])
 
   const handleQuickViewClick = (product: Product) => {
     setSelectedProduct(product);
@@ -48,6 +71,23 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto flex justify-center items-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading products...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto text-center py-20">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="py-16 bg-white">
@@ -55,15 +95,15 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(displayProducts as Product[]).map((product) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
               >
-                {(product as any).onSale && (
+                {product.is_on_sale && product.sale_percent && (
                   <div className="absolute top-2 left-2 z-10">
                     <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
-                      SALE {(product as any).salePercent || ""}
+                      SALE {product.sale_percent}%
                     </span>
                   </div>
                 )}
@@ -83,7 +123,14 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
 
                 <div className="mt-auto">
                   <div className="text-lg font-semibold text-gray-900 mb-4">
-                    <span>{product.price}</span>
+                    {product.is_on_sale && product.sale_price ? (
+                      <>
+                        <span className="line-through text-gray-500 mr-2 text-base">${parseFloat(product.price).toFixed(2)}</span>
+                        <span>${parseFloat(product.sale_price).toFixed(2)}</span>
+                      </>
+                    ) : (
+                      <span>${parseFloat(product.price).toFixed(2)}</span>
+                    )}
                   </div>
                   <Button
                     className="w-full mb-3 hover:brightness-90"
@@ -131,7 +178,16 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
                   <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
                 </DialogHeader>
                 
-                <p className="text-2xl font-semibold text-blue-600 mb-4">{selectedProduct.price}</p>
+                <div className="text-2xl font-semibold text-blue-600 mb-4">
+                  {selectedProduct.is_on_sale && selectedProduct.sale_price ? (
+                    <>
+                      <span className="line-through text-gray-500 mr-3 text-xl">${parseFloat(selectedProduct.price).toFixed(2)}</span>
+                      <span>${parseFloat(selectedProduct.sale_price).toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span>${parseFloat(selectedProduct.price).toFixed(2)}</span>
+                  )}
+                </div>
                 
                 <DialogDescription asChild>
                   <div
