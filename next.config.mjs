@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export', // Enables static HTML export
-  basePath: '/your-repository-name', // IMPORTANT: Replace with your GitHub repository name (e.g., '/dropskey-ecommerce')
+  basePath: '/KeyDrop', // Set to your GitHub repository name
   eslint: {
     ignoreDuringBuilds: true,
   },
