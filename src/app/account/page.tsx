@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
 import Image from "next/image"
 import { useSession } from "@/context/session-context"
 import { useForm } from "react-hook-form"
@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import md5 from "crypto-js/md5"
 import type { ControllerRenderProps } from "react-hook-form"
 
-import { Button } from "@/components/ui/button"
+import { Button, type ButtonProps } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Card,
@@ -39,7 +39,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>
 
 export default function AccountPage() {
   const { session, supabase } = useSession()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -58,7 +58,7 @@ export default function AccountPage() {
   })
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfile = async (): Promise<void> => {
       if (session) {
         const { data, error } = await supabase
           .from("profiles")
@@ -75,14 +75,14 @@ export default function AccountPage() {
           setIsAdmin(data.is_admin || false);
         }
         if (error && error.code !== 'PGRST116') {
-          toast.error("Could not fetch your profile information.")
+          toast.error(`Could not fetch your profile information: ${(error as Error).message}`)
         }
       }
     }
     fetchProfile()
   }, [session, supabase, form])
 
-  const onSubmit = async (values: ProfileFormValues) => {
+  const onSubmit = async (values: ProfileFormValues): Promise<void> => {
     if (!session) return
 
     const { error } = await supabase
@@ -91,7 +91,7 @@ export default function AccountPage() {
       .eq("id", session.user.id)
 
     if (error) {
-      toast.error(`Failed to update profile: ${error.message}`)
+      toast.error(`Failed to update profile: ${(error as Error).message}`)
     } else {
       toast.success("Profile updated successfully!")
     }
@@ -192,7 +192,7 @@ export default function AccountPage() {
                    <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/account/orders">View Order History</Link>
                   </Button>
-                  <Button onClick={() => supabase.auth.signOut()} variant="secondary" className="w-full sm:w-auto">
+                  <Button onClick={() => supabase.auth.signOut()} variant="secondary" className="w-full sm:w-auto" as unknown as ButtonProps>
                     Sign Out
                   </Button>
                 </div>

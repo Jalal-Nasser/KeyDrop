@@ -3,6 +3,7 @@
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import type { PostgrestError } from "@supabase/supabase-js"
 
 interface ProductData {
   name: string
@@ -15,7 +16,7 @@ export async function createProduct(_: any, formData: ProductData) {
   const supabase = createServerActionClient({ cookies })
   const { error } = await supabase.from("products").insert([formData])
   if (error) {
-    return { error: error.message }
+    return { error: (error as PostgrestError).message }
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")
@@ -27,7 +28,7 @@ export async function updateProduct(id: number | undefined, formData: ProductDat
   const supabase = createServerActionClient({ cookies })
   const { error } = await supabase.from("products").update(formData).eq("id", id)
   if (error) {
-    return { error: error.message }
+    return { error: (error as PostgrestError).message }
   }
   revalidatePath("/admin/products")
   revalidatePath(`/product/${id}`)
@@ -39,7 +40,7 @@ export async function deleteProduct(id: number) {
   const supabase = createServerActionClient({ cookies })
   const { error } = await supabase.from("products").delete().eq("id", id)
   if (error) {
-    return { error: error.message }
+    return { error: (error as PostgrestError).message }
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")

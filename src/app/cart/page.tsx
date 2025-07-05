@@ -1,16 +1,18 @@
 "use client"
 
-import React from "react"
+import React, { type ChangeEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
+import { Button, type ButtonProps } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Trash2, Minus, Plus, ShieldCheck } from "lucide-react"
+import type { Product } from "@/types/product"
+import type { CartItem } from "@/types/cart"
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -19,11 +21,11 @@ const getImagePath = (image: string | string[] | undefined): string => {
 }
 
 const Stepper = ({ step }: { step: number }) => {
-  const steps = ["Shopping Cart", "Checkout", "Order Status"]
+  const steps: string[] = ["Shopping Cart", "Checkout", "Order Status"]
   return (
     <div className="flex items-center justify-center w-full py-8">
       <div className="flex items-center justify-between w-full max-w-2xl">
-        {steps.map((name, index) => (
+        {steps.map((name: string, index: number) => (
           <React.Fragment key={name}>
             <div className="flex flex-col items-center text-center">
               <div
@@ -87,7 +89,7 @@ export default function CartPage() {
               </div>
               <Separator className="hidden md:block mb-4" />
               <div className="space-y-6">
-                {cartItems.map(item => (
+                {cartItems.map((item: CartItem) => (
                   <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                     <div className="col-span-2 flex items-center gap-4">
                       <div className="relative h-20 w-20 rounded-md overflow-hidden border bg-white flex-shrink-0">
@@ -95,7 +97,7 @@ export default function CartPage() {
                       </div>
                       <div>
                         <p className="font-medium">{item.name}</p>
-                        <Button variant="link" size="sm" className="text-red-500 p-0 h-auto" onClick={() => removeFromCart(item.id)}>
+                        <Button variant="link" size="sm" className="text-red-500 p-0 h-auto" onClick={() => removeFromCart(item.id) as unknown as ButtonProps}>
                           Remove
                         </Button>
                       </div>
@@ -103,21 +105,21 @@ export default function CartPage() {
                     <div className="font-medium">${parseFloat(item.price.replace(/[^0-9.-]+/g, "")).toFixed(2)}</div>
                     <div>
                       <div className="flex items-center border rounded-md w-fit">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1) as unknown as ButtonProps}>
                           <Minus className="h-4 w-4" />
                         </Button>
                         <Input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => updateQuantity(item.id, parseInt(e.target.value, 10) || 1)}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => updateQuantity(item.id, parseInt(e.target.value, 10) || 1)}
                           className="w-12 h-8 text-center border-x border-y-0 focus-visible:ring-0"
                         />
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1) as unknown as ButtonProps}>
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium text-right">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
+                    <div className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
                   </div>
                 ))}
               </div>
@@ -126,7 +128,7 @@ export default function CartPage() {
                 <div className="w-full md:w-auto">
                   <PromoCodeForm />
                 </div>
-                <Button variant="outline" onClick={clearCart}>
+                <Button variant="outline" onClick={clearCart as unknown as ButtonProps}>
                   <Trash2 className="mr-2 h-4 w-4" /> Clear Shopping Cart
                 </Button>
               </div>
@@ -140,7 +142,7 @@ export default function CartPage() {
                 <div className="flex justify-between"><span>Process Fees (15%)</span><span>${processingFee.toFixed(2)}</span></div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
-                <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white" size="lg" onClick={() => router.push('/checkout')}>
+                <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white" size="lg" onClick={() => router.push('/checkout') as unknown as ButtonProps}>
                   Proceed to Checkout
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
