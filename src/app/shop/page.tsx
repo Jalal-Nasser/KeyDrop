@@ -78,13 +78,13 @@ export default function ShopPage() {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300 relative pt-6" // Added relative and pt-6
+                  className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300 relative"
                 >
                   {product.is_on_sale && product.sale_percent && (
-                    <div className="absolute top-0 left-0 right-0 text-center py-1" style={{ backgroundColor: "#dc3545" }}>
-                      <span className="text-white text-xs font-semibold">
+                    <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
+                      <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
                         SALE {product.sale_percent}%
-                      </span>
+                      </div>
                     </div>
                   )}
                   <Link href={`/product/${product.id}`} className="block relative">

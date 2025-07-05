@@ -102,13 +102,13 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative pt-6" // Added relative and pt-6
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative"
               >
                 {product.is_on_sale && product.sale_percent && (
-                  <div className="absolute top-0 left-0 right-0 text-center py-1" style={{ backgroundColor: "#dc3545" }}>
-                    <span className="text-white text-xs font-semibold">
+                  <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
+                    <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
                       SALE {product.sale_percent}%
-                    </span>
+                    </div>
                   </div>
                 )}
                 
@@ -165,71 +165,73 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
       </div>
 
       <Dialog open={isQuickViewOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl p-0 gap-0 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl p-0 gap-0 max-h-[90vh] overflow-y-auto relative">
           {selectedProduct && (
-            <div className="flex flex-col md:flex-row md:gap-8 h-full relative pt-8"> {/* Added relative and pt-8 */}
+            <>
               {selectedProduct.is_on_sale && selectedProduct.sale_percent && (
-                <div className="absolute top-0 left-0 right-0 text-center py-2 rounded-t-lg" style={{ backgroundColor: "#dc3545" }}>
-                  <span className="text-white text-sm font-semibold">
+                <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
+                  <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
                     SALE {selectedProduct.sale_percent}%
-                  </span>
+                  </div>
                 </div>
               )}
-              <div className="flex-1 flex-shrink-0 flex items-center justify-center bg-gray-100 p-4 md:rounded-l-lg">
-                <Image
-                  src={getImagePath(selectedProduct.image)}
-                  alt={selectedProduct.name}
-                  width={400}
-                  height={400}
-                  className="object-contain max-h-full w-auto"
-                />
-              </div>
-              <div className="flex-1 flex flex-col p-8">
-                <DialogHeader className="text-left">
-                  <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
-                </DialogHeader>
-                
-                <div className="text-2xl font-semibold text-blue-600 mb-4">
-                  {selectedProduct.is_on_sale && selectedProduct.sale_price ? (
-                    <>
-                      <span className="line-through text-gray-500 mr-3 text-xl">${parseFloat(selectedProduct.price).toFixed(2)}</span>
-                      <span>${parseFloat(selectedProduct.sale_price).toFixed(2)}</span>
-                    </>
-                  ) : (
-                    <span>${parseFloat(selectedProduct.price).toFixed(2)}</span>
-                  )}
-                </div>
-                
-                <DialogDescription asChild>
-                  <div
-                    className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
-                    dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
+              <div className="flex flex-col md:flex-row md:gap-8 h-full">
+                <div className="flex-1 flex-shrink-0 flex items-center justify-center bg-gray-100 p-4 md:rounded-l-lg">
+                  <Image
+                    src={getImagePath(selectedProduct.image)}
+                    alt={selectedProduct.name}
+                    width={400}
+                    height={400}
+                    className="object-contain max-h-full w-auto"
                   />
-                </DialogDescription>
-                
-                <div className="mt-auto pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center border border-gray-300 rounded-md">
-                      <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => Math.max(1, q - 1))}>-</Button>
-                      <span className="w-16 text-center font-medium text-lg">{quickViewQuantity}</span>
-                      <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => q + 1)}>+</Button>
+                </div>
+                <div className="flex-1 flex flex-col p-8">
+                  <DialogHeader className="text-left">
+                    <DialogTitle className="text-2xl font-bold mb-2">{selectedProduct.name}</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="text-2xl font-semibold text-blue-600 mb-4">
+                    {selectedProduct.is_on_sale && selectedProduct.sale_price ? (
+                      <>
+                        <span className="line-through text-gray-500 mr-3 text-xl">${parseFloat(selectedProduct.price).toFixed(2)}</span>
+                        <span>${parseFloat(selectedProduct.sale_price).toFixed(2)}</span>
+                      </>
+                    ) : (
+                      <span>${parseFloat(selectedProduct.price).toFixed(2)}</span>
+                    )}
+                  </div>
+                  
+                  <DialogDescription asChild>
+                    <div
+                      className="text-sm text-gray-600 mb-6 prose prose-sm max-h-40 overflow-y-auto"
+                      dangerouslySetInnerHTML={{ __html: selectedProduct.description || '' }}
+                    />
+                  </DialogDescription>
+                  
+                  <div className="mt-auto pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center border border-gray-300 rounded-md">
+                        <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => Math.max(1, q - 1))}>-</Button>
+                        <span className="w-16 text-center font-medium text-lg">{quickViewQuantity}</span>
+                        <Button variant="ghost" size="icon" className="h-12 w-12 text-lg" onClick={() => setQuickViewQuantity(q => q + 1)}>+</Button>
+                      </div>
+                      <Button 
+                        size="lg" 
+                        className="flex-1 h-12 text-base" 
+                        style={{ backgroundColor: "#1e73be" }}
+                        onClick={() => {
+                          addToCart(selectedProduct, quickViewQuantity)
+                          handleOpenChange(false)
+                        }}
+                      >
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Add to Cart
+                      </Button>
                     </div>
-                    <Button 
-                      size="lg" 
-                      className="flex-1 h-12 text-base" 
-                      style={{ backgroundColor: "#1e73be" }}
-                      onClick={() => {
-                        addToCart(selectedProduct, quickViewQuantity)
-                        handleOpenChange(false)
-                      }}
-                    >
-                      <ShoppingCart className="mr-2 h-5 w-5" />
-                      Add to Cart
-                    </Button>
                   </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>

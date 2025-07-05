@@ -81,13 +81,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md relative pt-10"> {/* Added relative and pt-10 */}
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 bg-white p-6 rounded-lg shadow-md relative">
         {/* Sale Badge for single product page */}
         {product.is_on_sale && product.sale_percent && (
-          <div className="absolute top-0 left-0 right-0 text-center py-2 rounded-t-lg" style={{ backgroundColor: "#dc3545" }}>
-            <span className="text-white text-sm font-semibold">
+          <div className="absolute top-0 left-0 z-10 overflow-hidden" style={{ width: '100px', height: '100px' }}>
+            <div className="absolute top-4 -left-8 w-40 text-center py-1 bg-red-600 text-white text-xs font-semibold transform -rotate-45 origin-top-left">
               SALE {product.sale_percent}%
-            </span>
+            </div>
           </div>
         )}
         {/* Product Image */}
