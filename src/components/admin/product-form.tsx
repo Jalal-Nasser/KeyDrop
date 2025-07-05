@@ -24,7 +24,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Product } from "@/types/product"
-import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
 
@@ -53,34 +52,61 @@ export function ProductForm({ product }: ProductFormProps) {
   })
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    let result;
+    let url;
+    let method;
+
     if (product) {
-      // If product exists, it's an update operation.
-      // Using '!' here to assert that 'product' is not undefined,
-      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
-      result = await updateProduct(product!.id, values);
+      url = `/api/admin/products/${product.id}`;
+      method = 'PUT';
     } else {
-      // If product does not exist, it's a create operation
-      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+      url = '/api/admin/products';
+      method = 'POST';
     }
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success(`Product ${product ? "updated" : "created"} successfully!`)
-      setIsOpen(false)
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `Failed to ${product ? "update" : "create"} product.`);
+      }
+
+      toast.success(`Product ${product ? "updated" : "created"} successfully!`);
+      setIsOpen(false);
+      // Force a full page reload to reflect changes, as static export requires a re-deployment
+      window.location.reload(); 
+    } catch (error: any) {
+      toast.error(error.message || `Failed to ${product ? "update" : "create"} product.`);
     }
   }
 
   const handleDelete = async () => {
-    if (product) { // This check ensures 'product' is defined before proceeding
-      const result = await deleteProduct(product.id)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success("Product deleted successfully!")
-        setIsOpen(false)
+    if (!product) return;
+
+    try {
+      const response = await fetch(`/api/admin/products/${product.id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete product.");
       }
+
+      toast.success("Product deleted successfully!");
+      setIsOpen(false);
+      // Force a full page reload to reflect changes, as static export requires a re-deployment
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete product.");
     }
   }
 
