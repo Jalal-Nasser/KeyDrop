@@ -19,20 +19,21 @@ export default async function AdminLayout({
 
   let user = null;
   try {
-    const { data: { user: fetchedUser }, error } = await supabase.auth.getUser();
+    // Use getSession() directly from the server client
+    const { data: { session }, error } = await supabase.auth.getSession();
     if (error) throw error;
-    user = fetchedUser;
+    user = session?.user || null; // Get user from session
     console.log("AdminLayout: User fetched:", user ? "Exists" : "Null");
     if (user) {
       console.log("AdminLayout: User ID:", user.id);
     }
   } catch (error) {
-    console.error("AdminLayout: Error fetching user:", error);
-    redirect("/account"); // Redirect to account page on user fetch error
+    console.error("AdminLayout: Error fetching user session:", error);
+    redirect("/account"); // Redirect to account page on session fetch error
   }
 
   if (!user) {
-    console.log("AdminLayout: No user, redirecting to /account");
+    console.log("AdminLayout: No user session, redirecting to /account");
     redirect("/account");
   }
 
@@ -41,14 +42,13 @@ export default async function AdminLayout({
     const { data: fetchedProfile, error } = await supabase
       .from("profiles")
       .select("is_admin")
-      .eq("id", user.id) // Use user.id here
+      .eq("id", user.id)
       .single();
     if (error) throw error;
     profile = fetchedProfile;
     console.log("AdminLayout: Profile fetched:", profile);
   } catch (error) {
     console.error("AdminLayout: Error fetching profile:", error);
-    // If profile fetch fails, assume not admin or redirect to account
     redirect("/account");
   }
 
