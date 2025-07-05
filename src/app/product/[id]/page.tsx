@@ -16,15 +16,26 @@ const getImagePath = (image: string | string[] | undefined): string => {
   return image
 }
 
+// This function tells Next.js which dynamic paths to pre-render at build time.
+export async function generateStaticParams() {
+  // Map all product IDs to an array of objects with a 'id' property (as a string).
+  return products.map((product) => ({
+    id: product.id.toString(),
+  }))
+}
+
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
 
+  // Parse the ID from the URL params to a number
   const productId = parseInt(params.id)
+  // Find the product in your local JSON data
   const product: Product | undefined = (products as Product[]).find(
     (p) => p.id === productId
   )
 
+  // If the product is not found, render the Next.js notFound page
   if (!product) {
     notFound()
   }
