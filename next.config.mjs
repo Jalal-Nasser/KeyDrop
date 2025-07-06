@@ -6,7 +6,16 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Removed images: { unoptimized: true } as it's not needed for server-rendered builds
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.gravatar.com',
+        port: '',
+        pathname: '/avatar/**',
+      },
+    ],
+  },
 }
 
 export default nextConfig
