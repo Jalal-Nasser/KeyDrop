@@ -2,6 +2,9 @@ import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { cookies } from "next/headers"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet" // New import
+import { Button } from "@/components/ui/button" // New import
+import { Menu } from "lucide-react" // New import
 
 export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route segment
 
@@ -12,26 +15,14 @@ export default async function AdminLayout({
 }) {
   const supabase = createSupabaseServerClient()
 
-  // Log raw cookies to see if they are present
-  const allCookies = cookies().getAll();
-  console.log("AdminLayout: All cookies:", allCookies.map(c => c.name));
-  const sbCookie = allCookies.find(c => c.name.startsWith('sb-') && c.name.endsWith('-access-token'));
-  console.log("AdminLayout: Supabase access token cookie found:", !!sbCookie);
-
-
   let user = null;
   try {
-    // Use getSession() directly from the server client
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) throw error;
-    user = session?.user || null; // Get user from session
-    console.log("AdminLayout: User fetched:", user ? "Exists" : "Null");
-    if (user) {
-      console.log("AdminLayout: User ID:", user.id);
-    }
+    user = session?.user || null;
   } catch (error) {
     console.error("AdminLayout: Error fetching user session:", error);
-    redirect("/account"); // Redirect to account page on session fetch error
+    redirect("/account");
   }
 
   if (!user) {
@@ -48,7 +39,6 @@ export default async function AdminLayout({
       .single();
     if (error) throw error;
     profile = fetchedProfile;
-    console.log("AdminLayout: Profile fetched:", profile);
   } catch (error) {
     console.error("AdminLayout: Error fetching profile:", error);
     redirect("/account");
@@ -68,9 +58,32 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar />
-      <main className="flex-1 p-8 bg-muted/40">
-        {children}
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
+
+      {/* Mobile Sidebar Trigger and Sheet */}
+      <div className="lg:hidden fixed top-0 left-0 z-50 p-4">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Toggle Admin Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <AdminSidebar />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-8 bg-muted/40 lg:ml-64"> {/* Add margin for desktop sidebar */}
+        {/* Add padding-top for mobile to account for fixed menu button */}
+        <div className="lg:pt-0 pt-16">
+          {children}
+        </div>
       </main>
     </div>
   )
