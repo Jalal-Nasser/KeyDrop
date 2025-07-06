@@ -1,4 +1,9 @@
 import products from "@/data/products.json"
+import Image from "next/image" // New import
+import Link from "next/link" // New import for product links
+import { ShoppingCart, Heart } from "lucide-react" // New imports for icons
+import { Button } from "@/components/ui/button" // New import for Button
+import { getImagePath } from "@/lib/utils" // New import
 
 export function ProductGrid() {
   // Using local product data instead of fetching from WordPress
@@ -19,37 +24,25 @@ export function ProductGrid() {
             {displayProducts.map((product: any) => (
               <div
                 key={product.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
+                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group flex flex-col text-center"
               >
-                <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                  {product.image ? (
-                    <img
-                      src={Array.isArray(product.image) ? product.image[1] : product.image}
+                <Link href={`/product/${product.id}`} className="block relative">
+                  <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                    {/* Using next/image for optimization */}
+                    <Image
+                      src={getImagePath(product.image)}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
-                      <div className="text-blue-400 text-4xl">📦</div>
-                    </div>
-                  )}
-                  <div className="absolute top-4 right-4">
-                    <button className="bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                    </button>
                   </div>
-                </div>
+                </Link>
 
-                <div className="p-6">
+                <div className="p-6 flex flex-col flex-grow">
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {product.name}
+                    <Link href={`/product/${product.id}`}>
+                      {product.name}
+                    </Link>
                   </h3>
 
                   {product.description && (
@@ -58,17 +51,19 @@ export function ProductGrid() {
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between">
+                  <div className="mt-auto">
                     {product.price && (
-                      <div className="text-lg font-bold text-blue-600">
+                      <div className="text-lg font-bold text-blue-600 mb-4">
                         <span>{product.price}</span>
                       </div>
                     )}
-                    <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      // onClick={() => addToCart(product)} // Assuming addToCart is available in this context if needed
                     >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
                       Add to Cart
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

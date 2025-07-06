@@ -14,12 +14,7 @@ import { Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "./ui/separator"
-
-const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg"
-  if (Array.isArray(image)) return image[0]
-  return image
-}
+import { getImagePath } from "@/lib/utils" // Updated import
 
 interface CartSheetProps {
   open: boolean;

@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Heart, ShoppingCart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
-
-const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg"
-  if (Array.isArray(image)) return image[0]
-  return image
-}
+import { getImagePath } from "@/lib/utils" // Updated import
 
 export default function ShopPage() {
   const { addToCart } = useCart()

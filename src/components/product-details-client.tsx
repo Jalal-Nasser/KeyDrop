@@ -7,12 +7,7 @@ import { ShoppingCart } from "lucide-react"
 import { PayPalButton } from "@/components/paypal-button"
 import { Product } from "@/types/product"
 import { useCart } from "@/context/cart-context"
-
-const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg"
-  if (Array.isArray(image)) return image[0]
-  return image
-}
+import { getImagePath } from "@/lib/utils" // Updated import
 
 interface ProductDetailsClientProps {
   product: Product;

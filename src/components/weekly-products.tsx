@@ -14,14 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
-
-// Gets the correct image path from the product data.
-const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg";
-  // Use the first image if it's an array (assuming it's the primary one).
-  if (Array.isArray(image)) return image[0];
-  return image;
-}
+import { getImagePath } from "@/lib/utils" // Updated import
 
 interface WeeklyProductsProps {
   limit?: number;
