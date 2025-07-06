@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
-import { cookies } from "next/headers" // Import cookies here to log them
+import { cookies } from "next/headers"
+
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route segment
 
 export default async function AdminLayout({
   children,
