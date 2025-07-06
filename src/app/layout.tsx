@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "DropsKey",
   description:
     "DropsKey is your one-stop shop for digital keys and software licenses. We offer a wide range of products at competitive prices, with instant delivery and top-notch customer support.",
+  icons: {
+    icon: '/icon.png', // Assuming you will place your icon.png in the src/app directory
+  },
 }
 
 export default function RootLayout({
