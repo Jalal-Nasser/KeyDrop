@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { type SupabaseClient, type Session } from "@supabase/supabase-js"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabase } from "@/integrations/supabase/client" // Import the centralized supabase client
 
 type SessionContextType = {
   session: Session | null
@@ -12,9 +12,8 @@ type SessionContextType = {
 const SessionContext = createContext<SessionContextType | null>(null)
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  // Create the client component client here.
-  // It automatically reads from environment variables and manages cookies.
-  const supabase = createClientComponentClient()
+  // Use the imported supabase client instead of creating a new one here
+  // const supabase = createClientComponentClient() // Removed this line
 
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
