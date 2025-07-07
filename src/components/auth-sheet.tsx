@@ -7,6 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetDescription, // Import SheetDescription
 } from "@/components/ui/sheet"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
@@ -32,6 +33,9 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Sign In / Sign Up</SheetTitle>
+          <SheetDescription>
+            Enter your email and password to access your account.
+          </SheetDescription>
         </SheetHeader>
         <div className="py-4">
           <Auth
