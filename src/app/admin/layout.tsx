@@ -12,6 +12,7 @@ export default async function AdminLayout({
   try {
     // 1. Check session and redirect if not authenticated
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    console.log("AdminLayout: Session data:", session); // Added log
     if (sessionError || !session?.user) {
       console.log("AdminLayout: No active session or session error, redirecting to /account");
       redirect("/account");
@@ -26,6 +27,7 @@ export default async function AdminLayout({
       .eq("id", user.id)
       .single();
 
+    console.log("AdminLayout: Profile data:", profile); // Added log
     if (profileError || !profile?.is_admin) {
       console.log("AdminLayout: User is not admin or profile error, showing access denied.");
       return (
