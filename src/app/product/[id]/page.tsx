@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Import useEffect
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import products from "@/data/products.json"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import { PayPalButton } from "@/components/paypal-button"
 import { Product } from "@/types/product"
 import { useCart } from "@/context/cart-context"
+import { useSession } from "@/context/session-context" // Import useSession
+import { toast } from "sonner" // Import toast
 
 const getImagePath = (image: string | string[] | undefined): string => {
   if (!image) return "/placeholder.jpg"
@@ -18,15 +19,52 @@ const getImagePath = (image: string | string[] | undefined): string => {
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
+  const [product, setProduct] = useState<Product | null>(null) // State to hold product data
+  const [loading, setLoading] = useState(true)
   const { addToCart } = useCart()
+  const { supabase } = useSession() // Get supabase client from session context
 
   const productId = parseInt(params.id)
-  const product: Product | undefined = (products as Product[]).find(
-    (p) => p.id === productId
-  )
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (isNaN(productId)) {
+        notFound(); // Handle invalid ID
+        return;
+      }
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching product:", error);
+        toast.error("Failed to load product details.");
+        notFound(); // Show 404 if product not found or error
+      } else if (data) {
+        setProduct(data as Product);
+      } else {
+        notFound(); // Product not found
+      }
+      setLoading(false);
+    };
+
+    fetchProduct();
+  }, [productId, supabase]); // Depend on productId and supabase
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12 text-center">
+        Loading product...
+      </div>
+    );
+  }
 
   if (!product) {
-    notFound()
+    // notFound() is called in useEffect, but this handles initial render if product is null
+    return null;
   }
 
   const handleQuantityChange = (amount: number) => {

@@ -1,6 +1,5 @@
 "use client"
-import React, { useState } from "react"
-import products from "@/data/products.json"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
@@ -14,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
+import { useSession } from "@/context/session-context" // Import useSession
+import { toast } from "sonner" // Import toast
 
 // Gets the correct image path from the product data.
 const getImagePath = (image: string | string[] | undefined): string => {
@@ -31,9 +32,32 @@ interface WeeklyProductsProps {
 export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const displayProducts = [...products].slice(0, limit)
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([]); // State for products
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart()
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
+  const { supabase } = useSession(); // Get supabase client
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('id', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        console.error("Error fetching weekly products:", error);
+        toast.error("Failed to load featured products.");
+      } else if (data) {
+        setDisplayProducts(data as Product[]);
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, [limit, supabase]); // Depend on limit and supabase
 
   const handleQuickViewClick = (product: Product) => {
     setSelectedProduct(product);
@@ -48,68 +72,82 @@ export function WeeklyProducts({ limit = 8, title }: WeeklyProductsProps) {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="py-16 bg-white text-center">
+        Loading products...
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {title && <h2 className="text-3xl font-bold text-gray-900 mb-8">{title}</h2>}
           <div className="w-16 h-0.5 mb-8" style={{ backgroundColor: "#1e73be" }}></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(displayProducts as Product[]).map((product) => (
-              <div
-                key={product.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
-              >
-                {(product as any).onSale && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
-                      SALE {(product as any).salePercent || ""}
-                    </span>
-                  </div>
-                )}
-                
-                <Link href={`/product/${product.id}`} className="flex-grow flex flex-col">
-                  <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <Image
-                      src={getImagePath(product.image)}
-                      alt={product.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>
-                </Link>
-
-                <div className="mt-auto">
-                  <div className="text-lg font-semibold text-gray-900 mb-4">
-                    <span>{product.price}</span>
-                  </div>
-                  <Button
-                    className="w-full mb-3 hover:brightness-90"
-                    style={{ backgroundColor: "#dc3545", color: "white" }}
-                    onClick={() => handleQuickViewClick(product)}
-                  >
-                    QUICK VIEW
-                  </Button>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center border border-gray-300 rounded">
-                      <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>-</button>
-                      <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
-                      <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>+</button>
+          {displayProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {displayProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow relative group flex flex-col"
+                >
+                  {(product as any).is_on_sale && ( // Use is_on_sale from Supabase schema
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="text-white text-xs px-2 py-1 rounded" style={{ backgroundColor: "#dc3545" }}>
+                        SALE {(product as any).sale_percent ? `${(product as any).sale_percent}%` : ""}
+                      </span>
                     </div>
-                    <Button 
-                      size="icon" 
-                      style={{ backgroundColor: "#1e73be" }}
-                      onClick={() => addToCart(product)}
+                  )}
+                  
+                  <Link href={`/product/${product.id}`} className="flex-grow flex flex-col">
+                    <div className="aspect-square mb-4 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={getImagePath(product.image)}
+                        alt={product.name}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{product.name}</h3>
+                  </Link>
+
+                  <div className="mt-auto">
+                    <div className="text-lg font-semibold text-gray-900 mb-4">
+                      <span>{product.price}</span>
+                    </div>
+                    <Button
+                      className="w-full mb-3 hover:brightness-90"
+                      style={{ backgroundColor: "#dc3545", color: "white" }}
+                      onClick={() => handleQuickViewClick(product)}
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      QUICK VIEW
                     </Button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center border border-gray-300 rounded">
+                        <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>-</button>
+                        <input type="number" defaultValue="1" className="w-12 text-center border-0 text-sm py-1" readOnly />
+                        <button className="px-2 py-1 text-gray-500 hover:text-gray-700 text-sm" disabled>+</button>
+                      </div>
+                      <Button 
+                        size="icon" 
+                        style={{ backgroundColor: "#1e73be" }}
+                        onClick={() => addToCart(product)}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">No products available at the moment.</p>
+            </div>
+          )}
         </div>
       </div>
 
