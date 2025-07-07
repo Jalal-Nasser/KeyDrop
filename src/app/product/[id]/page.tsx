@@ -1,32 +1,43 @@
 import { notFound } from "next/navigation"
-import products from "@/data/products.json"
 import { Product } from "@/types/product"
-import { ProductDetailsClient } from "@/components/product-details-client" // New import
+import { ProductDetailsClient } from "@/components/product-details-client"
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 // This function tells Next.js which dynamic paths to pre-render at build time.
 export async function generateStaticParams() {
-  // Map all product IDs to an array of objects with a 'id' property (as a string).
+  const supabase = createSupabaseServerClient()
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("id")
+
+  if (error) {
+    console.error("Error fetching product IDs for static params:", error)
+    return []
+  }
+
   return products.map((product) => ({
     id: product.id.toString(),
   }))
 }
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  // Parse the ID from the URL params to a number
+export default async function ProductPage({ params }: { params: { id: string } }) {
   const productId = parseInt(params.id)
-  // Find the product in your local JSON data
-  const product: Product | undefined = (products as Product[]).find(
-    (p) => p.id === productId
-  )
+  const supabase = createSupabaseServerClient()
 
-  // If the product is not found, render the Next.js notFound page
-  if (!product) {
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", productId)
+    .single()
+
+  if (error || !product) {
+    console.error(`Error fetching product ${productId}:`, error)
     notFound()
   }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <ProductDetailsClient product={product} />
+      <ProductDetailsClient product={product as Product} />
     </div>
   )
 }

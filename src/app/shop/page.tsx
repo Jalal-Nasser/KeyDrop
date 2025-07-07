@@ -1,16 +1,46 @@
 "use client"
 
-import products from "@/data/products.json"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, ShoppingCart } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { Product } from "@/types/product"
-import { getImagePath } from "@/lib/utils" // Updated import
+import { getImagePath } from "@/lib/utils"
+import { useEffect, useState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 export default function ShopPage() {
   const { addToCart } = useCart()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", { ascending: true })
+
+      if (error) {
+        console.error("Error fetching products:", error)
+      } else {
+        setProducts(data as Product[])
+      }
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [supabase])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto text-center py-20">
+        <p>Loading products...</p>
+      </div>
+    )
+  }
 
   return (
     <main>
@@ -25,7 +55,7 @@ export default function ShopPage() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {(products as Product[]).map((product) => (
+              {products.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white border border-gray-200 rounded-lg overflow-hidden group flex flex-col text-center hover:shadow-xl transition-shadow duration-300"
