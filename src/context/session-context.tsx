@@ -2,16 +2,20 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { type SupabaseClient, type Session } from "@supabase/supabase-js"
-import { supabase } from "@/integrations/supabase/client" // Import the new client
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 type SessionContextType = {
   session: Session | null
   supabase: SupabaseClient
 }
 
-const SessionContext = createContext<SessionContextType | undefined>(undefined)
+const SessionContext = createContext<SessionContextType | null>(null)
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
+  // Create the client component client here.
+  // It automatically reads from environment variables and manages cookies.
+  const supabase = createClientComponentClient()
+
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -33,7 +37,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [supabase]) // Add supabase to dependency array
 
   return (
     <SessionContext.Provider value={{ session, supabase }}>
@@ -44,7 +48,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
 export const useSession = () => {
   const context = useContext(SessionContext)
-  if (context === undefined) {
+  if (context === null) {
     throw new Error("useSession must be used within a SessionProvider")
   }
   return context

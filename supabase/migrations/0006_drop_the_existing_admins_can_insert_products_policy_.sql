@@ -1,1 +1,0 @@
-DROP POLICY IF EXISTS "Admins can insert products." ON public.products;
