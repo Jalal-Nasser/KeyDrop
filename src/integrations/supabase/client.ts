@@ -5,6 +5,3 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClientComponentClient();
-
-// Add this line to log the URL being used by the client
-console.log("Supabase Client URL:", supabase.supabaseUrl);
