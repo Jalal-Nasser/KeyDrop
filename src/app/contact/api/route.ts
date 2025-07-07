@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   // IMPORTANT: Change 'support@yourdomain.com' to your actual verified sender email in Resend.
   await sendMail({
     from: 'no-reply@yourdomain.com', // Ensure this is a verified sender in your Resend account
-    to: 'support@yourdomain.com', // Change to your actual support email
+    to: 'support@yourdomain.com', // Change this to your actual support email
     subject: `Contact Form Submission from ${name}`,
     html: `<p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Message:</b><br/>${message}</p>`
   })
