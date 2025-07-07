@@ -19,7 +19,6 @@ import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
 import { Loader2 } from "lucide-react"
-import { getImagePath } from "@/lib/utils" // Updated import
 
 const checkoutSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -35,6 +34,12 @@ const checkoutSchema = z.object({
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
+
+const getImagePath = (image: string | string[] | undefined): string => {
+  if (!image) return "/placeholder.jpg"
+  if (Array.isArray(image)) return image[0]
+  return image
+}
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]

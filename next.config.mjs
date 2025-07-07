@@ -7,14 +7,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'www.gravatar.com',
-        port: '',
-        pathname: '/avatar/**',
-      },
-    ],
+    unoptimized: true,
   },
 }
 

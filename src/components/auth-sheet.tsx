@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import {
   Sheet,
   SheetContent,
@@ -18,14 +17,7 @@ interface AuthSheetProps {
 }
 
 export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
-  const { supabase, session } = useSession()
-
-  // Close the sheet automatically when a session is established (user signs in)
-  useEffect(() => {
-    if (session) {
-      onOpenChange(false)
-    }
-  }, [session, onOpenChange])
+  const { supabase } = useSession()
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

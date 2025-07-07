@@ -11,7 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Trash2, Minus, Plus, ShieldCheck } from "lucide-react"
-import { getImagePath } from "@/lib/utils" // Updated import
+
+const getImagePath = (image: string | string[] | undefined): string => {
+  if (!image) return "/placeholder.jpg"
+  if (Array.isArray(image)) return image[0]
+  return image
+}
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
