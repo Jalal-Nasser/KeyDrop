@@ -16,6 +16,7 @@ export type Database = {
           sku: string | null // Added
           tag: string | null // Added
           category: string | null // Added
+          is_most_sold: boolean | null // Added
         }
         Insert: {
           id?: number
@@ -31,6 +32,7 @@ export type Database = {
           sku?: string | null // Added (will be auto-generated)
           tag?: string | null // Added
           category?: string | null // Added
+          is_most_sold?: boolean | null // Added
         }
         Update: {
           id?: number
@@ -46,6 +48,7 @@ export type Database = {
           sku?: string | null // Added (should not be updated manually)
           tag?: string | null // Added
           category?: string | null // Added
+          is_most_sold?: boolean | null // Added
         }
       }
       profiles: {

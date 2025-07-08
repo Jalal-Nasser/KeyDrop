@@ -14,6 +14,7 @@ interface ProductData {
   sale_percent?: number | null // Added
   tag?: string // Added
   category?: string // Added
+  is_most_sold?: boolean // Added
 }
 
 export async function createProduct(_: any, formData: ProductData) {
@@ -24,6 +25,7 @@ export async function createProduct(_: any, formData: ProductData) {
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")
+  revalidatePath("/") // Revalidate homepage
   return { error: null }
 }
 
@@ -37,6 +39,7 @@ export async function updateProduct(id: number | undefined, formData: ProductDat
   revalidatePath("/admin/products")
   revalidatePath(`/product/${id}`)
   revalidatePath("/shop")
+  revalidatePath("/") // Revalidate homepage
   return { error: null }
 }
 
@@ -48,5 +51,6 @@ export async function deleteProduct(id: number) {
   }
   revalidatePath("/admin/products")
   revalidatePath("/shop")
+  revalidatePath("/") // Revalidate homepage
   return { error: null }
 }

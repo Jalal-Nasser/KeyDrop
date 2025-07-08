@@ -53,6 +53,7 @@ const productSchema = z.object({
   tag: z.string().optional(),
   category: z.string().optional(),
   sku: z.string().optional(),
+  is_most_sold: z.boolean().default(false).optional(), // Added
 }).superRefine((data, ctx) => {
   if (data.is_on_sale) {
     if (data.sale_percent === null || data.sale_percent === undefined) {
@@ -84,6 +85,7 @@ export function ProductForm({ product }: ProductFormProps) {
       tag: product?.tag || "",
       category: product?.category || "",
       sku: product?.sku || "",
+      is_most_sold: product?.is_most_sold || false, // Initialize default value
     },
   })
 
@@ -294,6 +296,29 @@ export function ProductForm({ product }: ProductFormProps) {
                 />
               </div>
             )}
+
+            <FormField
+              control={form.control}
+              name="is_most_sold"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Add to Homepage (Most Sold Products)
+                    </FormLabel>
+                    <FormDescription>
+                      Check this to feature the product on the homepage.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
 
             {product && product.sku && (
               <FormField

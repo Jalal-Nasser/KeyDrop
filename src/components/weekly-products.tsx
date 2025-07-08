@@ -28,6 +28,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("is_most_sold", true) // Filter by the new column
         .order("id", { ascending: true })
         .limit(8) // Changed limit to 8 to fit 4-column layout
 

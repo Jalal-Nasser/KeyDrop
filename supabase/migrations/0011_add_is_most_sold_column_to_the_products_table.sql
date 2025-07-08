@@ -1,0 +1,2 @@
+ALTER TABLE public.products
+ADD COLUMN is_most_sold BOOLEAN DEFAULT FALSE;

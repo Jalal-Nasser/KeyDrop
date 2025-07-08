@@ -13,4 +13,5 @@ export interface Product {
   sku?: string
   tag?: string
   category?: string
+  is_most_sold?: boolean // Added
 }
