@@ -28,7 +28,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         .from("products")
         .select("*")
         .order("id", { ascending: true })
-        .limit(4) // Fetch a few products for the weekly section
+        .limit(9) // Fetch 9 products for the weekly section
 
       if (error) {
         console.error("Error fetching weekly products:", error)
