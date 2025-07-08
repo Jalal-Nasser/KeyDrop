@@ -10,7 +10,7 @@ import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Database } from "@/types/supabase"
-import { useEffect, useState } => {
+import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 
 export default function WeeklyProducts({ title }: { title: string }) {
