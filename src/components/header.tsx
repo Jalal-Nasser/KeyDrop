@@ -55,19 +55,19 @@ export function Header() {
                   <rect x="18" y="2" width="6" height="6" fill="#1e73be" />
                   <rect x="26" y="2" width="6" height="6" fill="#1e73be" />
                   <rect x="34" y="2" width="4" height="6" fill="#1e73be" />
-                  <rect x="2" y="10" width="6" height="6" fill="#1e73be" />
-                  <rect x="18" y="10" width="6" height="6" fill="#1e73be" />
-                  <rect x="26" y="10" width="6" height="6" fill="#1e73be" />
-                  <rect x="34" y="10" width="4" height="6" fill="#1e73be" />
+                  <rect x="2" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="18" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="26" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="34" y="10" width="4" height="6" fill="#805da8" /> {/* Changed color */}
                   <rect x="2" y="18" width="6" height="6" fill="#1e73be" />
                   <rect x="10" y="18" width="6" height="6" fill="#1e73be" />
                   <rect x="18" y="18" width="6" height="6" fill="#1e73be" />
                   <rect x="26" y="18" width="6" height="6" fill="#1e73be" />
                   <rect x="34" y="18" width="4" height="6" fill="#1e73be" />
-                  <rect x="2" y="26" width="6" height="6" fill="#1e73be" />
-                  <rect x="10" y="26" width="6" height="6" fill="#1e73be" />
-                  <rect x="26" y="26" width="6" height="6" fill="#1e73be" />
-                  <rect x="34" y="26" width="4" height="6" fill="#1e73be" />
+                  <rect x="2" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="10" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="26" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
+                  <rect x="34" y="26" width="4" height="6" fill="#805da8" /> {/* Changed color */}
                   <rect x="2" y="34" width="6" height="4" fill="#1e73be" />
                   <rect x="10" y="34" width="6" height="4" fill="#1e73be" />
                   <rect x="18" y="34" width="6" height="4" fill="#1e73be" />
@@ -76,7 +76,7 @@ export function Header() {
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}>
+                <div className="text-2xl font-bold" style={{ color: "#805da8" }}> {/* Changed text color */}
                   Dropskey
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
