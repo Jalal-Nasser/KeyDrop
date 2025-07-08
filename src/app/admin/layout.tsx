@@ -45,7 +45,8 @@ export default async function AdminLayout({
         <main className="flex-1 p-8 bg-muted/40">
           {children}
         </main>
-      );
+      </div>
+    );
   } catch (e: any) {
     console.error("AdminLayout: Unexpected error during admin check:", e);
     // This catch block is for errors during the profile fetch, not for redirects
