@@ -2,45 +2,45 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { type SupabaseClient, type Session } from "@supabase/supabase-js"
-import { supabase } from "@/integrations/supabase/client" // Import the centralized supabase client
+import { supabase } from "@/integrations/supabase/client"
 
 type SessionContextType = {
   session: Session | null
   supabase: SupabaseClient
+  isLoading: boolean
 }
 
 const SessionContext = createContext<SessionContextType | null>(null)
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  // Use the imported supabase client instead of creating a new one here
-  // const supabase = createClientComponentClient() // Removed this line
-
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      setSession(session)
-      setLoading(false)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) throw error
+        setSession(session)
+      } catch (error) {
+        console.error("Error getting session:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     getSession()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase]) // Add supabase to dependency array
+  }, [])
 
   return (
-    <SessionContext.Provider value={{ session, supabase }}>
-      {!loading && children}
+    <SessionContext.Provider value={{ session, supabase, isLoading }}>
+      {children}
     </SessionContext.Provider>
   )
 }

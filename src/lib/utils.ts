@@ -5,13 +5,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// New getImagePath utility function
 export const getImagePath = (image: string | string[] | undefined): string => {
-  if (!image) return "/placeholder.jpg";
-  let path = Array.isArray(image) ? image[0] : image;
-  // Ensure the path starts with /images/ if it's a local image and doesn't already have a leading slash or is an external URL
-  if (!path.startsWith('/') && !path.startsWith('http')) {
-    return `/images/${path}`;
+  // First try to get the primary image
+  let path = Array.isArray(image) ? image[0] : image
+  
+  // If no image or invalid path, return placeholder
+  if (!path || typeof path !== 'string') {
+    return '/placeholder-product.png'
   }
-  return path;
+
+  // Check if it's already a full URL
+  if (path.startsWith('http')) {
+    return path
+  }
+
+  // Ensure local paths start with /images/
+  if (!path.startsWith('/images/')) {
+    path = `/images/${path}`
+  }
+
+  return path
 }
