@@ -20,6 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription, // Imported FormDescription
 } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -248,7 +249,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sale Price</FormLabel>
-                      <FormControl><Input type="number" step="0.01" {...field} placeholder="$XX.XX" /></FormControl>
+                      <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder="$XX.XX" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -259,7 +260,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sale Percentage</FormLabel>
-                      <FormControl><Input type="number" step="1" {...field} placeholder="e.g., 15" /></FormControl>
+                      <FormControl><Input type="number" step="1" {...field} value={field.value ?? ""} placeholder="e.g., 15" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
