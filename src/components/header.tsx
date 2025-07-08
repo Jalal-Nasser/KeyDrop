@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useRef, MouseEvent } => "react"
+import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/image" // Import Image component
 import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
 import { AuthSheet } from "@/components/auth-sheet"
@@ -47,19 +47,18 @@ export function Header() {
       <div className="bg-white py-4 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            {/* Logo and new panda image */}
+            {/* Logo */}
             <div className="flex items-center space-x-3">
-              {/* This is the single panda image */}
-              <div className="w-10 h-10 relative">
+              <div className="w-10 h-10 relative"> {/* Added relative for Image fill */}
                 <Image
-                  src="/favicon.png"
-                  alt="Panda Mascot"
-                  fill
-                  style={{ objectFit: "contain" }}
+                  src="/pasted-image-2025-07-08T09-08-15-130Z.png" // Updated path to the new favicon
+                  alt="Dropskey Logo"
+                  fill // Use fill to make it responsive within the parent div
+                  style={{ objectFit: "contain" }} // Ensure the image fits without cropping
                 />
               </div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}>
+                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}> {/* Reverted to single blue color */}
                   Dropskey
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">

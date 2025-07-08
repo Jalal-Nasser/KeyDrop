@@ -12,12 +12,9 @@ export default async function AdminLayout({
   try {
     // 1. Check session and redirect if not authenticated
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) {
-      console.error("AdminLayout: Supabase session error:", sessionError); // Explicitly log the error
-      redirect("/account"); // Redirect even on session error
-    }
-    if (!session?.user) {
-      console.log("AdminLayout: No active session, redirecting to /account");
+    console.log("AdminLayout: Session data:", session); // Added log
+    if (sessionError || !session?.user) {
+      console.log("AdminLayout: No active session or session error, redirecting to /account");
       redirect("/account");
     }
 
@@ -30,21 +27,9 @@ export default async function AdminLayout({
       .eq("id", user.id)
       .single();
 
-    if (profileError) {
-      console.error("AdminLayout: Supabase profile fetch error:", profileError); // Explicitly log the error
-      // If there's a profile error (e.g., profile not found, or DB issue), deny access
-      return (
-        <div className="container mx-auto py-20 text-center">
-          <h1 className="text-2xl font-bold text-red-500">Error loading profile.</h1>
-          <p className="text-muted-foreground">
-            There was an issue retrieving your user profile. Please try again later.
-          </p>
-        </div>
-      );
-    }
-
-    if (!profile?.is_admin) {
-      console.log("AdminLayout: User is not admin, showing access denied.");
+    console.log("AdminLayout: Profile data:", profile); // Added log
+    if (profileError || !profile?.is_admin) {
+      console.log("AdminLayout: User is not admin or profile error, showing access denied.");
       return (
         <div className="container mx-auto py-20 text-center">
           <h1 className="text-2xl font-bold">Access Denied</h1>
