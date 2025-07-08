@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, MouseEvent } from "react"
+import { useState, useRef, MouseEvent } => "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -52,7 +52,7 @@ export function Header() {
               {/* This is the single panda image */}
               <div className="w-10 h-10 relative">
                 <Image
-                  src="/favicon.ico"
+                  src="/favicon.png"
                   alt="Panda Mascot"
                   fill
                   style={{ objectFit: "contain" }}

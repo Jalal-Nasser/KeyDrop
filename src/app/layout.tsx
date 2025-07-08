@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Dropskey is your one-stop shop for digital keys and software licenses. We offer a wide range of products at competitive prices, with instant delivery and top-notch customer support.",
   icons: {
-    icon: '/favicon.ico', // Updated to the new favicon
+    icon: '/favicon.png', // Updated to .png
   },
 }
 
