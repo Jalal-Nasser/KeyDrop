@@ -26,7 +26,7 @@ interface Order {
     state_province_region: string | null;
     postal_code: string | null;
     country: string | null;
-  } | null;
+  }[] | null; // Changed to array
 }
 
 interface OrderItem {
@@ -36,7 +36,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  } | null; // Changed to single product object or null
+  }[] | null; // Changed to array
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -60,6 +60,9 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   const processingFee = order.total * 0.15;
   const finalTotal = order.total + processingFee;
 
+  // Access the first profile object if profiles array exists and is not empty
+  const profile = order.profiles?.[0];
+
   return (
     <div className="container mx-auto p-4 py-12">
       <Card className="max-w-4xl mx-auto">
@@ -77,16 +80,16 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <p><strong>Payment Gateway:</strong> {order.payment_gateway || 'N/A'}</p>
               {order.payment_id && <p><strong>Payment ID:</strong> {order.payment_id}</p>}
             </div>
-            {order.profiles && (
+            {profile && (
               <div>
                 <h3 className="text-lg font-semibold mb-2">Billing Details</h3>
-                <p>{order.profiles.first_name} {order.profiles.last_name}</p>
-                {order.profiles.company_name && <p>{order.profiles.company_name}</p>}
-                <p>{order.profiles.address_line_1}</p>
-                {order.profiles.address_line_2 && <p>{order.profiles.address_line_2}</p>}
-                <p>{order.profiles.city}, {order.profiles.state_province_region} {order.profiles.postal_code}</p>
-                <p>{order.profiles.country}</p>
-                {order.profiles.vat_number && <p>VAT: {order.profiles.vat_number}</p>}
+                <p>{profile.first_name} {profile.last_name}</p>
+                {profile.company_name && <p>{profile.company_name}</p>}
+                <p>{profile.address_line_1}</p>
+                {profile.address_line_2 && <p>{profile.address_line_2}</p>}
+                <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
+                <p>{profile.country}</p>
+                {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
               </div>
             )}
           </div>
@@ -107,7 +110,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <TableBody>
                 {order.order_items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.products?.name || `Product ${item.product_id}`}</TableCell>
+                    <TableCell className="font-medium">{item.products?.[0]?.name || `Product ${item.product_id}`}</TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
                     <TableCell className="text-right">${item.price_at_purchase.toFixed(2)}</TableCell>
                     <TableCell className="text-right">${(item.quantity * item.price_at_purchase).toFixed(2)}</TableCell>

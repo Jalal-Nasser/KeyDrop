@@ -22,7 +22,7 @@ interface Order {
     state_province_region: string | null;
     postal_code: string | null;
     country: string | null;
-  } | null;
+  }[] | null; // Changed to array
 }
 
 interface OrderItem {
@@ -32,7 +32,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  } | null; // Changed to single product object or null
+  }[] | null; // Changed to array
 }
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
@@ -55,6 +55,9 @@ export default async function InvoicePage({ params }: { params: { id: string } }
 
   const processingFee = order.total * 0.15;
   const finalTotal = order.total + processingFee;
+
+  // Access the first profile object if profiles array exists and is not empty
+  const profile = order.profiles?.[0];
 
   return (
     <div className="container mx-auto p-4 py-8 print:p-0">
@@ -79,15 +82,15 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-lg font-semibold mb-2 text-gray-800">Billed To:</h3>
-            {order.profiles ? (
+            {profile ? (
               <address className="not-italic text-gray-700">
-                <p className="font-medium">{order.profiles.first_name} {order.profiles.last_name}</p>
-                {order.profiles.company_name && <p>{order.profiles.company_name}</p>}
-                <p>{order.profiles.address_line_1}</p>
-                {order.profiles.address_line_2 && <p>{order.profiles.address_line_2}</p>}
-                <p>{order.profiles.city}, {order.profiles.state_province_region} {order.profiles.postal_code}</p>
-                <p>{order.profiles.country}</p>
-                {order.profiles.vat_number && <p>VAT: {order.profiles.vat_number}</p>}
+                <p className="font-medium">{profile.first_name} {profile.last_name}</p>
+                {profile.company_name && <p>{profile.company_name}</p>}
+                <p>{profile.address_line_1}</p>
+                {profile.address_line_2 && <p>{profile.address_line_2}</p>}
+                <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
+                <p>{profile.country}</p>
+                {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
               </address>
             ) : (
               <p className="text-gray-700">Customer details not available.</p>
@@ -114,7 +117,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
             <tbody>
               {order.order_items.map((item) => (
                 <tr key={item.id} className="border-b border-gray-100">
-                  <td className="py-3 text-gray-700">{item.products?.name || `Product ${item.product_id}`}</td>
+                  <td className="py-3 text-gray-700">{item.products?.[0]?.name || `Product ${item.product_id}`}</td>
                   <td className="py-3 text-right text-gray-700">{item.quantity}</td>
                   <td className="py-3 text-right text-gray-700">${item.price_at_purchase.toFixed(2)}</td>
                   <td className="py-3 text-right text-gray-700">${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
