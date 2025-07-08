@@ -41,6 +41,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         src={getImagePath(item.image)}
                         alt={item.name}
                         fill
+                        sizes="64px"
                         className="object-contain p-1"
                       />
                     </div>

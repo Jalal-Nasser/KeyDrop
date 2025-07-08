@@ -30,6 +30,7 @@ export function HeroSlider() {
 					src={slides[currentSlide].image || "/placeholder.svg"}
 					alt={slides[currentSlide].caption}
 					fill
+					sizes="100vw"
 					style={{ objectFit: "contain" }}
 					priority
 				/>

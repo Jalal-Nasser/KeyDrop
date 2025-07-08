@@ -160,7 +160,7 @@ export default function CheckoutPage() {
                       <div key={item.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white">
-                            <Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" />
+                            <Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" />
                           </div>
                           <div>
                             <p className="font-medium">{item.name}</p>
@@ -247,7 +247,7 @@ export default function CheckoutPage() {
                   {cartItems.map(item => (
                     <div key={item.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" /></div>
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
                       <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>

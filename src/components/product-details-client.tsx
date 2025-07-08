@@ -25,7 +25,6 @@
       }
 
       const imagePath = getImagePath(product.image);
-      console.log(`ProductDetailsClient: Image path for ${product.name} (ID: ${product.id}): ${imagePath}`);
 
       return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -34,6 +33,7 @@
               src={imagePath}
               alt={product.name}
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-contain p-4"
             />
           </div>

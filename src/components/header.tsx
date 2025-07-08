@@ -54,6 +54,7 @@ export function Header() {
                   src="/panda.png" // Updated path to the new panda.png
                   alt="Dropskey Logo"
                   fill // Use fill to make it responsive within the parent div
+                  sizes="40px"
                   style={{ objectFit: "contain" }} // Ensure the image fits without cropping
                 />
               </div>

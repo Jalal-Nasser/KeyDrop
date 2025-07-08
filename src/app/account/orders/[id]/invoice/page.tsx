@@ -66,7 +66,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           <div>
             <div className="flex items-center space-x-2 mb-2">
               <div className="w-8 h-8 relative">
-                <Image src="/panda.png" alt="Dropskey Logo" fill style={{ objectFit: "contain" }} />
+                <Image src="/panda.png" alt="Dropskey Logo" fill sizes="32px" style={{ objectFit: "contain" }} />
               </div>
               <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
             </div>

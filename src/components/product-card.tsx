@@ -34,7 +34,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const originalPrice = parseFloat(product.price).toFixed(2);
 
   const imagePath = getImagePath(product.image);
-  console.log(`ProductCard: Image path for ${product.name} (ID: ${product.id}): ${imagePath}`);
 
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 relative">
@@ -48,6 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
           src={imagePath}
           alt={product.name}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           style={{ objectFit: "contain" }}
         />
       </Link>

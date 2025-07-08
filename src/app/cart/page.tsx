@@ -86,7 +86,7 @@ export default function CartPage() {
                   <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                     <div className="col-span-2 flex items-center gap-4">
                       <div className="relative h-20 w-20 rounded-md overflow-hidden border bg-white flex-shrink-0">
-                        <Image src={getImagePath(item.image)} alt={item.name} fill className="object-contain p-1" />
+                        <Image src={getImagePath(item.image)} alt={item.name} fill sizes="80px" className="object-contain p-1" />
                       </div>
                       <div>
                         <p className="font-medium">{item.name}</p>
