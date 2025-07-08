@@ -27,6 +27,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
     onUpdate({ editor }) {
       onChange(editor.getHTML())
     },
+    immediatelyRender: false, // Add this line to prevent SSR hydration mismatches
   })
 
   return (
