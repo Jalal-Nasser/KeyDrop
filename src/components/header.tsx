@@ -2,7 +2,7 @@
 
 import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
-import { usePathname } => "next/navigation"
+import { usePathname } from "next/navigation" // Corrected this line
 import Link from "next/link"
 import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
@@ -57,7 +57,7 @@ export function Header() {
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}> {/* Reverted to single color */}
+                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}>
                   Dropskey
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
