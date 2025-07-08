@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -29,6 +29,10 @@ import { createProduct, updateProduct, deleteProduct } from "@/app/admin/product
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useSession } from "@/context/session-context" // Import useSession
+import { v4 as uuidv4 } from 'uuid'; // Import uuid
+import Image from "next/image" // Import Image component
+import { getImagePath } from "@/lib/utils" // Import getImagePath
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -36,9 +40,9 @@ const productSchema = z.object({
     .min(1, "Price is required")
     .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number"),
   description: z.string().optional(),
-  image: z.string().optional(),
+  image: z.string().optional(), // This will store the URL after upload
   is_on_sale: z.boolean().default(false).optional(),
-  sale_price: z.preprocess( // This will be calculated, but kept in schema for type safety
+  sale_price: z.preprocess(
     (val) => (val === "" ? null : Number(val)),
     z.number().nullable().optional()
   ).refine((val) => val === null || val === undefined || val >= 0, {
@@ -53,7 +57,7 @@ const productSchema = z.object({
   tag: z.string().optional(),
   category: z.string().optional(),
   sku: z.string().optional(),
-  is_most_sold: z.boolean().default(false).optional(), // Added
+  is_most_sold: z.boolean().default(false).optional(),
 }).superRefine((data, ctx) => {
   if (data.is_on_sale) {
     if (data.sale_percent === null || data.sale_percent === undefined) {
@@ -72,6 +76,9 @@ interface ProductFormProps {
 
 export function ProductForm({ product }: ProductFormProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.image ? getImagePath(product.image) : null)
+  const { supabase } = useSession()
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -79,13 +86,13 @@ export function ProductForm({ product }: ProductFormProps) {
       name: product?.name || "",
       price: product?.price || "",
       description: product?.description || "",
-      image: Array.isArray(product?.image) ? product.image[0] : product?.image || "",
+      image: product?.image ? getImagePath(product.image) : "", // Initialize with existing image URL
       is_on_sale: product?.is_on_sale || false,
       sale_percent: product?.sale_percent || undefined,
       tag: product?.tag || "",
       category: product?.category || "",
       sku: product?.sku || "",
-      is_most_sold: product?.is_most_sold || false, // Initialize default value
+      is_most_sold: product?.is_most_sold || false,
     },
   })
 
@@ -100,53 +107,117 @@ export function ProductForm({ product }: ProductFormProps) {
       if (!isNaN(basePrice)) {
         const discount = sale_percent / 100;
         const calculated = basePrice * (1 - discount);
-        return calculated >= 0 ? calculated.toFixed(2) : "0.00"; // Ensure non-negative
+        return calculated >= 0 ? calculated.toFixed(2) : "0.00";
       }
     }
     return null;
   }, [is_on_sale, price, sale_percent]);
 
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImageFile(file);
+      setCurrentImageUrl(URL.createObjectURL(file)); // For immediate preview
+    } else {
+      setSelectedImageFile(null);
+      setCurrentImageUrl(product?.image ? getImagePath(product.image) : null); // Revert to original if no new file
+    }
+  }, [product?.image]);
+
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     const dataToSubmit = { ...values };
+    const toastId = toast.loading(product ? "Updating product..." : "Creating product...");
 
-    if (dataToSubmit.is_on_sale) {
-      const basePrice = parseFloat(dataToSubmit.price);
-      const discountPercent = dataToSubmit.sale_percent;
+    try {
+      if (selectedImageFile) {
+        const fileExtension = selectedImageFile.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExtension}`;
+        const filePath = `public/${fileName}`; // Store in a 'public' folder within the bucket
 
-      if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
-        const calculated = basePrice * (1 - discountPercent / 100);
-        dataToSubmit.sale_price = calculated >= 0 ? parseFloat(calculated.toFixed(2)) : 0;
-      } else {
-        dataToSubmit.sale_price = null; // Fallback if calculation fails
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('product-images') // Your bucket name
+          .upload(filePath, selectedImageFile, {
+            cacheControl: '3600',
+            upsert: true, // Overwrite if file with same name exists
+          });
+
+        if (uploadError) {
+          throw new Error(`Image upload failed: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData?.publicUrl) {
+          throw new Error("Could not get public URL for the uploaded image.");
+        }
+        dataToSubmit.image = publicUrlData.publicUrl;
+      } else if (product && !currentImageUrl) {
+        // If it was an existing product and the image was removed
+        dataToSubmit.image = undefined; // Or null, depending on your schema's nullability
       }
-    } else {
-      dataToSubmit.sale_price = null;
-      dataToSubmit.sale_percent = null;
-    }
 
-    let result;
-    if (product) {
-      result = await updateProduct(product.id, dataToSubmit);
-    } else {
-      result = await createProduct(undefined, dataToSubmit);
-    }
+      if (dataToSubmit.is_on_sale) {
+        const basePrice = parseFloat(dataToSubmit.price);
+        const discountPercent = dataToSubmit.sale_percent;
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success(`Product ${product ? "updated" : "created"} successfully!`)
-      setIsOpen(false)
+        if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
+          const calculated = basePrice * (1 - discountPercent / 100);
+          dataToSubmit.sale_price = calculated >= 0 ? parseFloat(calculated.toFixed(2)) : 0;
+        } else {
+          dataToSubmit.sale_price = null;
+        }
+      } else {
+        dataToSubmit.sale_price = null;
+        dataToSubmit.sale_percent = null;
+      }
+
+      let result;
+      if (product) {
+        result = await updateProduct(product.id, dataToSubmit);
+      } else {
+        result = await createProduct(undefined, dataToSubmit);
+      }
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      toast.success(`Product ${product ? "updated" : "created"} successfully!`, { id: toastId });
+      setIsOpen(false);
+      setSelectedImageFile(null); // Clear selected file after successful submission
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred.", { id: toastId });
     }
   }
 
   const handleDelete = async () => {
     if (product) {
-      const result = await deleteProduct(product.id)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success("Product deleted successfully!")
-        setIsOpen(false)
+      const toastId = toast.loading("Deleting product...");
+      try {
+        // Optionally delete image from storage if it exists
+        if (product.image) {
+          const imagePathInStorage = product.image.split('/public/')[1]; // Extract path after /public/
+          if (imagePathInStorage) {
+            const { error: deleteImageError } = await supabase.storage
+              .from('product-images')
+              .remove([`public/${imagePathInStorage}`]); // Ensure correct path for removal
+            if (deleteImageError) {
+              console.warn("Failed to delete image from storage:", deleteImageError.message);
+              // Don't block product deletion if image deletion fails
+            }
+          }
+        }
+
+        const result = await deleteProduct(product.id);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        toast.success("Product deleted successfully!", { id: toastId });
+        setIsOpen(false);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete product.", { id: toastId });
       }
     }
   }
@@ -163,7 +234,7 @@ export function ProductForm({ product }: ProductFormProps) {
           <DialogTitle>{product ? "Edit Product" : "Add New Product"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4"> {/* Added py-4 for internal padding */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="name"
@@ -186,17 +257,25 @@ export function ProductForm({ product }: ProductFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl>
-                  <FormMessage />
-                </FormItem>
+            <FormItem>
+              <FormLabel>Product Image</FormLabel>
+              <FormControl>
+                <Input type="file" onChange={handleFileChange} accept="image/*" />
+              </FormControl>
+              <FormDescription>Upload an image for your product.</FormDescription>
+              <FormMessage />
+              {currentImageUrl && (
+                <div className="mt-4 relative w-32 h-32 border rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <Image
+                    src={currentImageUrl}
+                    alt="Product Preview"
+                    fill
+                    sizes="128px"
+                    style={{ objectFit: "contain" }}
+                  />
+                </div>
               )}
-            />
+            </FormItem>
             <FormField
               control={form.control}
               name="description"
@@ -274,17 +353,17 @@ export function ProductForm({ product }: ProductFormProps) {
                 />
                 <FormField
                   control={form.control}
-                  name="sale_price" // This field is now for display
+                  name="sale_price"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Calculated Sale Price</FormLabel>
                       <FormControl>
                         <Input
-                          type="text" // Changed to text as it's display only
+                          type="text"
                           value={calculatedSalePrice !== null ? `$${calculatedSalePrice}` : "N/A"}
-                          readOnly // Make it read-only
-                          disabled // Disable it
-                          className="bg-gray-100 cursor-not-allowed" // Add styling for disabled
+                          readOnly
+                          disabled
+                          className="bg-gray-100 cursor-not-allowed"
                         />
                       </FormControl>
                       <FormDescription>
