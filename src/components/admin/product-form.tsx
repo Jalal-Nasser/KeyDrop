@@ -29,10 +29,10 @@ import { createProduct, updateProduct, deleteProduct } from "@/app/admin/product
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useSession } from "@/context/session-context" // Import useSession
-import { v4 as uuidv4 } from 'uuid'; // Import uuid
-import Image from "next/image" // Import Image component
-import { getImagePath } from "@/lib/utils" // Import getImagePath
+import { useSession } from "@/context/session-context"
+import { v4 as uuidv4 } from 'uuid';
+import Image from "next/image"
+import { getImagePath } from "@/lib/utils"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -40,16 +40,24 @@ const productSchema = z.object({
     .min(1, "Price is required")
     .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number"),
   description: z.string().optional(),
-  image: z.string().optional(), // This will store the URL after upload
+  image: z.string().optional(),
   is_on_sale: z.boolean().default(false).optional(),
   sale_price: z.preprocess(
-    (val) => (val === "" ? null : Number(val)),
+    (val) => {
+      if (val === "" || val === undefined || val === null) return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    },
     z.number().nullable().optional()
   ).refine((val) => val === null || val === undefined || val >= 0, {
     message: "Sale price must be a non-negative number.",
   }),
   sale_percent: z.preprocess(
-    (val) => (val === "" ? null : Number(val)),
+    (val) => {
+      if (val === "" || val === undefined || val === null) return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    },
     z.number().nullable().optional()
   ).refine((val) => val === null || val === undefined || (val >= 0 && val <= 100), {
     message: "Sale percent must be between 0 and 100.",
@@ -86,9 +94,9 @@ export function ProductForm({ product }: ProductFormProps) {
       name: product?.name || "",
       price: product?.price || "",
       description: product?.description || "",
-      image: product?.image ? getImagePath(product.image) : "", // Initialize with existing image URL
+      image: product?.image ? getImagePath(product.image) : "",
       is_on_sale: product?.is_on_sale || false,
-      sale_percent: product?.sale_percent || undefined,
+      sale_percent: product?.sale_percent ?? null, // Use nullish coalescing
       tag: product?.tag || "",
       category: product?.category || "",
       sku: product?.sku || "",
@@ -117,10 +125,10 @@ export function ProductForm({ product }: ProductFormProps) {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImageFile(file);
-      setCurrentImageUrl(URL.createObjectURL(file)); // For immediate preview
+      setCurrentImageUrl(URL.createObjectURL(file));
     } else {
       setSelectedImageFile(null);
-      setCurrentImageUrl(product?.image ? getImagePath(product.image) : null); // Revert to original if no new file
+      setCurrentImageUrl(product?.image ? getImagePath(product.image) : null);
     }
   }, [product?.image]);
 
@@ -132,13 +140,13 @@ export function ProductForm({ product }: ProductFormProps) {
       if (selectedImageFile) {
         const fileExtension = selectedImageFile.name.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
-        const filePath = `public/${fileName}`; // Store in a 'public' folder within the bucket
+        const filePath = `public/${fileName}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('product-images') // Your bucket name
+          .from('product-images')
           .upload(filePath, selectedImageFile, {
             cacheControl: '3600',
-            upsert: true, // Overwrite if file with same name exists
+            upsert: true,
           });
 
         if (uploadError) {
@@ -154,8 +162,7 @@ export function ProductForm({ product }: ProductFormProps) {
         }
         dataToSubmit.image = publicUrlData.publicUrl;
       } else if (product && !currentImageUrl) {
-        // If it was an existing product and the image was removed
-        dataToSubmit.image = undefined; // Or null, depending on your schema's nullability
+        dataToSubmit.image = undefined;
       }
 
       if (dataToSubmit.is_on_sale) {
@@ -186,7 +193,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
       toast.success(`Product ${product ? "updated" : "created"} successfully!`, { id: toastId });
       setIsOpen(false);
-      setSelectedImageFile(null); // Clear selected file after successful submission
+      setSelectedImageFile(null);
     } catch (error: any) {
       toast.error(error.message || "An unexpected error occurred.", { id: toastId });
     }
@@ -196,24 +203,20 @@ export function ProductForm({ product }: ProductFormProps) {
     if (product) {
       const toastId = toast.loading("Deleting product...");
       try {
-        // Optionally delete image from storage if it exists
         if (product.image) {
           const imageUrl = typeof product.image === 'string' ? product.image : product.image[0];
           try {
             const url = new URL(imageUrl);
-            // The path in the bucket starts after /storage/v1/object/public/bucket_name/
-            // For 'product-images' bucket, it's after /storage/v1/object/public/product-images/
             const pathSegments = url.pathname.split('/product-images/');
             const pathInBucket = pathSegments.length > 1 ? pathSegments[1] : null;
 
             if (pathInBucket) {
               const { error: deleteImageError } = await supabase.storage
                 .from('product-images')
-                .remove([pathInBucket]); // Remove directly using the path in bucket
+                .remove([pathInBucket]);
 
               if (deleteImageError) {
                 console.warn("Failed to delete image from storage:", deleteImageError.message);
-                // Don't block product deletion if image deletion fails
               }
             }
           } catch (e) {
