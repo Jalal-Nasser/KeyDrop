@@ -9,10 +9,10 @@ import {
 import { ProductForm } from "@/components/admin/product-form"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
-import { createSupabaseServerClient } from "@/lib/supabaseServer" // New import
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 export default async function ProductsPage() {
-  const supabase = createSupabaseServerClient() // Use the new utility function
+  const supabase = createSupabaseServerClient()
   const { data: products, error } = await supabase
     .from("products")
     .select("*")
@@ -33,8 +33,12 @@ export default async function ProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>SKU</TableHead> {/* New */}
               <TableHead>Name</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead>Sale Price</TableHead> {/* New */}
+              <TableHead>Category</TableHead> {/* New */}
+              <TableHead>Tag</TableHead> {/* New */}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -42,8 +46,16 @@ export default async function ProductsPage() {
             {(products as Product[])?.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.id}</TableCell>
+                <TableCell>{product.sku || "N/A"}</TableCell> {/* New */}
                 <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.price}</TableCell>
+                <TableCell>${parseFloat(product.price).toFixed(2)}</TableCell>
+                <TableCell>
+                  {product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined
+                    ? `$${product.sale_price.toFixed(2)} (${product.sale_percent || 0}%)`
+                    : "N/A"}
+                </TableCell> {/* New */}
+                <TableCell>{product.category || "N/A"}</TableCell> {/* New */}
+                <TableCell>{product.tag || "N/A"}</TableCell> {/* New */}
                 <TableCell>
                   <ProductForm product={product} />
                 </TableCell>

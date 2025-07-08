@@ -27,13 +27,47 @@ import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
+import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   price: z.string().min(1, "Price is required"),
   description: z.string().optional(),
   image: z.string().optional(),
-})
+  is_on_sale: z.boolean().default(false).optional(), // New: is_on_sale
+  sale_price: z.preprocess(
+    (val) => (val === "" ? null : Number(val)),
+    z.number().nullable().optional()
+  ).refine((val) => val === null || val === undefined || val >= 0, {
+    message: "Sale price must be a non-negative number.",
+  }), // New: sale_price
+  sale_percent: z.preprocess(
+    (val) => (val === "" ? null : Number(val)),
+    z.number().nullable().optional()
+  ).refine((val) => val === null || val === undefined || (val >= 0 && val <= 100), {
+    message: "Sale percent must be between 0 and 100.",
+  }), // New: sale_percent
+  tag: z.string().optional(), // New: tag
+  category: z.string().optional(), // New: category
+  sku: z.string().optional(), // New: sku (read-only, auto-generated)
+}).superRefine((data, ctx) => {
+  if (data.is_on_sale) {
+    if (data.sale_price === null || data.sale_price === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sale price is required when product is on sale.",
+        path: ["sale_price"],
+      });
+    }
+    if (data.sale_percent === null || data.sale_percent === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sale percent is required when product is on sale.",
+        path: ["sale_percent"],
+      });
+    }
+  }
+});
 
 interface ProductFormProps {
   product?: Product
@@ -49,19 +83,32 @@ export function ProductForm({ product }: ProductFormProps) {
       price: product?.price || "",
       description: product?.description || "",
       image: Array.isArray(product?.image) ? product.image[0] : product?.image || "",
+      is_on_sale: product?.is_on_sale || false, // Default to false
+      sale_price: product?.sale_price || undefined,
+      sale_percent: product?.sale_percent || undefined,
+      tag: product?.tag || "",
+      category: product?.category || "",
+      sku: product?.sku || "", // SKU will be read-only
     },
   })
 
+  const is_on_sale = form.watch("is_on_sale");
+
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
+    // Clean up values for submission: remove sale_price/percent if not on sale
+    const dataToSubmit = { ...values };
+    if (!dataToSubmit.is_on_sale) {
+      dataToSubmit.sale_price = null;
+      dataToSubmit.sale_percent = null;
+    }
+
     let result;
     if (product) {
       // If product exists, it's an update operation.
-      // Using '!' here to assert that 'product' is not undefined,
-      // as the 'if (product)' check ensures it. This resolves the TypeScript error.
-      result = await updateProduct(product!.id, values);
+      result = await updateProduct(product.id, dataToSubmit);
     } else {
       // If product does not exist, it's a create operation
-      result = await createProduct(undefined, values); // createProduct doesn't use the first arg, but we pass undefined for consistency
+      result = await createProduct(undefined, dataToSubmit);
     }
 
     if (result.error) {
@@ -73,7 +120,7 @@ export function ProductForm({ product }: ProductFormProps) {
   }
 
   const handleDelete = async () => {
-    if (product) { // This check ensures 'product' is defined before proceeding
+    if (product) {
       const result = await deleteProduct(product.id)
       if (result.error) {
         toast.error(result.error)
@@ -143,6 +190,98 @@ export function ProductForm({ product }: ProductFormProps) {
                 </FormItem>
               )}
             />
+
+            {/* New fields for sale, tag, category, SKU */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="tag"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tag</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g., software, antivirus" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g., security, productivity" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="is_on_sale"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Product is on sale
+                    </FormLabel>
+                    <FormDescription>
+                      Check this if the product has a special sale price.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {is_on_sale && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="sale_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sale Price</FormLabel>
+                      <FormControl><Input type="number" step="0.01" {...field} placeholder="$XX.XX" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sale_percent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sale Percentage</FormLabel>
+                      <FormControl><Input type="number" step="1" {...field} placeholder="e.g., 15" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {product && product.sku && ( // Display SKU only for existing products
+              <FormField
+                control={form.control}
+                name="sku"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SKU</FormLabel>
+                    <FormControl><Input {...field} readOnly disabled /></FormControl>
+                    <FormDescription>SKU is auto-generated and cannot be changed.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <DialogFooter className="pt-8">
               {product && (
                 <Button type="button" variant="destructive" onClick={handleDelete}>

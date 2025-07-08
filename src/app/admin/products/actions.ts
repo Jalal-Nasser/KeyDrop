@@ -9,6 +9,11 @@ interface ProductData {
   price: string
   description?: string
   image?: string
+  is_on_sale?: boolean // Added
+  sale_price?: number | null // Added
+  sale_percent?: number | null // Added
+  tag?: string // Added
+  category?: string // Added
 }
 
 export async function createProduct(_: any, formData: ProductData) {
@@ -25,7 +30,7 @@ export async function createProduct(_: any, formData: ProductData) {
 export async function updateProduct(id: number | undefined, formData: ProductData) {
   if (!id) return { error: "Product ID is missing." }
   const supabase = createServerActionClient({ cookies })
-  const { error } = await supabase.from("products").update(formData).eq("id", id)
+  const { error } => await supabase.from("products").update(formData).eq("id", id)
   if (error) {
     return { error: error.message }
   }

@@ -13,6 +13,9 @@ export type Database = {
           sale_price: number | null
           is_on_sale: boolean | null
           sale_percent: number | null
+          sku: string | null // Added
+          tag: string | null // Added
+          category: string | null // Added
         }
         Insert: {
           id?: number
@@ -25,6 +28,9 @@ export type Database = {
           sale_price?: number | null
           is_on_sale?: boolean | null
           sale_percent?: number | null
+          sku?: string | null // Added (will be auto-generated)
+          tag?: string | null // Added
+          category?: string | null // Added
         }
         Update: {
           id?: number
@@ -37,6 +43,9 @@ export type Database = {
           sale_price?: number | null
           is_on_sale?: boolean | null
           sale_percent?: number | null
+          sku?: string | null // Added (should not be updated manually)
+          tag?: string | null // Added
+          category?: string | null // Added
         }
       }
       profiles: {
@@ -140,6 +149,10 @@ export type Database = {
       // Add views if any
     }
     Functions: {
+      generate_unique_sku: { // Added
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
       // Add functions if any
     }
     Enums: {
