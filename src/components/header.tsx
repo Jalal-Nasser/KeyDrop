@@ -4,7 +4,7 @@ import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image" // Import Image component
+import Image from "next/image"
 import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
 import { AuthSheet } from "@/components/auth-sheet"
@@ -47,18 +47,27 @@ export function Header() {
       <div className="bg-white py-4 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            {/* Logo */}
+            {/* Logo and new panda image */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 relative"> {/* Added relative for Image fill */}
+              <div className="w-10 h-10 relative">
                 <Image
-                  src="/pasted-image-2025-07-08T09-08-15-130Z.png" // Updated path to the new favicon
+                  src="/pasted-image-2025-07-08T09-08-15-130Z.png"
                   alt="Dropskey Logo"
-                  fill // Use fill to make it responsive within the parent div
-                  style={{ objectFit: "contain" }} // Ensure the image fits without cropping
+                  fill
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+              {/* New panda image added here */}
+              <div className="w-10 h-10 relative">
+                <Image
+                  src="/pasted-image-2025-07-08T09-17-03-134Z.png"
+                  alt="Panda Mascot"
+                  fill
+                  style={{ objectFit: "contain" }}
                 />
               </div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}> {/* Reverted to single blue color */}
+                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}>
                   Dropskey
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
