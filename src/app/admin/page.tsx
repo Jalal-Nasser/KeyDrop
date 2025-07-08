@@ -3,6 +3,7 @@ import Link from "next/link"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { DollarSign, Package, ShoppingCart, Users } from "lucide-react"
 import { format } from "date-fns"
+import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
 
 export default async function AdminDashboardPage() {
   const supabase = createSupabaseServerClient()
@@ -93,6 +94,11 @@ export default async function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Income Chart */}
+      <div className="mb-8">
+        <IncomeChart />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
