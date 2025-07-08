@@ -139,8 +139,9 @@ export function Header() {
             <nav className="hidden lg:flex relative" ref={navRef} onMouseLeave={handleMouseLeave}>
               {hovered && hoveredRect && navRef.current && (
                 <div
-                  className="absolute bg-blue-700 rounded-md"
+                  className="absolute rounded-md"
                   style={{
+                    backgroundColor: "#805da8", // Changed to the requested color
                     left: hoveredRect.left - navRef.current.getBoundingClientRect().left,
                     top: hoveredRect.top - navRef.current.getBoundingClientRect().top,
                     width: hoveredRect.width,
