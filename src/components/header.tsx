@@ -2,7 +2,7 @@
 
 import { useState, useRef, MouseEvent } from "react"
 import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname } => "next/navigation"
 import Link from "next/link"
 import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
@@ -49,39 +49,16 @@ export function Header() {
             {/* Logo */}
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10">
-                <svg viewBox="0 0 40 40" className="w-full h-full">
-                  <rect x="2" y="2" width="6" height="6" fill="#1e73be" />
-                  <rect x="10" y="2" width="6" height="6" fill="#1e73be" />
-                  <rect x="18" y="2" width="6" height="6" fill="#1e73be" />
-                  <rect x="26" y="2" width="6" height="6" fill="#1e73be" />
-                  <rect x="34" y="2" width="4" height="6" fill="#1e73be" />
-                  <rect x="2" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="18" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="26" y="10" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="34" y="10" width="4" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="2" y="18" width="6" height="6" fill="#1e73be" />
-                  <rect x="10" y="18" width="6" height="6" fill="#1e73be" />
-                  <rect x="18" y="18" width="6" height="6" fill="#1e73be" />
-                  <rect x="26" y="18" width="6" height="6" fill="#1e73be" />
-                  <rect x="34" y="18" width="4" height="6" fill="#1e73be" />
-                  <rect x="2" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="10" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="26" y="26" width="6" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="34" y="26" width="4" height="6" fill="#805da8" /> {/* Changed color */}
-                  <rect x="2" y="34" width="6" height="4" fill="#1e73be" />
-                  <rect x="10" y="34" width="6" height="4" fill="#1e73be" />
-                  <rect x="18" y="34" width="6" height="4" fill="#1e73be" />
-                  <rect x="26" y="34" width="6" height="4" fill="#1e73be" />
-                  <rect x="34" y="34" width="4" height="4" fill="#1e73be" />
+                <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="100" height="100" fill="#805DA8"/>
+                  <path d="M50 10C27.9086 10 10 27.9086 10 50C10 72.0914 27.9086 90 50 90C72.0914 90 90 72.0914 90 50C90 27.9086 72.0914 10 50 10ZM50 20C66.5685 20 80 33.4315 80 50C80 66.5685 66.5685 80 50 80C33.4315 80 20 66.5685 20 50C20 33.4315 33.4315 20 50 20Z" fill="#1E73BE"/>
+                  <path d="M50 30C44.4772 30 40 34.4772 40 40C40 45.5228 44.4772 50 50 50C55.5228 50 60 45.5228 60 40C60 34.4772 55.5228 30 50 30Z" fill="white"/>
+                  <path d="M50 60C44.4772 60 40 64.4772 40 70C40 75.5228 44.4772 80 50 80C55.5228 80 60 75.5228 60 70C60 64.4772 55.5228 60 50 60Z" fill="white"/>
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold">
-                  {"Dropskey".split('').map((char, index) => (
-                    <span key={index} style={{ color: index % 2 === 0 ? "#805da8" : "#1e73be" }}>
-                      {char}
-                    </span>
-                  ))}
+                <div className="text-2xl font-bold" style={{ color: "#1e73be" }}> {/* Reverted to single color */}
+                  Dropskey
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -145,7 +122,7 @@ export function Header() {
                 <div
                   className="absolute rounded-md"
                   style={{
-                    backgroundColor: "#805da8", // Changed to the requested color
+                    backgroundColor: "#805da8",
                     left: hoveredRect.left - navRef.current.getBoundingClientRect().left,
                     top: hoveredRect.top - navRef.current.getBoundingClientRect().top,
                     width: hoveredRect.width,
