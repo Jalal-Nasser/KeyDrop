@@ -76,8 +76,12 @@ export function Header() {
                 </svg>
               </div>
               <div>
-                <div className="text-2xl font-bold" style={{ color: "#805da8" }}> {/* Changed text color */}
-                  Dropskey
+                <div className="text-2xl font-bold">
+                  {"Dropskey".split('').map((char, index) => (
+                    <span key={index} style={{ color: index % 2 === 0 ? "#805da8" : "#1e73be" }}>
+                      {char}
+                    </span>
+                  ))}
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
