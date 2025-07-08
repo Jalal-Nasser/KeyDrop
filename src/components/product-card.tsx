@@ -43,7 +43,8 @@ export function ProductCard({ product }: ProductCardProps) {
             <span>{product.price}</span>
           </div>
           <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full"
+            style={{ backgroundColor: "#805da8", color: "white" }}
             onClick={() => addToCart(product)}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
