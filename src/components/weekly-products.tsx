@@ -12,6 +12,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
+import { ProductCard } from "./product-card" // New import
 
 export default function WeeklyProducts({ title }: { title: string }) {
   const { addToCart } = useCart()
@@ -58,31 +59,9 @@ export default function WeeklyProducts({ title }: { title: string }) {
         ) : products.length === 0 ? (
           <p className="text-center text-muted-foreground">No products found for this section.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Changed lg:grid-cols-4 to lg:grid-cols-3 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <Card key={product.id} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <Link href={`/product/${product.id}`} className="relative block h-48 w-full overflow-hidden">
-                  <Image
-                    src={getImagePath(product.image)}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-4"
-                  />
-                </Link>
-                <CardContent className="flex-grow p-4">
-                  <CardTitle className="text-lg font-semibold mb-2 line-clamp-2">
-                    <Link href={`/product/${product.id}`} className="hover:text-blue-600 transition-colors">
-                      {product.name}
-                    </Link>
-                  </CardTitle>
-                  <p className="text-gray-700 font-bold text-xl">${parseFloat(product.price).toFixed(2)}</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button className="w-full bg-[#1e73be] hover:bg-[#28a645]" onClick={() => addToCart(product)}> {/* Changed colors */}
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-                  </Button>
-                </CardFooter>
-              </Card>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
