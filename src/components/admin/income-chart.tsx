@@ -37,7 +37,7 @@ export function IncomeChart() {
       setError(null)
       const { data, error } = await supabase
         .from("orders")
-        .select("created_at, total")
+        .select("id, created_at, total") // Added 'id' to the select statement
         .order("created_at", { ascending: true })
 
       if (error) {

@@ -32,7 +32,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  }[];
+  } | null; // Changed to single product object or null
 }
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
@@ -114,7 +114,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
             <tbody>
               {order.order_items.map((item) => (
                 <tr key={item.id} className="border-b border-gray-100">
-                  <td className="py-3 text-gray-700">{item.products?.[0]?.name || `Product ${item.product_id}`}</td>
+                  <td className="py-3 text-gray-700">{item.products?.name || `Product ${item.product_id}`}</td>
                   <td className="py-3 text-right text-gray-700">{item.quantity}</td>
                   <td className="py-3 text-right text-gray-700">${item.price_at_purchase.toFixed(2)}</td>
                   <td className="py-3 text-right text-gray-700">${(item.quantity * item.price_at_purchase).toFixed(2)}</td>

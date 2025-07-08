@@ -36,7 +36,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  }[];
+  } | null; // Changed to single product object or null
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -107,7 +107,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <TableBody>
                 {order.order_items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.products?.[0]?.name || `Product ${item.product_id}`}</TableCell>
+                    <TableCell className="font-medium">{item.products?.name || `Product ${item.product_id}`}</TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
                     <TableCell className="text-right">${item.price_at_purchase.toFixed(2)}</TableCell>
                     <TableCell className="text-right">${(item.quantity * item.price_at_purchase).toFixed(2)}</TableCell>
