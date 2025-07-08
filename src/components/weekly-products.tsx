@@ -10,7 +10,7 @@ import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Database } from "@/types/supabase"
-import { useEffect, useState } from "react"
+import { useEffect, useState } => {
 import { Loader2 } from "lucide-react"
 
 export default function WeeklyProducts({ title }: { title: string }) {
@@ -58,7 +58,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         ) : products.length === 0 ? (
           <p className="text-center text-muted-foreground">No products found for this section.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Changed lg:grid-cols-4 to lg:grid-cols-3 */}
             {products.map((product) => (
               <Card key={product.id} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <Link href={`/product/${product.id}`} className="relative block h-48 w-full overflow-hidden">
