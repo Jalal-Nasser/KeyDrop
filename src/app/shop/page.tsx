@@ -14,7 +14,8 @@ export default async function ShopPage() {
     const { data, error: fetchError } = await supabase
       .from("products")
       .select("*")
-      .order("created_at", { ascending: false })
+      // Remove the non-existent created_at ordering
+      // .order("created_at", { ascending: false })
     
     products = data || []
     error = fetchError

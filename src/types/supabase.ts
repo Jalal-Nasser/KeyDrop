@@ -8,7 +8,8 @@ export type Database = {
           description: string | null
           price: string
           image: string | null
-          created_at: string
+          // Remove created_at if it doesn't exist
+          // created_at: string
           is_digital: boolean | null
           download_url: string | null
         }
@@ -18,7 +19,7 @@ export type Database = {
           description?: string | null
           price: string
           image?: string | null
-          created_at?: string
+          // created_at?: string
           is_digital?: boolean | null
           download_url?: string | null
         }
@@ -28,7 +29,7 @@ export type Database = {
           description?: string | null
           price?: string
           image?: string | null
-          created_at?: string
+          // created_at?: string
           is_digital?: boolean | null
           download_url?: string | null
         }
