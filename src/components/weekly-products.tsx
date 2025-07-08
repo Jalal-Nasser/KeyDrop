@@ -29,7 +29,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         .from("products")
         .select("*")
         .order("id", { ascending: true })
-        .limit(9) // Fetch 9 products for the weekly section
+        .limit(8) // Changed limit to 8 to fit 4-column layout
 
       if (error) {
         console.error("Error fetching weekly products:", error)
@@ -59,7 +59,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         ) : products.length === 0 ? (
           <p className="text-center text-muted-foreground">No products found for this section.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"> {/* Changed lg:grid-cols-3 to lg:grid-cols-4 */}
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
