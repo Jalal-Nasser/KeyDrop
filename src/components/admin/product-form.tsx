@@ -156,12 +156,12 @@ export function ProductForm({ product }: ProductFormProps) {
           {product ? "Edit" : "Add Product"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{product ? "Edit Product" : "Add New Product"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4"> {/* Added py-4 for internal padding */}
             <FormField
               control={form.control}
               name="name"
