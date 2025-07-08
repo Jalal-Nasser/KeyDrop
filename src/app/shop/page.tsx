@@ -1,5 +1,63 @@
-{error && (
-  <p className="text-sm text-red-500 mt-2">
-    Error: {error instanceof Error ? error.message : 'Unknown error'}
-  </p>
-)}
+"use client"
+
+    import { useEffect, useState } from "react"
+    import { useSearchParams } from "next/navigation"
+    import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+    import { ProductGrid } from "@/components/product-grid"
+    import { Product } from "@/types/product"
+    import { Database } from "@/types/supabase"
+    import { Loader2 } from "lucide-react"
+
+    export default function ShopPage() {
+      const [products, setProducts] = useState<Product[]>([])
+      const [loading, setLoading] = useState(true)
+      const [error, setError] = useState<string | null>(null)
+      const searchParams = useSearchParams()
+      const supabase = createClientComponentClient<Database>()
+
+      useEffect(() => {
+        const fetchProducts = async () => {
+          setLoading(true)
+          setError(null)
+          const searchQuery = searchParams.get("search")
+
+          let query = supabase.from("products").select("*")
+
+          if (searchQuery) {
+            query = query.ilike("name", `%${searchQuery}%`)
+          }
+
+          const { data, error } = await query.order("id", { ascending: true })
+
+          if (error) {
+            console.error("Error fetching products:", error)
+            setError(error.message)
+          } else {
+            setProducts(data || [])
+          }
+          setLoading(false)
+        }
+
+        fetchProducts()
+      }, [searchParams, supabase])
+
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-4xl font-bold mb-8 text-center">Our Products</h1>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <p className="ml-4">Loading products...</p>
+            </div>
+          ) : error ? (
+            <p className="text-sm text-red-500 mt-2">
+              Error: {error}
+            </p>
+          ) : products.length === 0 ? (
+            <p className="text-center text-muted-foreground">No products found.</p>
+          ) : (
+            <ProductGrid products={products} />
+          )}
+        </div>
+      )
+    }
