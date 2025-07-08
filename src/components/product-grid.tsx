@@ -34,7 +34,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
           </CardContent>
           <CardFooter className="p-4 pt-0">
             <Button
-              className="w-full text-white bg-[#28a645] hover:bg-[#1e7335]" // Applied custom color and a darker hover state using Tailwind classes
+              className="w-full text-white bg-[#28a645] hover:bg-[#1e73be]" // Applied custom color and a darker hover state using Tailwind classes
               onClick={() => addToCart(product)}
             >
               <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
