@@ -52,7 +52,7 @@ export function Header() {
               {/* This is the single panda image */}
               <div className="w-10 h-10 relative">
                 <Image
-                  src="/pasted-image-2025-07-08T09-17-03-134Z.png"
+                  src="/favicon.ico"
                   alt="Panda Mascot"
                   fill
                   style={{ objectFit: "contain" }}
