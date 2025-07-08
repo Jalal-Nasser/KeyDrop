@@ -1,167 +1,50 @@
 [
   {
     "id": 1,
-    "name": "Windows Server 2022 Standard",
-    "price": "69.99 $",
-    "image": [
-      "/images/windows-server-2022-standard.webp",
-      "/images/windows-server-2022-standard.png"
-    ],
-    "slug": "windows-server-2022-standard",
-    "description": "Genuine Windows Server 2022 Standard license. Instant delivery."
+    "name": "Sample Product 1",
+    "description": "This is a sample product description for Product 1. It highlights the features and benefits of the product, providing detailed information for potential buyers.",
+    "price": "19.99",
+    "image": "placeholder-product.png",
+    "is_digital": true,
+    "download_url": "/downloads/sample1.zip",
+    "sale_price": null,
+    "is_on_sale": false,
+    "sale_percent": null
   },
   {
     "id": 2,
-    "name": "Windows Server 2019 Standard",
-    "price": "53.85 $",
-    "image": [
-      "/images/windows-server-2019-standard.webp",
-      "/images/windows-server-2019-standard.png"
-    ],
-    "slug": "windows-server-2019-standard",
-    "description": "Genuine Windows Server 2019 Standard license. Instant delivery."
+    "name": "Sample Product 2 (On Sale)",
+    "description": "This is a sample product description for Product 2, currently on sale! It provides a brief overview and key selling points.",
+    "price": "49.99",
+    "image": "placeholder-product.png",
+    "is_digital": true,
+    "download_url": "/downloads/sample2.zip",
+    "sale_price": 39.99,
+    "is_on_sale": true,
+    "sale_percent": 20
   },
   {
     "id": 3,
-    "name": "Office365",
-    "price": "39.99 $",
-    "image": [
-      "/images/office-2021.webp",
-      "/images/office365.png"
-    ],
-    "slug": "office365",
-    "description": "Genuine Office365 license. Instant delivery."
+    "name": "Sample Product 3",
+    "description": "A third sample product with its own unique description. This product is designed for general use and offers great value.",
+    "price": "9.99",
+    "image": "placeholder-product.png",
+    "is_digital": true,
+    "download_url": "/downloads/sample3.zip",
+    "sale_price": null,
+    "is_on_sale": false,
+    "sale_percent": null
   },
   {
     "id": 4,
-    "name": "Windows 11 Pro",
-    "price": "28.00 $",
-    "image": [
-      "/images/windows-11.webp",
-      "/images/windows-11-pro.png"
-    ],
-    "slug": "windows-11-pro",
-    "description": "Genuine Windows 11 Pro license. Instant delivery."
-  },
-  {
-    "id": 5,
-    "name": "Windows 10 Pro",
-    "price": "19.00 $",
-    "image": [
-      "/images/windows-10-pro.webp",
-      "/images/windows-10-pro.png"
-    ],
-    "slug": "windows-10-pro",
-    "description": "Genuine Windows 10 Pro license. Instant delivery."
-  },
-  {
-    "id": 6,
-    "name": "Adobe Creative Cloud 1 Month",
-    "price": "50.00 $",
-    "image": [
-      "/images/photoshop-2024.webp",
-      "/images/adobe-creative-cloud-1-month.png"
-    ],
-    "slug": "adobe-creative-cloud-1-month",
-    "description": "1 Month Adobe Creative Cloud subscription. Instant delivery."
-  },
-  {
-    "id": 7,
-    "name": "Bitdefender Total Security",
-    "price": "45.99 $",
-    "image": [
-      "/images/bitdefender-total-security.webp",
-      "/images/bitdefender-total-security.png"
-    ],
-    "slug": "bitdefender-total-security",
-    "description": "Bitdefender Total Security license. Instant delivery."
-  },
-  {
-    "id": 8,
-    "name": "AUTODESK All Pack",
-    "price": "60.00 $",
-    "image": [
-      "/images/autodesk-all-pack.webp",
-      "/images/autodesk-all-pack.png"
-    ],
-    "slug": "autodesk-all-pack",
-    "description": "AUTODESK All Pack license. Instant delivery."
-  },
-  {
-    "id": 9,
-    "name": "Autodesk 3DS Max 2025",
-    "price": "49.00 $",
-    "image": [
-      "/images/autodesk-3ds-max-2025.webp",
-      "/images/autodesk-3ds-max-2025.png"
-    ],
-    "slug": "autodesk-3ds-max-2025",
-    "description": "Autodesk 3DS Max 2025 license. Instant delivery."
-  },
-  {
-    "id": 12,
-    "name": "Avast Ultimate - 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/avast-ultimate-1-year.webp",
-      "/images/avast-ultimate-1-year.png"
-    ],
-    "slug": "avast-ultimate-1-year",
-    "description": "Avast Ultimate - 1 Year license. Instant delivery."
-  },
-  {
-    "id": 13,
-    "name": "Avast Premium Security - 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/avast-premium-security-1-year.webp",
-      "/images/avast-premium-security-1-year.png"
-    ],
-    "slug": "avast-premium-security-1-year",
-    "description": "Avast Premium Security - 1 Year license. Instant delivery."
-  },
-  {
-    "id": 14,
-    "name": "AVG Internet Security - 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/avg-internet-security-1-year.webp",
-      "/images/avg-internet-security-1-year.png"
-    ],
-    "slug": "avg-internet-security-1-year",
-    "description": "AVG Internet Security - 1 Year license. Instant delivery."
-  },
-  {
-    "id": 15,
-    "name": "AVG Ultimate - 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/avg-ultimate-1-year.webp",
-      "/images/avg-ultimate-1-year.png"
-    ],
-    "slug": "avg-ultimate-1-year",
-    "description": "AVG Ultimate - 1 Year license. Instant delivery."
-  },
-  {
-    "id": 16,
-    "name": "Kaspersky Premium - 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/kaspersky-total-security.webp",
-      "/images/kaspersky-premium-1-year.png"
-    ],
-    "slug": "kaspersky-premium-1-year",
-    "description": "Kaspersky Premium - 1 Year license. Instant delivery."
-  },
-  {
-    "id": 17,
-    "name": "ESET Internet Security – 1 Year",
-    "price": "--.-- $",
-    "image": [
-      "/images/eset-internet-security.webp",
-      "/images/eset-internet-security-1-year.png"
-    ],
-    "slug": "eset-internet-security-1-year",
-    "description": "ESET Internet Security – 1 Year license. Instant delivery."
+    "name": "Sample Product 4",
+    "description": "The fourth sample product, perfect for advanced users. It comes with a comprehensive set of features.",
+    "price": "79.99",
+    "image": "placeholder-product.png",
+    "is_digital": true,
+    "download_url": "/downloads/sample4.zip",
+    "sale_price": null,
+    "is_on_sale": false,
+    "sale_percent": null
   }
 ]

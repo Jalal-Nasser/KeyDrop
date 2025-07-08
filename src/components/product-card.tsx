@@ -33,6 +33,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const originalPrice = parseFloat(product.price).toFixed(2);
 
+  const imagePath = getImagePath(product.image);
+  console.log(`ProductCard: Image path for ${product.name} (ID: ${product.id}): ${imagePath}`);
+
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 relative">
       {product.is_on_sale && product.sale_percent !== null && product.sale_percent !== undefined && (
@@ -42,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
       )}
       <Link href={`/product/${product.id}`} className="relative block h-48 w-full overflow-hidden flex items-center justify-center bg-white p-4">
         <Image
-          src={getImagePath(product.image)}
+          src={imagePath}
           alt={product.name}
           fill
           style={{ objectFit: "contain" }}

@@ -24,11 +24,14 @@
         addToCart(product, quantity)
       }
 
+      const imagePath = getImagePath(product.image);
+      console.log(`ProductDetailsClient: Image path for ${product.name} (ID: ${product.id}): ${imagePath}`);
+
       return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="relative h-96 w-full bg-white rounded-lg overflow-hidden flex items-center justify-center border">
             <Image
-              src={getImagePath(product.image)}
+              src={imagePath}
               alt={product.name}
               fill
               className="object-contain p-4"
