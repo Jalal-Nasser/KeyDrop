@@ -49,15 +49,7 @@ export function Header() {
           <div className="flex justify-between items-center">
             {/* Logo and new panda image */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 relative">
-                <Image
-                  src="/pasted-image-2025-07-08T09-08-15-130Z.png"
-                  alt="Dropskey Logo"
-                  fill
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-              {/* New panda image added here */}
+              {/* This is the single panda image */}
               <div className="w-10 h-10 relative">
                 <Image
                   src="/pasted-image-2025-07-08T09-17-03-134Z.png"
