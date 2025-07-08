@@ -51,7 +51,7 @@ export function Header() {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 relative"> {/* Added relative for Image fill */}
                 <Image
-                  src="/pasted-image-2025-07-08T09-08-15-130Z.png" // Updated path to the new favicon
+                  src="/panda.png" // Updated path to the new panda.png
                   alt="Dropskey Logo"
                   fill // Use fill to make it responsive within the parent div
                   style={{ objectFit: "contain" }} // Ensure the image fits without cropping
