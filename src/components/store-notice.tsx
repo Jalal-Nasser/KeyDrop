@@ -11,7 +11,7 @@ export function StoreNotice() {
   }
 
   return (
-    <div className="relative py-2 text-center text-sm text-white" style={{ backgroundColor: "#805da8" }}>
+    <div className="relative py-2 text-center text-sm text-white" style={{ backgroundColor: "#28a645" }}> {/* Changed from #805da8 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center">
           <span className="mr-2">📋</span>

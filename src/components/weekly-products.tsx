@@ -78,7 +78,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
                   <p className="text-gray-700 font-bold text-xl">${parseFloat(product.price).toFixed(2)}</p>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
-                  <Button className="w-full" onClick={() => addToCart(product)} style={{ backgroundColor: "#805da8" }}>
+                  <Button className="w-full bg-[#28a645] hover:bg-[#1e7335]" onClick={() => addToCart(product)}> {/* Changed color */}
                     <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
                   </Button>
                 </CardFooter>

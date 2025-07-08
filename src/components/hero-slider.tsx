@@ -76,7 +76,7 @@ export function HeroSlider() {
 						key={i}
 						className={`h-2 w-2 rounded-full ${
 							i === currentSlide
-								? "bg-purple-500"
+								? "bg-[#28a645]" // Changed from bg-purple-500
 								: "bg-gray-300"
 						}`}
 					/>
