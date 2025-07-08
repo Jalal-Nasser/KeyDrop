@@ -198,15 +198,26 @@ export function ProductForm({ product }: ProductFormProps) {
       try {
         // Optionally delete image from storage if it exists
         if (product.image) {
-          const imagePathInStorage = product.image.split('/public/')[1]; // Extract path after /public/
-          if (imagePathInStorage) {
-            const { error: deleteImageError } = await supabase.storage
-              .from('product-images')
-              .remove([`public/${imagePathInStorage}`]); // Ensure correct path for removal
-            if (deleteImageError) {
-              console.warn("Failed to delete image from storage:", deleteImageError.message);
-              // Don't block product deletion if image deletion fails
+          const imageUrl = typeof product.image === 'string' ? product.image : product.image[0];
+          try {
+            const url = new URL(imageUrl);
+            // The path in the bucket starts after /storage/v1/object/public/bucket_name/
+            // For 'product-images' bucket, it's after /storage/v1/object/public/product-images/
+            const pathSegments = url.pathname.split('/product-images/');
+            const pathInBucket = pathSegments.length > 1 ? pathSegments[1] : null;
+
+            if (pathInBucket) {
+              const { error: deleteImageError } = await supabase.storage
+                .from('product-images')
+                .remove([pathInBucket]); // Remove directly using the path in bucket
+
+              if (deleteImageError) {
+                console.warn("Failed to delete image from storage:", deleteImageError.message);
+                // Don't block product deletion if image deletion fails
+              }
             }
+          } catch (e) {
+            console.warn("Invalid image URL for deletion or parsing error:", imageUrl, e);
           }
         }
 
