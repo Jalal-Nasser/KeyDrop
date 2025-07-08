@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -20,7 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // Imported FormDescription
+  FormDescription,
 } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,42 +28,37 @@ import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
-import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
+import { Checkbox } from "@/components/ui/checkbox"
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  price: z.string().min(1, "Price is required"),
+  price: z.string()
+    .min(1, "Price is required")
+    .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number"),
   description: z.string().optional(),
   image: z.string().optional(),
-  is_on_sale: z.boolean().default(false).optional(), // New: is_on_sale
-  sale_price: z.preprocess(
+  is_on_sale: z.boolean().default(false).optional(),
+  sale_price: z.preprocess( // This will be calculated, but kept in schema for type safety
     (val) => (val === "" ? null : Number(val)),
     z.number().nullable().optional()
   ).refine((val) => val === null || val === undefined || val >= 0, {
     message: "Sale price must be a non-negative number.",
-  }), // New: sale_price
+  }),
   sale_percent: z.preprocess(
     (val) => (val === "" ? null : Number(val)),
     z.number().nullable().optional()
   ).refine((val) => val === null || val === undefined || (val >= 0 && val <= 100), {
     message: "Sale percent must be between 0 and 100.",
-  }), // New: sale_percent
-  tag: z.string().optional(), // New: tag
-  category: z.string().optional(), // New: category
-  sku: z.string().optional(), // New: sku (read-only, auto-generated)
+  }),
+  tag: z.string().optional(),
+  category: z.string().optional(),
+  sku: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.is_on_sale) {
-    if (data.sale_price === null || data.sale_price === undefined) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Sale price is required when product is on sale.",
-        path: ["sale_price"],
-      });
-    }
     if (data.sale_percent === null || data.sale_percent === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Sale percent is required when product is on sale.",
+        message: "Sale percentage is required when product is on sale.",
         path: ["sale_percent"],
       });
     }
@@ -84,31 +79,53 @@ export function ProductForm({ product }: ProductFormProps) {
       price: product?.price || "",
       description: product?.description || "",
       image: Array.isArray(product?.image) ? product.image[0] : product?.image || "",
-      is_on_sale: product?.is_on_sale || false, // Default to false
-      sale_price: product?.sale_price || undefined,
+      is_on_sale: product?.is_on_sale || false,
       sale_percent: product?.sale_percent || undefined,
       tag: product?.tag || "",
       category: product?.category || "",
-      sku: product?.sku || "", // SKU will be read-only
+      sku: product?.sku || "",
     },
   })
 
   const is_on_sale = form.watch("is_on_sale");
+  const price = form.watch("price");
+  const sale_percent = form.watch("sale_percent");
+
+  // Calculate sale_price dynamically
+  const calculatedSalePrice = useMemo(() => {
+    if (is_on_sale && price && sale_percent !== null && sale_percent !== undefined) {
+      const basePrice = parseFloat(price);
+      if (!isNaN(basePrice)) {
+        const discount = sale_percent / 100;
+        const calculated = basePrice * (1 - discount);
+        return calculated >= 0 ? calculated.toFixed(2) : "0.00"; // Ensure non-negative
+      }
+    }
+    return null;
+  }, [is_on_sale, price, sale_percent]);
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    // Clean up values for submission: remove sale_price/percent if not on sale
     const dataToSubmit = { ...values };
-    if (!dataToSubmit.is_on_sale) {
+
+    if (dataToSubmit.is_on_sale) {
+      const basePrice = parseFloat(dataToSubmit.price);
+      const discountPercent = dataToSubmit.sale_percent;
+
+      if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
+        const calculated = basePrice * (1 - discountPercent / 100);
+        dataToSubmit.sale_price = calculated >= 0 ? parseFloat(calculated.toFixed(2)) : 0;
+      } else {
+        dataToSubmit.sale_price = null; // Fallback if calculation fails
+      }
+    } else {
       dataToSubmit.sale_price = null;
       dataToSubmit.sale_percent = null;
     }
 
     let result;
     if (product) {
-      // If product exists, it's an update operation.
       result = await updateProduct(product.id, dataToSubmit);
     } else {
-      // If product does not exist, it's a create operation
       result = await createProduct(undefined, dataToSubmit);
     }
 
@@ -192,7 +209,6 @@ export function ProductForm({ product }: ProductFormProps) {
               )}
             />
 
-            {/* New fields for sale, tag, category, SKU */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -245,17 +261,6 @@ export function ProductForm({ product }: ProductFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="sale_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sale Price</FormLabel>
-                      <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder="$XX.XX" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="sale_percent"
                   render={({ field }) => (
                     <FormItem>
@@ -265,10 +270,32 @@ export function ProductForm({ product }: ProductFormProps) {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="sale_price" // This field is now for display
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Calculated Sale Price</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text" // Changed to text as it's display only
+                          value={calculatedSalePrice !== null ? `$${calculatedSalePrice}` : "N/A"}
+                          readOnly // Make it read-only
+                          disabled // Disable it
+                          className="bg-gray-100 cursor-not-allowed" // Add styling for disabled
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Automatically calculated based on price and percentage.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             )}
 
-            {product && product.sku && ( // Display SKU only for existing products
+            {product && product.sku && (
               <FormField
                 control={form.control}
                 name="sku"
