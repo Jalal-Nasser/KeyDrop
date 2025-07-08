@@ -1,9 +1,9 @@
-// Find the Button component in the ProductGrid file and update its style prop:
-<Button
-  className="w-full"
-  style={{ backgroundColor: "#805da8", color: "white" }}
-  onClick={() => addToCart(product)}
->
-  <ShoppingCart className="w-4 h-4 mr-2" />
-  Add to Cart
-</Button>
+import { Button } from "@/components/ui/button"
+import { ShoppingCart } from "lucide-react"
+import { Product } from "@/types/product"
+import { useCart } from "@/context/cart-context"
+
+export function ProductGrid({ products }: { products: Product[] }) {
+  const { addToCart } = useCart()
+  // ... rest of component
+}
