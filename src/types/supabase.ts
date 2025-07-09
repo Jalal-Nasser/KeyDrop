@@ -17,6 +17,9 @@ export type Database = {
           tag: string | null // Added
           category: string | null // Added
           is_most_sold: boolean | null // Added
+          seo_title: string | null // Added
+          seo_description: string | null // Added
+          seo_keywords: string | null // Added
         }
         Insert: {
           id?: number
@@ -33,6 +36,9 @@ export type Database = {
           tag?: string | null // Added
           category?: string | null // Added
           is_most_sold?: boolean | null // Added
+          seo_title?: string | null // Added
+          seo_description?: string | null // Added
+          seo_keywords?: string | null // Added
         }
         Update: {
           id?: number
@@ -49,6 +55,9 @@ export type Database = {
           tag?: string | null // Added
           category?: string | null // Added
           is_most_sold?: boolean | null // Added
+          seo_title?: string | null // Added
+          seo_description?: string | null // Added
+          seo_keywords?: string | null // Added
         }
       }
       profiles: {

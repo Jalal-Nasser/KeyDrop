@@ -1,14 +1,42 @@
 import { notFound } from "next/navigation"
 import { Product } from "@/types/product"
 import { ProductDetailsClient } from "@/components/product-details-client"
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createSupabaseServerClient }
+ from "@/lib/supabaseServer"
+import { Metadata } from "next"
 
-// This function is no longer needed if products are fetched dynamically
-// export async function generateStaticParams() {
-//   return products.map((product) => ({
-//     id: product.id.toString(),
-//   }))
-// }
+interface ProductPageProps {
+  params: { id: string }
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const productId = parseInt(params.id)
+  const supabase = createSupabaseServerClient()
+
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("name, description, seo_title, seo_description, seo_keywords, image")
+    .eq("id", productId)
+    .single()
+
+  if (error || !product) {
+    return {
+      title: "Product Not Found",
+      description: "The product you are looking for does not exist.",
+    }
+  }
+
+  return {
+    title: product.seo_title || product.name,
+    description: product.seo_description || product.description || `Discover ${product.name} at Dropskey.`,
+    keywords: product.seo_keywords?.split(',').map(keyword => keyword.trim()) || [product.name, "digital key", "software", "dropskey"],
+    openGraph: {
+      title: product.seo_title || product.name,
+      description: product.seo_description || product.description || `Discover ${product.name} at Dropskey.`,
+      images: product.image ? [{ url: product.image }] : [],
+    },
+  }
+}
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const productId = parseInt(params.id)

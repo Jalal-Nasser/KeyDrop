@@ -34,6 +34,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Image from "next/image"
 import { getImagePath } from "@/lib/utils"
 import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescription
+import { Textarea } from "@/components/ui/textarea" // Import Textarea
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -58,6 +59,10 @@ const productSchema = z.object({
   category: z.string().optional(),
   sku: z.string().optional(),
   is_most_sold: z.boolean().default(false).optional(),
+  // SEO fields
+  seo_title: z.string().nullable().optional(),
+  seo_description: z.string().nullable().optional(),
+  seo_keywords: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   if (data.is_on_sale) {
     if (data.sale_percent === null || data.sale_percent === undefined) {
@@ -87,6 +92,9 @@ type ProductServerData = {
   category?: string;
   is_most_sold?: boolean;
   sku?: string;
+  seo_title?: string | null; // Added
+  seo_description?: string | null; // Added
+  seo_keywords?: string | null; // Added
 };
 
 interface ProductFormProps {
@@ -113,6 +121,9 @@ export function ProductForm({ product }: ProductFormProps) {
       sku: product?.sku || "",
       is_most_sold: product?.is_most_sold || false,
       sale_percent: product?.sale_percent ?? null, // Use nullish coalescing
+      seo_title: product?.seo_title ?? null, // Initialize SEO fields
+      seo_description: product?.seo_description ?? null,
+      seo_keywords: product?.seo_keywords ?? null,
     },
   })
 
@@ -157,6 +168,9 @@ export function ProductForm({ product }: ProductFormProps) {
       sku: values.sku,
       is_most_sold: values.is_most_sold,
       sale_price: null, // Initialize sale_price as null, will be set conditionally
+      seo_title: values.seo_title, // Include SEO fields
+      seo_description: values.seo_description,
+      seo_keywords: values.seo_keywords,
     };
     const toastId = toast.loading(product ? "Updating product..." : "Creating product...");
 
@@ -454,6 +468,45 @@ export function ProductForm({ product }: ProductFormProps) {
                 )}
               />
             )}
+
+            {/* SEO Section */}
+            <h3 className="text-lg font-semibold mt-8 mb-4">Search Engine Optimization (SEO)</h3>
+            <FormField
+              control={form.control}
+              name="seo_title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Title</FormLabel>
+                  <FormControl><Input {...field} placeholder="Catchy title for search engines" /></FormControl>
+                  <FormDescription>A concise title (max 60 characters) for search engine results and browser tabs.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="seo_description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Description</FormLabel>
+                  <FormControl><Textarea {...field} placeholder="Brief description for search engine snippets" className="resize-y" /></FormControl>
+                  <FormDescription>A short summary (max 160 characters) of the product for search engine results.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="seo_keywords"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Keywords</FormLabel>
+                  <FormControl><Input {...field} placeholder="comma, separated, keywords" /></FormControl>
+                  <FormDescription>Relevant keywords to help search engines understand your product's content.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter className="pt-8">
               {product && (

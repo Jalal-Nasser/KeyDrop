@@ -14,4 +14,8 @@ export interface Product {
   tag?: string
   category?: string
   is_most_sold?: boolean
+  // SEO fields
+  seo_title?: string | null
+  seo_description?: string | null
+  seo_keywords?: string | null
 }

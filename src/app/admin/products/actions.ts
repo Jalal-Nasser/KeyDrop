@@ -16,6 +16,9 @@ interface ProductData {
   category?: string // Added
   is_most_sold?: boolean // Added
   sku?: string // Added for type safety, but will be handled
+  seo_title?: string | null // Added
+  seo_description?: string | null // Added
+  seo_keywords?: string | null // Added
 }
 
 export async function createProduct(_: any, formData: ProductData) {
