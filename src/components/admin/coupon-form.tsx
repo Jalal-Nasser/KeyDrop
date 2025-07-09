@@ -82,7 +82,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, first_name, last_name')
-          .order('created_at', { ascending: false });
+          .order('id', { ascending: false }); // Changed from 'created_at' to 'id'
 
         if (error) throw error;
         
@@ -102,10 +102,16 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
     const toastId = toast.loading(coupon ? "Updating coupon..." : "Creating coupon...")
     try {
       let result;
+      // Ensure assigned_user_id is null if "public" is selected
+      const dataToSubmit = {
+        ...values,
+        assigned_user_id: values.assigned_user_id === "public" ? null : values.assigned_user_id,
+      };
+
       if (coupon) {
-        result = await updateCoupon(coupon.id, values)
+        result = await updateCoupon(coupon.id, dataToSubmit)
       } else {
-        result = await createCoupon(values)
+        result = await createCoupon(dataToSubmit)
       }
 
       if (result.error) {
@@ -179,14 +185,14 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select onValueChange={field.onChange} value={field.value === null ? "public" : field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a user or leave public" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Public (Any user)</SelectItem>
+                      <SelectItem value="public">Public (Any user)</SelectItem> {/* Changed value from "" to "public" */}
                       {isLoadingUsers ? (
                         <SelectItem value="loading" disabled>Loading users...</SelectItem>
                       ) : (
