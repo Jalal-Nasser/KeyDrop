@@ -26,13 +26,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
-import { toast } => "sonner"
+import { toast } from "sonner"
 import { RichTextEditor } from "./rich-text-editor"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSession } from "@/context/session-context"
 import { v4 as uuidv4 } from 'uuid';
 import Image from "next/image"
-import { getImagePath } from "@/lib/utils"
+import { getImagePath } => "@/lib/utils"
 import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescription
 import { Textarea } from "@/components/ui/textarea" // Import Textarea
 
