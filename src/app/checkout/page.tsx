@@ -19,7 +19,8 @@ import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
 import { Loader2 } from "lucide-react"
-import { getImagePath } from "@/lib/utils" // Updated import
+import { getImagePath } from "@/lib/utils"
+import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 
 const checkoutSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -32,6 +33,9 @@ const checkoutSchema = z.object({
   state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
   postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
   country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
+  agreedToTerms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions.",
+  }),
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
@@ -74,6 +78,7 @@ export default function CheckoutPage() {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
       state_province_region: "", postal_code: "", country: "",
+      agreedToTerms: false, // Default to false
     },
   })
 
@@ -95,7 +100,8 @@ export default function CheckoutPage() {
           .single()
 
         if (data) {
-          form.reset(data)
+          // Merge fetched profile data with default form values, ensuring agreedToTerms is preserved
+          form.reset({ ...data, agreedToTerms: form.getValues("agreedToTerms") })
           setProfile(data)
         }
         if (error && error.code !== 'PGRST116') {
@@ -111,7 +117,7 @@ export default function CheckoutPage() {
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
-  const isProfileValid = checkoutSchema.safeParse(profile).success
+  const isProfileValid = checkoutSchema.safeParse(form.getValues()).success // Validate current form values
 
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
@@ -128,13 +134,14 @@ export default function CheckoutPage() {
       )
     }
 
+    // If profile is not valid (e.g., missing required fields), prompt user to update
     if (!isProfileValid) {
       return (
         <div className="container mx-auto py-20">
           <Card className="max-w-lg mx-auto">
             <CardHeader>
               <CardTitle>Complete Your Profile</CardTitle>
-              <CardDescription>Your billing information is incomplete. Please update your profile to proceed with the checkout.</CardDescription>
+              <CardDescription>Your billing information is incomplete or you have not agreed to the terms. Please update your profile and agree to the terms to proceed with the checkout.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild>
@@ -167,7 +174,7 @@ export default function CheckoutPage() {
                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                           </div>
                         </div>
-                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p> {/* Directly use item.price */}
+                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
@@ -191,6 +198,29 @@ export default function CheckoutPage() {
               <Card>
                 <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
                 <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="agreedToTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            I agree to the{" "}
+                            <Link href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                              Terms and Conditions
+                            </Link>
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                   <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
                 </CardContent>
               </Card>
@@ -250,7 +280,7 @@ export default function CheckoutPage() {
                         <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
-                      <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p> {/* Directly use item.price */}
+                      <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
