@@ -45,7 +45,7 @@ export default function ContactForm() {
     const toastId = toast.loading("Sending your message...")
 
     try {
-      const res = await fetch("/api/contact", { // Changed to /api/contact as per Next.js API routes
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values)
@@ -67,7 +67,7 @@ export default function ContactForm() {
   }
 
   return (
-    <Card className="max-w-lg mx-auto">
+    <Card className="max-w-lg mx-auto shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Get in Touch</CardTitle>
         <CardDescription>We'd love to hear from you! Fill out the form below.</CardDescription>
