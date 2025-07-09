@@ -83,7 +83,7 @@ export function Header() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
+              <div className="hidden lg:flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
                 <button className="flex items-center gap-x-1 hover:text-blue-600">
                   <Heart className="w-4 h-4" />
                   <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
@@ -114,6 +114,15 @@ export function Header() {
                   )}
                 </button>
               </div>
+              {/* Mobile-only cart icon for header (if needed, otherwise remove) */}
+              <button onClick={() => setIsCartSheetOpen(true)} className="lg:hidden flex items-center gap-x-1 hover:text-blue-600 relative">
+                <ShoppingCart className="w-4 h-4" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer"
 import { Toaster } from "@/components/ui/sonner"
 import { PayPalProvider } from "@/context/paypal-provider"
 import { CartProvider } from "@/context/cart-context"
+import { MobileNavBar } from "@/components/mobile-nav-bar" // Import the new component
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -39,8 +40,9 @@ export default function RootLayout({
             <SessionProvider>
               <CartProvider>
                 <Header />
-                <main className="flex-grow">{children}</main>
+                <main className="flex-grow pb-[60px]">{children}</main> {/* Added padding-bottom */}
                 <Footer />
+                <MobileNavBar /> {/* Add the mobile navigation bar here */}
               </CartProvider>
             </SessionProvider>
           </PayPalProvider>
