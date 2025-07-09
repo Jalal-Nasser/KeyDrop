@@ -15,9 +15,7 @@ interface PayPalButtonProps {
 export function PayPalButton({ product, quantity }: PayPalButtonProps) {
   const { session, supabase } = useSession()
 
-  const parsePrice = (price: string): number => {
-    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
-  }
+  // Removed parsePrice as product.price is now a number
 
   const createOrder = (data: any, actions: any) => { // Changed type from CreateOrderData to any
     if (!session) {
@@ -25,7 +23,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
       return Promise.reject(new Error("User not signed in"))
     }
 
-    const price = parsePrice(product.price)
+    const price = product.price // Directly use product.price as it's a number
     const totalValue = (price * quantity).toFixed(2)
 
     return actions.order.create({
@@ -48,7 +46,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     }
 
     const details = await actions.order.capture()
-    const price = parsePrice(product.price)
+    const price = product.price // Directly use product.price as it's a number
     const total = price * quantity
 
     if (details.status === "COMPLETED") {
@@ -76,7 +74,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
           order_id: orderData.id,
           product_id: product.id,
           quantity: quantity,
-          price_at_purchase: price,
+          price_at_purchase: price, // Directly use price as it's a number
         })
 
         if (itemError) {

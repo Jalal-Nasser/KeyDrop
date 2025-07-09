@@ -38,10 +38,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("cart", JSON.stringify(cartItems))
   }, [cartItems])
 
-  const parsePrice = (price: string): number => {
-    if (typeof price !== 'string') return 0;
-    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
-  }
+  // Removed parsePrice as price is now consistently a number
 
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems(prevItems => {
@@ -75,7 +72,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           },
           duration: 3000,
         });
-        return [...prevItems, { ...product, quantity }]
+        // Ensure price is stored as a number
+        return [...prevItems, { ...product, quantity, price: product.price }]
       }
     })
   }
@@ -115,8 +113,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
   const cartTotal = cartItems.reduce((total, item) => {
-    const price = parsePrice(item.price)
-    return total + price * item.quantity
+    // Price is now directly a number
+    return total + item.price * item.quantity
   }, 0)
 
   return (

@@ -17,9 +17,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
   const { session, supabase } = useSession()
   const { clearCart } = useCart()
 
-  const parsePrice = (price: string): number => {
-    return parseFloat(price.replace(/[^0-9.-]+/g, ""))
-  }
+  // Removed parsePrice as item.price is now a number
 
   const handleProfileUpdate = async () => {
     if (!session) return
@@ -99,7 +97,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
-          price_at_purchase: parsePrice(item.price),
+          price_at_purchase: item.price, // Directly use item.price as it's a number
         }))
 
         const { error: itemError } = await supabase

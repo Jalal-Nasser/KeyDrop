@@ -48,7 +48,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.quantity} x ${parseFloat(item.price.replace(/[^0-g.-]+/g, "")).toFixed(2)}
+                        {item.quantity} x ${item.price.toFixed(2)} {/* Directly use item.price */}
                       </p>
                     </div>
                     <Button

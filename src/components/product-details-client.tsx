@@ -50,7 +50,7 @@
           </div>
           <div className="space-y-6">
             <h1 className="text-4xl font-bold text-gray-900">{product.name}</h1>
-            <p className="text-3xl font-semibold text-blue-600">${parseFloat(product.price).toFixed(2)}</p>
+            <p className="text-3xl font-semibold text-blue-600">${product.price.toFixed(2)}</p> {/* Directly use product.price */}
 
             <div>
               <h2 className="text-xl font-semibold mb-2">Description</h2>

@@ -11,6 +11,14 @@ import { useCart } from "@/context/cart-context"
 import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 import { getImagePath } from "@/lib/utils"
 import { Product } from "@/types/product"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { ProductQuickView } from "./product-quick-view" // Import the new component
 
 interface ProductCardProps {
   product: Product
@@ -18,6 +26,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1)
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const { addToCart } = useCart()
   const { addToWishlist, removeFromWishlist, isProductInWishlist } = useWishlist() // Use wishlist hook
 
@@ -39,9 +48,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const displayPrice = product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined
     ? product.sale_price.toFixed(2)
-    : parseFloat(product.price).toFixed(2);
+    : product.price.toFixed(2); // Directly use product.price
 
-  const originalPrice = parseFloat(product.price).toFixed(2);
+  const originalPrice = product.price.toFixed(2); // Directly use product.price
 
   const imagePath = getImagePath(product.image);
 
@@ -80,9 +89,16 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-col items-center space-y-4">
-        <Button variant="outline" className="w-full">
-          QUICK VIEW
-        </Button>
+        <Dialog open={isQuickViewOpen} onOpenChange={setIsQuickViewOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              QUICK VIEW
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-3xl p-0"> {/* Adjust max-width as needed */}
+            <ProductQuickView product={product} />
+          </DialogContent>
+        </Dialog>
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center border rounded-md">
             <Button

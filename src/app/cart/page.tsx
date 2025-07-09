@@ -95,7 +95,7 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium">${parseFloat(item.price.replace(/[^0-9.-]+/g, "")).toFixed(2)}</div>
+                    <div className="font-medium">${item.price.toFixed(2)}</div> {/* Directly use item.price */}
                     <div>
                       <div className="flex items-center border rounded-md w-fit">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -112,7 +112,7 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium text-right">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</div>
+                    <div className="font-medium text-right">${(item.price * item.quantity).toFixed(2)}</div> {/* Directly use item.price */}
                   </div>
                 ))}
               </div>

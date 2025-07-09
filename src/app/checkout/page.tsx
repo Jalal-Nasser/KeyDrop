@@ -167,7 +167,7 @@ export default function CheckoutPage() {
                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                           </div>
                         </div>
-                        <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p> {/* Directly use item.price */}
                       </div>
                     ))}
                   </div>
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
                         <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
-                      <p className="font-medium">${(parseFloat(item.price.replace(/[^0-9.-]+/g, "")) * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p> {/* Directly use item.price */}
                     </div>
                   ))}
                 </div>

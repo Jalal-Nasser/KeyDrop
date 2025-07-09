@@ -2,8 +2,8 @@ export interface Product {
   id: number
   name: string
   description?: string
-  price: string
-  image?: string | null // Changed from string | string[]
+  price: number // Changed from string to number
+  image?: string | null
   is_digital?: boolean
   download_url?: string
   sale_price?: number
@@ -13,5 +13,5 @@ export interface Product {
   sku?: string
   tag?: string
   category?: string
-  is_most_sold?: boolean // Added
+  is_most_sold?: boolean
 }
