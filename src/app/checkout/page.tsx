@@ -18,7 +18,7 @@ import { PayPalCartButton } from "@/components/paypal-cart-button"
 import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
-import { Loader2 } from "lucide-react"
+import { Loader2, ShieldCheck, Lock } from "lucide-react" // Added Lock icon
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 
@@ -52,15 +52,21 @@ const Stepper = ({ step }: { step: number }) => {
           <React.Fragment key={name}>
             <div className="flex flex-col items-center text-center">
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  index + 1 === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300
+                  ${index + 1 === step
+                    ? "bg-blue-600 text-white shadow-md scale-110"
+                    : "bg-gray-200 text-gray-600"
+                  }`}
               >
                 {index + 1}
               </div>
-              <p className={`mt-2 text-sm ${index + 1 === step ? "font-semibold text-primary" : "text-muted-foreground"}`}>{name}</p>
+              <p className={`mt-2 text-sm transition-colors duration-300
+                ${index + 1 === step ? "font-semibold text-blue-600" : "text-muted-foreground"}`}
+              >
+                {name}
+              </p>
             </div>
-            {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
+            {index < steps.length - 1 && <div className="flex-1 h-px bg-gray-300 mx-2" />}
           </React.Fragment>
         ))}
       </div>
@@ -150,7 +156,7 @@ export default function CheckoutPage() {
     if (!isProfileDataComplete) {
       return (
         <div className="container mx-auto py-20">
-          <Card className="max-w-lg mx-auto">
+          <Card className="max-w-lg mx-auto shadow-lg rounded-lg">
             <CardHeader>
               <CardTitle>Complete Your Profile</CardTitle>
               <CardDescription>Your billing information is incomplete. Please update your profile to proceed with the checkout.</CardDescription>
@@ -166,19 +172,32 @@ export default function CheckoutPage() {
     }
 
     return (
-      <div className="bg-muted/40">
+      <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+        {/* Hero Section for Logged-in User */}
+        <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
+          <div className="absolute inset-0 bg-black/20 z-0"></div>
+          <div className="container mx-auto px-4 relative z-10">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-md">
+              Secure Checkout
+            </h1>
+            <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto opacity-90">
+              Review your order and complete your purchase.
+            </p>
+          </div>
+        </section>
+
         <div className="container mx-auto px-4 py-8 md:py-12">
           <Stepper step={2} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mt-8">
             <div className="lg:col-span-3 space-y-8">
-              <Card>
+              <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {cartItems.map(item => (
-                      <div key={item.id} className="flex items-center justify-between">
+                      <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                         <div className="flex items-center gap-4">
-                          <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white">
+                          <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white flex-shrink-0">
                             <Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" />
                           </div>
                           <div>
@@ -192,13 +211,13 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
                 <CardContent><PromoCodeForm /></CardContent>
               </Card>
             </div>
             <div className="lg:col-span-2 space-y-8">
-              <Card>
+              <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Cart Totals</CardTitle></CardHeader>
                 <CardContent>
                   <div className="flex justify-between text-base"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
@@ -207,7 +226,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
                 <CardContent>
                   {/* Wrap the form fields and PayPal button in a Form component */}
@@ -241,6 +260,19 @@ export default function CheckoutPage() {
                   </Form>
                 </CardContent>
               </Card>
+              <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+                <CardHeader className="p-0 pb-4">
+                  <ShieldCheck className="h-12 w-12 mx-auto mb-2 text-white" />
+                  <CardTitle className="text-xl font-bold text-white">Secure Checkout</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-2">
+                  <p className="text-sm text-blue-100">Your payment information is encrypted and secure.</p>
+                  <div className="flex justify-center items-center gap-2 text-blue-100 text-xs">
+                    <Lock className="h-4 w-4" />
+                    <span>SSL Secured Transactions</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -250,15 +282,25 @@ export default function CheckoutPage() {
 
   // Guest user view
   return (
-    <div className="bg-muted/40">
-      <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="mx-auto max-w-4xl text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Secure Checkout</h1>
-          <p className="text-muted-foreground">Please fill in your details to complete your purchase.</p>
+    <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+      {/* Hero Section for Guest User */}
+      <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/20 z-0"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-md">
+            Secure Checkout
+          </h1>
+          <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto opacity-90">
+            Please fill in your details to complete your purchase.
+          </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+      </section>
+
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <Stepper step={2} />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mt-8">
           <div className="lg:col-span-3">
-            <Card>
+            <Card className="shadow-lg rounded-lg">
               <CardHeader><CardTitle>Billing & Shipping Details</CardTitle></CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -281,18 +323,41 @@ export default function CheckoutPage() {
                       <FormField control={form.control} name="postal_code" render={({ field }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
+                    <FormField
+                      control={form.control}
+                      name="agreedToTerms"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              I agree to the{" "}
+                              <Link href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                                Terms and Conditions
+                              </Link>
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
                   </form>
                 </Form>
               </CardContent>
             </Card>
           </div>
           <div className="lg:col-span-2 space-y-8">
-            <Card>
+            <Card className="shadow-lg rounded-lg">
               <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex items-center justify-between">
+                    <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                       <div className="flex items-center gap-4">
                         <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
@@ -308,11 +373,11 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-lg rounded-lg">
               <CardHeader><CardTitle>Promo Code</CardTitle></CardHeader>
               <CardContent><PromoCodeForm /></CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-lg rounded-lg">
               <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
               <CardContent>
                 {!session ? (
@@ -325,6 +390,19 @@ export default function CheckoutPage() {
                 )}
               </CardContent>
             </Card>
+            <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+                <CardHeader className="p-0 pb-4">
+                  <ShieldCheck className="h-12 w-12 mx-auto mb-2 text-white" />
+                  <CardTitle className="text-xl font-bold text-white">Secure Checkout</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-2">
+                  <p className="text-sm text-blue-100">Your payment information is encrypted and secure.</p>
+                  <div className="flex justify-center items-center gap-2 text-blue-100 text-xs">
+                    <Lock className="h-4 w-4" />
+                    <span>SSL Secured Transactions</span>
+                  </div>
+                </CardContent>
+              </Card>
           </div>
         </div>
       </div>
