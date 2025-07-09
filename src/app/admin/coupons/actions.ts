@@ -8,8 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 interface CouponData {
   code: string;
   discount_percent: number;
-  assigned_user_id: string | null | undefined; // Changed to allow undefined
-  is_applied: boolean;
+  assigned_user_id?: string | null;
+  is_applied?: boolean; // Changed to optional property
 }
 
 export async function createCoupon(formData: CouponData) {
