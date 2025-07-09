@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useForm } from "@hookform/react" // Changed from "react-hook-form" to "@hookform/react"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
@@ -59,8 +59,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
     resolver: zodResolver(couponSchema),
     defaultValues: {
       discount_percent: coupon?.discount_percent || 0,
-      // If assigned_user_id is null, set it to "public" for the Select component
-      assigned_user_id: coupon?.assigned_user_id ?? "public", 
+      assigned_user_id: coupon?.assigned_user_id ?? "public",
     },
   })
 
@@ -83,7 +82,6 @@ export function CouponForm({ coupon }: CouponFormProps) {
   const onSubmit = async (values: CouponFormValues) => {
     const toastId = toast.loading(coupon ? "Updating coupon..." : "Generating coupon...")
     try {
-      // Convert "public" back to null for the database
       const assignedUserIdForDb = values.assigned_user_id === "public" ? null : values.assigned_user_id;
 
       let result;
@@ -105,7 +103,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
 
       toast.success(`Coupon ${coupon ? "updated" : "generated"} successfully!`, { id: toastId })
       setIsOpen(false)
-      form.reset() // Reset form after successful submission
+      form.reset()
     } catch (error: any) {
       toast.error(error.message || "An unexpected error occurred.", { id: toastId })
     }
@@ -142,7 +140,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            {!coupon && ( // Only show discount percent field when creating new coupon
+            {!coupon && (
               <FormField
                 control={form.control}
                 name="discount_percent"
@@ -150,7 +148,6 @@ export function CouponForm({ coupon }: CouponFormProps) {
                   <FormItem>
                     <FormLabel>Discount Percentage (%)</FormLabel>
                     <FormControl>
-                      {/* Ensure value is always a string for the Input component */}
                       <Input type="number" step="1" min="1" max="100" {...field} value={String(field.value)} />
                     </FormControl>
                     <FormMessage />
@@ -164,7 +161,6 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  {/* The value prop of Select expects a string, so field.value (which is "public" or a user ID) works directly */}
                   <Select onValueChange={field.onChange} value={field.value || "public"}>
                     <FormControl>
                       <SelectTrigger>
@@ -172,7 +168,6 @@ export function CouponForm({ coupon }: CouponFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Use a non-empty string for the "No specific user" option */}
                       <SelectItem value="public">No specific user (public)</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
