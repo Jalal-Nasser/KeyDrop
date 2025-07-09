@@ -45,10 +45,10 @@ export default async function ProductsPage() {
           <TableBody>
             {(products as Product[])?.map((product) => (
               <TableRow key={product.id}>
-                <TableCell>{product.id}</TableCell>
+                <TableCell>{product.id.toString()}</TableCell> {/* Fixed: Convert number to string */}
                 <TableCell>{product.sku || "N/A"}</TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>${parseFloat(product.price).toFixed(2)}</TableCell>
+                <TableCell>${parseFloat(product.price.toString()).toFixed(2)}</TableCell>
                 <TableCell>
                   {product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined
                     ? `$${product.sale_price.toFixed(2)} (${product.sale_percent || 0}%)`

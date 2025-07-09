@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache"
 
 interface ProductData {
   name: string
-  price: string
+  price: number // Changed from string to number
   description?: string
   image?: string
   is_on_sale?: boolean // Added

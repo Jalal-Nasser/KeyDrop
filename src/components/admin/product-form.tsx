@@ -37,9 +37,11 @@ import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescr
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  // Price is input as string, transformed to number
   price: z.string()
     .min(1, "Price is required")
-    .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number"),
+    .transform((val) => parseFloat(val))
+    .refine((val) => !isNaN(val) && val >= 0, "Price must be a non-negative number."),
   description: z.string().optional(),
   image: z.string().optional(),
   is_on_sale: z.boolean().default(false).optional(),
@@ -93,7 +95,7 @@ export function ProductForm({ product }: ProductFormProps) {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || "",
-      price: product?.price || "",
+      price: product?.price?.toString() || "", // Convert number to string for input
       description: product?.description || "",
       image: product?.image ? getImagePath(product.image) : "",
       is_on_sale: product?.is_on_sale || false,
@@ -106,7 +108,7 @@ export function ProductForm({ product }: ProductFormProps) {
   })
 
   const is_on_sale = form.watch("is_on_sale");
-  const price = form.watch("price");
+  const price = form.watch("price"); // This will be a string from the input
   const sale_percent = form.watch("sale_percent");
 
   // Calculate sale_price dynamically
@@ -167,7 +169,7 @@ export function ProductForm({ product }: ProductFormProps) {
       }
 
       if (dataToSubmit.is_on_sale) {
-        const basePrice = parseFloat(dataToSubmit.price);
+        const basePrice = dataToSubmit.price; // This is now a number due to schema transform
         const discountPercent = dataToSubmit.sale_percent;
 
         if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
