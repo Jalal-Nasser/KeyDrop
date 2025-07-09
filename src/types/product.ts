@@ -3,7 +3,7 @@ export interface Product {
   name: string
   description?: string
   price: string
-  image?: string | string[]
+  image?: string | null // Changed from string | string[]
   is_digital?: boolean
   download_url?: string
   sale_price?: number
