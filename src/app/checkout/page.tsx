@@ -210,30 +210,35 @@ export default function CheckoutPage() {
               <Card>
                 <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
                 <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="agreedToTerms"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            I agree to the{" "}
-                            <Link href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                              Terms and Conditions
-                            </Link>
-                          </FormLabel>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                  {/* Wrap the form fields and PayPal button in a Form component */}
+                  <Form {...form}>
+                    <form> {/* A dummy form tag is needed for FormField to work */}
+                      <FormField
+                        control={form.control}
+                        name="agreedToTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>
+                                I agree to the{" "}
+                                <Link href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                                  Terms and Conditions
+                                </Link>
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </div>
