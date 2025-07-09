@@ -59,7 +59,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
     resolver: zodResolver(couponSchema),
     defaultValues: {
       discount_percent: coupon?.discount_percent || 0,
-      assigned_user_id: coupon?.assigned_user_id ?? null, // Changed default to null for consistency with nullable()
+      assigned_user_id: coupon?.assigned_user_id ?? "", // Set default to empty string for Select component
     },
   })
 
@@ -148,8 +148,8 @@ export function CouponForm({ coupon }: CouponFormProps) {
                   <FormItem>
                     <FormLabel>Discount Percentage (%)</FormLabel>
                     <FormControl>
-                      {/* Ensure value is always a string, handling potential null/undefined from field.value */}
-                      <Input type="number" step="1" min="1" max="100" {...field} value={field.value?.toString() ?? ''} />
+                      {/* Ensure value is always a string for the Input component */}
+                      <Input type="number" step="1" min="1" max="100" {...field} value={String(field.value)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -162,16 +162,16 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  {/* Ensure value is string | null, explicitly converting undefined to null */}
-                  <Select onValueChange={field.onChange} value={field.value === undefined ? null : field.value}>
+                  {/* Ensure value is string for the Select component */}
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Use null for the "No specific user" option to match the type */}
-                      <SelectItem value={null}>No specific user (public)</SelectItem>
+                      {/* Use empty string for the "No specific user" option */}
+                      <SelectItem value="">No specific user (public)</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.first_name} {user.last_name} ({user.id.substring(0, 8)}...)
