@@ -146,8 +146,17 @@ export function ProductForm({ product }: ProductFormProps) {
 
   const onSubmit = async (values: ProductFormValues) => {
     const dataToSubmit: ProductServerData = {
-      ...values,
-      price: parseFloat(values.price), // Parse price string to number
+      name: values.name,
+      price: parseFloat(values.price), // Parse price string to number here
+      description: values.description,
+      image: values.image,
+      is_on_sale: values.is_on_sale,
+      sale_percent: values.sale_percent,
+      tag: values.tag,
+      category: values.category,
+      sku: values.sku,
+      is_most_sold: values.is_most_sold,
+      sale_price: null, // Initialize sale_price as null, will be set conditionally
     };
     const toastId = toast.loading(product ? "Updating product..." : "Creating product...");
 
@@ -181,14 +190,8 @@ export function ProductForm({ product }: ProductFormProps) {
       }
 
       if (dataToSubmit.is_on_sale) {
-        const basePrice = dataToSubmit.price; // This is now a number due to schema transform
+        const basePrice = dataToSubmit.price;
         const discountPercent = dataToSubmit.sale_percent;
-
-        if (values.sale_price !== null && values.sale_price !== undefined) {
-          dataToSubmit.sale_price = parseFloat(values.sale_price);
-        } else {
-          dataToSubmit.sale_price = null;
-        }
 
         if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
           const calculated = basePrice * (1 - discountPercent / 100);
