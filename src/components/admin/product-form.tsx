@@ -32,7 +32,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useSession } from "@/context/session-context"
 import { v4 as uuidv4 } from 'uuid';
 import Image from "next/image"
-import { getImagePath } => "@/lib/utils"
+import { getImagePath } from "@/lib/utils"
 import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescription
 import { Textarea } from "@/components/ui/textarea" // Import Textarea
 
