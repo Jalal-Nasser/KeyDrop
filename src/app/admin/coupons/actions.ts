@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface CouponData {
   code: string;
   discount_percent: number;
-  assigned_user_id: string | null;
+  assigned_user_id: string | null | undefined; // Changed to allow undefined
   is_applied: boolean;
 }
 
