@@ -59,7 +59,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
     resolver: zodResolver(couponSchema),
     defaultValues: {
       discount_percent: coupon?.discount_percent || 0,
-      assigned_user_id: coupon?.assigned_user_id ?? "", // Initialize with empty string for Select
+      assigned_user_id: coupon?.assigned_user_id ?? null, // Initialize with null to align with nullable()
     },
   })
 
@@ -163,7 +163,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
                   {/* Ensure value is always a string for the Select component */}
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
