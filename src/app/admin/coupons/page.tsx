@@ -11,6 +11,8 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 
+export const revalidate = 0 // Disable cache to always get fresh data
+
 export default async function AdminCouponsPage() {
   const supabase = createSupabaseServerClient()
   const { data: coupons, error } = await supabase
