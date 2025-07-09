@@ -148,7 +148,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
                   <FormItem>
                     <FormLabel>Discount Percentage (%)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="1" min="1" max="100" {...field} />
+                      <Input type="number" step="1" min="1" max="100" {...field} value={field.value.toString()} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
