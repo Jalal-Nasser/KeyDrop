@@ -11,6 +11,7 @@ import { AuthSheet } from "@/components/auth-sheet"
 import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
 import { cn } from "@/lib/utils" // Import cn for conditional classes
+import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -22,6 +23,7 @@ export function Header() {
   const navRef = useRef<HTMLElement>(null)
   const { session } = useSession()
   const { cartCount, cartTotal } = useCart()
+  const { wishlistCount } = useWishlist() // Use wishlist hook
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -83,11 +85,16 @@ export function Header() {
                 </div>
               </div>
 
-              <div className="hidden lg:flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
-                <button className="flex items-center gap-x-1 hover:text-blue-600">
+              <div className="flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
+                <Link href="/wishlist" className="hidden lg:flex items-center gap-x-1 hover:text-blue-600 relative">
                   <Heart className="w-4 h-4" />
                   <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
-                </button>
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
                 <span className="text-gray-300 hidden sm:inline">|</span> {/* Hide separator on very small screens */}
                 {session ? (
                   <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-blue-600">
@@ -114,15 +121,6 @@ export function Header() {
                   )}
                 </button>
               </div>
-              {/* Mobile-only cart icon for header (if needed, otherwise remove) */}
-              <button onClick={() => setIsCartSheetOpen(true)} className="lg:hidden flex items-center gap-x-1 hover:text-blue-600 relative">
-                <ShoppingCart className="w-4 h-4" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
             </div>
           </div>
         </div>

@@ -6,16 +6,18 @@ import { Home, ShoppingBag, Heart, PackageCheck, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useCart } from "@/context/cart-context"
 import { useSession } from "@/context/session-context"
+import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 
 export function MobileNavBar() {
   const pathname = usePathname()
   const { cartCount } = useCart() // Assuming cartCount can be used as a placeholder for wishlist count for now
   const { session } = useSession()
+  const { wishlistCount } = useWishlist() // Use wishlist hook
 
   const navItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/shop", label: "Shop", icon: ShoppingBag },
-    { href: "/wishlist", label: "Wishlist", icon: Heart, count: 0 }, // Placeholder for wishlist count
+    { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount }, // Use actual wishlist count
     { href: "/account/orders", label: "Track Order", icon: PackageCheck },
     { href: "/account", label: "My account", icon: User },
   ]

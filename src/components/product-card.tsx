@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card"
 import { ShoppingCart, Minus, Plus, Heart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
+import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 import { getImagePath } from "@/lib/utils"
 import { Product } from "@/types/product"
 
@@ -18,6 +19,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
+  const { addToWishlist, removeFromWishlist, isProductInWishlist } = useWishlist() // Use wishlist hook
 
   const handleAddToCart = () => {
     addToCart(product, quantity)
@@ -25,6 +27,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(Math.max(1, newQuantity)) // Ensure quantity is at least 1
+  }
+
+  const handleWishlistToggle = () => {
+    if (isProductInWishlist(product.id)) {
+      removeFromWishlist(product.id)
+    } else {
+      addToWishlist(product)
+    }
   }
 
   const displayPrice = product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined
@@ -105,10 +115,14 @@ export function ProductCard({ product }: ProductCardProps) {
           >
             <ShoppingCart className="h-5 w-5" />
           </Button>
-          {/* Optional: Wishlist icon - uncomment and add functionality if needed */}
-          {/* <Button variant="ghost" size="icon" className="ml-2">
-            <Heart className="h-5 w-5 text-gray-500 hover:text-red-500" />
-          </Button> */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-2"
+            onClick={handleWishlistToggle}
+          >
+            <Heart className={isProductInWishlist(product.id) ? "h-5 w-5 text-red-500 fill-red-500" : "h-5 w-5 text-gray-500"} />
+          </Button>
         </div>
       </CardFooter>
     </Card>

@@ -3,10 +3,11 @@
     import { useState } from "react"
     import Image from "next/image"
     import { Button } from "@/components/ui/button"
-    import { ShoppingCart } from "lucide-react"
+    import { ShoppingCart, Heart } from "lucide-react" // Import Heart icon
     import { PayPalButton } from "@/components/paypal-button"
     import { Product } from "@/types/product"
     import { useCart } from "@/context/cart-context"
+    import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
     import { getImagePath } from "@/lib/utils"
     import { Card, CardContent } from "./ui/card"
     import { Separator } from "./ui/separator"
@@ -19,9 +20,18 @@
     export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
       const [quantity, setQuantity] = useState(1)
       const { addToCart } = useCart()
+      const { addToWishlist, removeFromWishlist, isProductInWishlist } = useWishlist() // Use wishlist hook
 
       const handleAddToCart = () => {
         addToCart(product, quantity)
+      }
+
+      const handleWishlistToggle = () => {
+        if (isProductInWishlist(product.id)) {
+          removeFromWishlist(product.id)
+        } else {
+          addToWishlist(product)
+        }
       }
 
       const imagePath = getImagePath(product.image);
@@ -67,6 +77,15 @@
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1"
+                onClick={handleWishlistToggle}
+              >
+                <Heart className={isProductInWishlist(product.id) ? "mr-2 h-5 w-5 text-red-500 fill-red-500" : "mr-2 h-5 w-5 text-gray-500"} />
+                {isProductInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
               </Button>
               <PayPalButton product={product} quantity={quantity} />
             </div>

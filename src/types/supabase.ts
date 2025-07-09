@@ -147,6 +147,26 @@ export type Database = {
           price_at_purchase?: number
         }
       }
+      wishlist_items: {
+        Row: {
+          id: string
+          user_id: string
+          product_id: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product_id: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product_id?: number
+          created_at?: string
+        }
+      }
     }
     Views: {
       // Add views if any
