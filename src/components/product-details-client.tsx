@@ -44,7 +44,7 @@
               alt={product.name}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-contain p-4"
+              className="object-contain"
               priority // Added priority prop
             />
           </div>

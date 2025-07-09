@@ -52,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
           SALE {product.sale_percent}%
         </div>
       )}
-      <Link href={`/product/${product.id}`} className="relative block h-48 w-full overflow-hidden flex items-center justify-center bg-white p-4">
+      <Link href={`/product/${product.id}`} className="relative block h-64 w-full overflow-hidden flex items-center justify-center bg-white">
         <Image
           src={imagePath}
           alt={product.name}
