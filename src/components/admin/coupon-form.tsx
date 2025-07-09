@@ -161,7 +161,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                  <Select onValueChange={field.onChange} value={field.value ?? null}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
