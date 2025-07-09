@@ -59,7 +59,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
     resolver: zodResolver(couponSchema),
     defaultValues: {
       discount_percent: coupon?.discount_percent || 0,
-      assigned_user_id: coupon?.assigned_user_id ?? "", // Set default to empty string for Select component
+      assigned_user_id: coupon?.assigned_user_id ?? null, // Set default to null to align with nullable()
     },
   })
 
@@ -162,16 +162,16 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  {/* Ensure value is always a string for the Select component */}
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  {/* Explicitly convert undefined to null to match Select's expected type */}
+                  <Select onValueChange={field.onChange} value={field.value === undefined ? null : field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Use empty string for the "No specific user" option */}
-                      <SelectItem value="">No specific user (public)</SelectItem>
+                      {/* Use null for the "No specific user" option to match the type */}
+                      <SelectItem value={null}>No specific user (public)</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.first_name} {user.last_name} ({user.id.substring(0, 8)}...)
