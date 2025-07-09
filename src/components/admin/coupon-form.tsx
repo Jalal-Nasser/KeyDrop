@@ -54,7 +54,7 @@ const couponSchema = z.object({
     z.number().min(0, "Discount must be at least 0").max(100, "Discount cannot exceed 100")
   ),
   assigned_user_id: z.string().nullable().optional(),
-  is_applied: z.boolean().default(false).optional(),
+  is_applied: z.boolean().default(false), // Removed .optional()
 })
 
 type CouponFormValues = z.infer<typeof couponSchema>
@@ -82,7 +82,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, first_name, last_name')
-          .order('id', { ascending: false }); // Changed from 'created_at' to 'id'
+          .order('id', { ascending: false });
 
         if (error) throw error;
         
@@ -192,7 +192,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="public">Public (Any user)</SelectItem> {/* Changed value from "" to "public" */}
+                      <SelectItem value="public">Public (Any user)</SelectItem>
                       {isLoadingUsers ? (
                         <SelectItem value="loading" disabled>Loading users...</SelectItem>
                       ) : (

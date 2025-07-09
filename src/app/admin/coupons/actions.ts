@@ -9,7 +9,7 @@ interface CouponData {
   code: string;
   discount_percent: number;
   assigned_user_id?: string | null;
-  is_applied?: boolean; // Changed to optional property
+  is_applied: boolean; // Changed to non-optional
 }
 
 export async function createCoupon(formData: CouponData) {
