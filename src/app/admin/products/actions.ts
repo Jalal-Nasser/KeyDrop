@@ -51,3 +51,15 @@ export async function updateProduct(id: number | undefined, formData: ProductDat
   revalidatePath("/") // Revalidate homepage
   return { error: null }
 }
+
+export async function deleteProduct(id: number) {
+  const supabase = createServerActionClient({ cookies })
+  const { error } = await supabase.from("products").delete().eq("id", id)
+  if (error) {
+    return { error: error.message }
+  }
+  revalidatePath("/admin/products")
+  revalidatePath("/shop")
+  revalidatePath("/") // Revalidate homepage
+  return { error: null }
+}
