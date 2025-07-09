@@ -55,9 +55,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         toast.error("Failed to load your wishlist.")
         setWishlistItems([])
       } else {
-        // Filter out items where product data might be null (e.g., if product was deleted)
-        // And cast to the correct WishlistItem type
-        const validItems = data.filter(item => item.products !== null) as WishlistItem[]
+        // Filter out items where product data might be null or empty
+        const validItems = data.filter(item => item.products && item.products.length > 0) as WishlistItem[]
         setWishlistItems(validItems)
       }
       setIsLoadingWishlist(false)
