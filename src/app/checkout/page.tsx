@@ -22,7 +22,7 @@ import { Loader2 } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 
-const checkoutSchema = z.object({
+const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
   last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
   company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
@@ -33,6 +33,9 @@ const checkoutSchema = z.object({
   state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
   postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
   country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
+});
+
+const checkoutSchema = profileBillingSchema.extend({
   agreedToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
@@ -69,7 +72,6 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { cartItems, cartTotal, cartCount } = useCart()
   const { session, supabase } = useSession()
-  const [profile, setProfile] = useState<CheckoutFormValues | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
 
   const form = useForm<CheckoutFormValues>({
@@ -100,9 +102,17 @@ export default function CheckoutPage() {
           .single()
 
         if (data) {
-          // Merge fetched profile data with default form values, ensuring agreedToTerms is preserved
-          form.reset({ ...data, agreedToTerms: form.getValues("agreedToTerms") })
-          setProfile(data)
+          // Set each profile field individually, but do NOT touch agreedToTerms
+          form.setValue("first_name", data.first_name || "");
+          form.setValue("last_name", data.last_name || "");
+          form.setValue("company_name", data.company_name || "");
+          form.setValue("vat_number", data.vat_number || "");
+          form.setValue("address_line_1", data.address_line_1 || "");
+          form.setValue("address_line_2", data.address_line_2 || "");
+          form.setValue("city", data.city || "");
+          form.setValue("state_province_region", data.state_province_region || "");
+          form.setValue("postal_code", data.postal_code || "");
+          form.setValue("country", data.country || "");
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -117,7 +127,9 @@ export default function CheckoutPage() {
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
-  const isProfileValid = checkoutSchema.safeParse(form.getValues()).success // Validate current form values
+  
+  // Validate only the billing profile data, not the agreedToTerms checkbox for this check
+  const isProfileDataComplete = profileBillingSchema.safeParse(form.getValues()).success 
 
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
@@ -134,14 +146,14 @@ export default function CheckoutPage() {
       )
     }
 
-    // If profile is not valid (e.g., missing required fields), prompt user to update
-    if (!isProfileValid) {
+    // If profile billing data is not complete, prompt user to update
+    if (!isProfileDataComplete) {
       return (
         <div className="container mx-auto py-20">
           <Card className="max-w-lg mx-auto">
             <CardHeader>
               <CardTitle>Complete Your Profile</CardTitle>
-              <CardDescription>Your billing information is incomplete or you have not agreed to the terms. Please update your profile and agree to the terms to proceed with the checkout.</CardDescription>
+              <CardDescription>Your billing information is incomplete. Please update your profile to proceed with the checkout.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild>
