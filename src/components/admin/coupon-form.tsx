@@ -54,7 +54,7 @@ const couponSchema = z.object({
     z.number().min(0, "Discount must be at least 0").max(100, "Discount cannot exceed 100")
   ),
   assigned_user_id: z.string().nullable().optional(),
-  is_applied: z.boolean().default(false), // Removed .optional()
+  is_applied: z.boolean().default(false),
 })
 
 type CouponFormValues = z.infer<typeof couponSchema>
@@ -99,6 +99,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
   }, [isOpen, supabase]);
 
   const onSubmit = async (values: CouponFormValues) => {
+    console.log("CouponForm onSubmit triggered with values:", values); // New client-side log
     const toastId = toast.loading(coupon ? "Updating coupon..." : "Creating coupon...")
     try {
       let result;
