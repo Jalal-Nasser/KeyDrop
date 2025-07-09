@@ -162,15 +162,15 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  {/* Ensure value is always a string for the Select component */}
-                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                  {/* Convert undefined to null for the Select component's value prop */}
+                  <Select onValueChange={field.onChange} value={field.value ?? null}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Use empty string for the "No specific user" option */}
+                      {/* Use empty string for the "No specific user" option, as onValueChange will provide a string */}
                       <SelectItem value="">No specific user (public)</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
