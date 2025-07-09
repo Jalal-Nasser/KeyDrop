@@ -9,35 +9,44 @@ interface CouponData {
   code: string;
   discount_percent: number;
   assigned_user_id?: string | null;
-  is_applied: boolean; // Changed to non-optional
+  is_applied: boolean;
 }
 
 export async function createCoupon(formData: CouponData) {
   const supabase = createServerActionClient({ cookies });
+  console.log("Attempting to create coupon with data:", formData); // Added log
   const { error } = await supabase.from("coupons").insert([formData]);
   if (error) {
+    console.error("Error creating coupon:", error); // Added log
     return { error: error.message };
   }
+  console.log("Coupon created successfully."); // Added log
   revalidatePath("/admin/coupons");
   return { error: null };
 }
 
 export async function updateCoupon(id: string, formData: CouponData) {
   const supabase = createServerActionClient({ cookies });
+  console.log(`Attempting to update coupon ${id} with data:`, formData); // Added log
   const { error } = await supabase.from("coupons").update(formData).eq("id", id);
   if (error) {
+    console.error(`Error updating coupon ${id}:`, error); // Added log
     return { error: error.message };
   }
+  console.log(`Coupon ${id} updated successfully.`); // Added log
   revalidatePath("/admin/coupons");
   return { error: null };
 }
 
 export async function deleteCoupon(id: string) {
   const supabase = createServerActionClient({ cookies });
+  console.log(`Attempting to delete coupon with ID: ${id}`); // Added log
   const { error } = await supabase.from("coupons").delete().eq("id", id);
   if (error) {
+    console.error(`Error deleting coupon ${id}:`, error); // Added log
     return { error: error.message };
   }
+  console.log(`Coupon ${id} deleted successfully.`); // Added log
   revalidatePath("/admin/coupons");
   return { error: null };
 }
@@ -48,7 +57,7 @@ export async function fetchUsersForAssignment() {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, first_name, last_name")
-    .order("created_at", { ascending: false });
+    .order("id", { ascending: false }); // Changed from 'created_at' to 'id'
 
   if (error) {
     console.error("Error fetching users:", error);
