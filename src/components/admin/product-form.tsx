@@ -37,24 +37,13 @@ import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescr
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  // Price is input as string, transformed to number
-  price: z.string()
-    .min(1, "Price is required")
-    .transform((val) => parseFloat(val))
-    .refine((val) => !isNaN(val) && val >= 0, "Price must be a non-negative number."),
+  // Price is input as string, will be parsed in onSubmit
+  price: z.string().min(1, "Price is required"),
   description: z.string().optional(),
   image: z.string().optional(),
   is_on_sale: z.boolean().default(false).optional(),
-  sale_price: z.preprocess(
-    (val) => {
-      if (val === "" || val === undefined || val === null) return null;
-      const num = Number(val);
-      return isNaN(num) ? null : num;
-    },
-    z.number().nullable().optional()
-  ).refine((val) => val === null || val === undefined || val >= 0, {
-    message: "Sale price must be a non-negative number.",
-  }),
+  // Sale price is input as string, will be parsed in onSubmit
+  sale_price: z.string().nullable().optional(),
   sale_percent: z.preprocess(
     (val) => {
       if (val === "" || val === undefined || val === null) return null;
@@ -81,6 +70,25 @@ const productSchema = z.object({
   }
 });
 
+// Define the type for the form values (what useForm expects)
+type ProductFormValues = z.infer<typeof productSchema>;
+
+// Define the type for the data sent to server actions (what createProduct/updateProduct expect)
+// This matches the ProductData interface in actions.ts
+type ProductServerData = {
+  name: string;
+  price: number; // This is a number for the server
+  description?: string;
+  image?: string;
+  is_on_sale?: boolean;
+  sale_price?: number | null;
+  sale_percent?: number | null;
+  tag?: string;
+  category?: string;
+  is_most_sold?: boolean;
+  sku?: string;
+};
+
 interface ProductFormProps {
   product?: Product
 }
@@ -91,7 +99,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.image ? getImagePath(product.image) : null)
   const { supabase } = useSession()
 
-  const form = useForm<z.infer<typeof productSchema>>({
+  const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || "",
@@ -99,11 +107,12 @@ export function ProductForm({ product }: ProductFormProps) {
       description: product?.description || "",
       image: product?.image ? getImagePath(product.image) : "",
       is_on_sale: product?.is_on_sale || false,
-      sale_percent: product?.sale_percent ?? null, // Use nullish coalescing
+      sale_price: product?.sale_price?.toString() ?? null, // Convert number to string for input
       tag: product?.tag || "",
       category: product?.category || "",
       sku: product?.sku || "",
       is_most_sold: product?.is_most_sold || false,
+      sale_percent: product?.sale_percent ?? null, // Use nullish coalescing
     },
   })
 
@@ -135,8 +144,11 @@ export function ProductForm({ product }: ProductFormProps) {
     }
   }, [product?.image]);
 
-  const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    const dataToSubmit = { ...values };
+  const onSubmit = async (values: ProductFormValues) => {
+    const dataToSubmit: ProductServerData = {
+      ...values,
+      price: parseFloat(values.price), // Parse price string to number
+    };
     const toastId = toast.loading(product ? "Updating product..." : "Creating product...");
 
     try {
@@ -171,6 +183,12 @@ export function ProductForm({ product }: ProductFormProps) {
       if (dataToSubmit.is_on_sale) {
         const basePrice = dataToSubmit.price; // This is now a number due to schema transform
         const discountPercent = dataToSubmit.sale_percent;
+
+        if (values.sale_price !== null && values.sale_price !== undefined) {
+          dataToSubmit.sale_price = parseFloat(values.sale_price);
+        } else {
+          dataToSubmit.sale_price = null;
+        }
 
         if (!isNaN(basePrice) && discountPercent !== null && discountPercent !== undefined) {
           const calculated = basePrice * (1 - discountPercent / 100);
@@ -366,7 +384,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sale Percentage</FormLabel>
-                      <FormControl><Input type="number" step="1" {...field} value={field.value ?? ""} placeholder="e.g., 15" /></FormControl>
+                      <FormControl><Input type="number" step="1" {...field} value={field.value?.toString() ?? ""} placeholder="e.g., 15" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
