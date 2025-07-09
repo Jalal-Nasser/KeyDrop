@@ -67,10 +67,10 @@ export default function ContactForm() {
   }
 
   return (
-    <Card className="max-w-lg mx-auto shadow-xl rounded-xl">
+    <Card className="max-w-lg mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold">Get in Touch</CardTitle>
-        <CardDescription className="text-base text-gray-600">We'd love to hear from you! Fill out the form below.</CardDescription>
+        <CardTitle className="text-2xl font-bold">Get in Touch</CardTitle>
+        <CardDescription>We'd love to hear from you! Fill out the form below.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -118,7 +118,7 @@ export default function ContactForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full transition-all duration-300 hover:scale-[1.01]" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
