@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
-import { DollarSign, Package, ShoppingCart, Users } from "lucide-react"
+import { DollarSign, Package, ShoppingCart, Users, Tag } from "lucide-react" // Import Tag icon
 import { format } from "date-fns"
 import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
 
@@ -139,6 +139,7 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <ul className="space-y-4">
               <li><Link href="/admin/products" className="text-blue-600 hover:underline text-lg">Manage Products</Link></li>
+              <li><Link href="/admin/coupons" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><Tag className="h-5 w-5" /> Manage Coupons</Link></li>
               <li><Link href="/admin/sections" className="text-blue-600 hover:underline text-lg">Manage Section Content</Link></li>
               <li><Link href="/admin/contact-submissions" className="text-blue-600 hover:underline text-lg">View Contact Submissions</Link></li>
             </ul>
