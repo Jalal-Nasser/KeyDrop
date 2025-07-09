@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useForm } from "@hookform/react" // Changed from "react-hook-form" to "@hookform/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
@@ -59,7 +59,8 @@ export function CouponForm({ coupon }: CouponFormProps) {
     resolver: zodResolver(couponSchema),
     defaultValues: {
       discount_percent: coupon?.discount_percent || 0,
-      assigned_user_id: coupon?.assigned_user_id ?? null, // Initialize with null to align with nullable()
+      // If assigned_user_id is null, set it to "public" for the Select component
+      assigned_user_id: coupon?.assigned_user_id ?? "public", 
     },
   })
 
@@ -82,18 +83,19 @@ export function CouponForm({ coupon }: CouponFormProps) {
   const onSubmit = async (values: CouponFormValues) => {
     const toastId = toast.loading(coupon ? "Updating coupon..." : "Generating coupon...")
     try {
+      // Convert "public" back to null for the database
+      const assignedUserIdForDb = values.assigned_user_id === "public" ? null : values.assigned_user_id;
+
       let result;
       if (coupon) {
-        // If editing an existing coupon, only assignment can be changed via this form
         result = await assignCoupon(undefined, {
           coupon_id: coupon.id,
-          assigned_user_id: values.assigned_user_id === "" ? null : values.assigned_user_id,
+          assigned_user_id: assignedUserIdForDb,
         });
       } else {
-        // Creating a new coupon
         result = await createCoupon(undefined, {
           discount_percent: values.discount_percent,
-          assigned_user_id: values.assigned_user_id === "" ? null : values.assigned_user_id,
+          assigned_user_id: assignedUserIdForDb,
         });
       }
 
@@ -162,16 +164,16 @@ export function CouponForm({ coupon }: CouponFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to User (Optional)</FormLabel>
-                  {/* Convert undefined to null for the Select component's value prop */}
-                  <Select onValueChange={field.onChange} value={field.value ?? null}>
+                  {/* The value prop of Select expects a string, so field.value (which is "public" or a user ID) works directly */}
+                  <Select onValueChange={field.onChange} value={field.value || "public"}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Use empty string for the "No specific user" option, as onValueChange will provide a string */}
-                      <SelectItem value="">No specific user (public)</SelectItem>
+                      {/* Use a non-empty string for the "No specific user" option */}
+                      <SelectItem value="public">No specific user (public)</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.first_name} {user.last_name} ({user.id.substring(0, 8)}...)
