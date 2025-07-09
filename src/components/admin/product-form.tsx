@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
-import { toast } from "sonner"
+import { toast } => "sonner"
 import { RichTextEditor } from "./rich-text-editor"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSession } from "@/context/session-context"
@@ -477,7 +477,7 @@ export function ProductForm({ product }: ProductFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>SEO Title</FormLabel>
-                  <FormControl><Input {...field} placeholder="Catchy title for search engines" /></FormControl>
+                  <FormControl><Input {...field} value={field.value ?? ""} placeholder="Catchy title for search engines" /></FormControl>
                   <FormDescription>A concise title (max 60 characters) for search engine results and browser tabs.</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -489,7 +489,7 @@ export function ProductForm({ product }: ProductFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>SEO Description</FormLabel>
-                  <FormControl><Textarea {...field} placeholder="Brief description for search engine snippets" className="resize-y" /></FormControl>
+                  <FormControl><Textarea {...field} value={field.value ?? ""} placeholder="Brief description for search engine snippets" className="resize-y" /></FormControl>
                   <FormDescription>A short summary (max 160 characters) of the product for search engine results.</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -501,7 +501,7 @@ export function ProductForm({ product }: ProductFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>SEO Keywords</FormLabel>
-                  <FormControl><Input {...field} placeholder="comma, separated, keywords" /></FormControl>
+                  <FormControl><Input {...field} value={field.value ?? ""} placeholder="comma, separated, keywords" /></FormControl>
                   <FormDescription>Relevant keywords to help search engines understand your product's content.</FormDescription>
                   <FormMessage />
                 </FormItem>

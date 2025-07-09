@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title: product.seo_title || product.name,
     description: product.seo_description || product.description || `Discover ${product.name} at Dropskey.`,
-    keywords: product.seo_keywords?.split(',').map(keyword => keyword.trim()) || [product.name, "digital key", "software", "dropskey"],
+    keywords: product.seo_keywords?.split(',').map((keyword: string) => keyword.trim()) || [product.name, "digital key", "software", "dropskey"],
     openGraph: {
       title: product.seo_title || product.name,
       description: product.seo_description || product.description || `Discover ${product.name} at Dropskey.`,
