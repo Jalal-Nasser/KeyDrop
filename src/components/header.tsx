@@ -10,6 +10,7 @@ import { useSession } from "@/context/session-context"
 import { AuthSheet } from "@/components/auth-sheet"
 import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
+import { cn } from "@/lib/utils" // Import cn for conditional classes
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -70,7 +71,7 @@ export function Header() {
             </div>
 
             {/* Right side - Business info and user actions */}
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center gap-x-4"> {/* Changed space-x-8 to gap-x-4 */}
               <div className="hidden lg:flex items-center space-x-6 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
                   <Globe className="w-4 h-4" />
@@ -82,27 +83,30 @@ export function Header() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 text-sm text-gray-600">
-                <button className="flex items-center space-x-1 hover:text-blue-600">
+              <div className="flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
+                <button className="flex items-center gap-x-1 hover:text-blue-600">
                   <Heart className="w-4 h-4" />
-                  <span>Wishlist</span>
+                  <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
                 </button>
-                <span className="text-gray-300">|</span>
+                <span className="text-gray-300 hidden sm:inline">|</span> {/* Hide separator on very small screens */}
                 {session ? (
-                  <Link href="/account" className="flex items-center space-x-1 text-red-600 hover:text-blue-600">
+                  <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-blue-600">
                     <User className="w-4 h-4" />
-                    <span>Account</span>
+                    <span className="hidden sm:inline">Account</span> {/* Hide text on very small screens */}
                   </Link>
                 ) : (
-                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center space-x-1 text-red-600 hover:text-blue-600">
+                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center gap-x-1 text-red-600 hover:text-blue-600">
                     <User className="w-4 h-4" />
-                    <span>Sign In</span>
+                    <span className="hidden sm:inline">Sign In</span> {/* Hide text on very small screens */}
                   </button>
                 )}
                 <span className="text-gray-300">|</span>
-                <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center space-x-1 hover:text-blue-600 relative">
+                <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center gap-x-1 hover:text-blue-600 relative">
                   <ShoppingCart className="w-4 h-4" />
-                  <span>Cart {cartTotal.toFixed(2)} $</span>
+                  <div className="flex flex-col items-end leading-none"> {/* Stack cart text and total */}
+                    <span>Cart</span>
+                    <span className="text-xs">${cartTotal.toFixed(2)}</span>
+                  </div>
                   {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {cartCount}

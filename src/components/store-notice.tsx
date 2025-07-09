@@ -13,9 +13,9 @@ export function StoreNotice() {
   return (
     <div className="relative py-2 text-center text-sm text-white" style={{ backgroundColor: "#28a645" }}> {/* Changed from #805da8 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center flex-wrap"> {/* Added flex-wrap */}
           <span className="mr-2">📋</span>
-          <span>Start order without waiting approval</span>
+          <span className="text-wrap">Start order without waiting approval</span> {/* Added text-wrap */}
         </div>
       </div>
       <button
