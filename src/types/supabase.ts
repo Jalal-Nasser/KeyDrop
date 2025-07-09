@@ -6,7 +6,7 @@ export type Database = {
           id: number
           name: string
           description: string | null
-          price: string
+          price: number // Changed from string to number
           image: string | null
           is_digital: boolean | null
           download_url: string | null
@@ -25,7 +25,7 @@ export type Database = {
           id?: number
           name: string
           description?: string | null
-          price: string
+          price: number // Changed from string to number
           image?: string | null
           is_digital?: boolean | null
           download_url?: string | null
@@ -44,7 +44,7 @@ export type Database = {
           id?: number
           name?: string
           description?: string | null
-          price?: string
+          price?: number // Changed from string to number
           image?: string | null
           is_digital?: boolean | null
           download_url?: string | null
@@ -173,6 +173,32 @@ export type Database = {
           id?: string
           user_id?: string
           product_id?: number
+          created_at?: string
+        }
+      }
+      coupons: {
+        Row: {
+          id: string
+          code: string
+          discount_percent: number
+          assigned_user_id: string | null
+          is_applied: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          discount_percent: number
+          assigned_user_id?: string | null
+          is_applied?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          discount_percent?: number
+          assigned_user_id?: string | null
+          is_applied?: boolean
           created_at?: string
         }
       }
