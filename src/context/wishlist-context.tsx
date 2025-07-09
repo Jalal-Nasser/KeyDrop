@@ -8,7 +8,7 @@ import { toast } from "sonner"
 interface WishlistItem {
   id: string // wishlist_item ID
   product_id: number
-  products: Product // Changed to single Product object
+  products: Product[] // Changed to array of Product
 }
 
 interface WishlistContextType {
@@ -131,7 +131,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const toastId = toast.loading(`Removing ${itemToRemove.products.name} from wishlist...`)
+    const toastId = toast.loading(`Removing ${itemToRemove.products[0].name} from wishlist...`)
     try {
       const { error } = await supabase
         .from("wishlist_items")
@@ -143,7 +143,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         throw error
       } else {
         setWishlistItems(prev => prev.filter(item => item.product_id !== productId))
-        toast.success(`${itemToRemove.products.name} removed from wishlist.`, { id: toastId })
+        toast.success(`${itemToRemove.products[0].name} removed from wishlist.`, { id: toastId })
       }
     } catch (error: any) {
       console.error("Error removing from wishlist:", error)
