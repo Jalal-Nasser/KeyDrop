@@ -5,6 +5,8 @@ import { useSession } from "@/context/session-context"
 import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
+import { sendOrderConfirmationEmail } from "@/lib/order-mail" // Import the new email utility
+import { format } from "date-fns"
 
 interface PayPalCartButtonProps {
   cartTotal: number
@@ -16,8 +18,6 @@ interface PayPalCartButtonProps {
 export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormValid }: PayPalCartButtonProps) {
   const { session, supabase } = useSession()
   const { clearCart } = useCart()
-
-  // Removed parsePrice as item.price is now a number
 
   const handleProfileUpdate = async () => {
     if (!session) return
@@ -109,6 +109,28 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
         } else {
           toast.success("Your order has been successfully saved.")
           clearCart()
+
+          // Send order confirmation email
+          if (session.user.email) {
+            const customerName = `${billingDetails.first_name || ''} ${billingDetails.last_name || ''}`.trim() || session.user.email;
+            const invoiceLink = `${window.location.origin}/account/orders/${orderData.id}/invoice`;
+            const itemsForEmail = cartItems.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            }));
+
+            await sendOrderConfirmationEmail({
+              to: session.user.email,
+              orderId: orderData.id,
+              orderDate: format(new Date(orderData.created_at), 'PPP p'),
+              totalAmount: cartTotal,
+              items: itemsForEmail,
+              customerName: customerName,
+              invoiceLink: invoiceLink,
+            });
+            toast.success("Order confirmation email sent!", { duration: 3000 });
+          }
         }
       }
     } else {

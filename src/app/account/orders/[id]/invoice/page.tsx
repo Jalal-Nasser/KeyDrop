@@ -71,6 +71,12 @@ export default async function InvoicePage({ params }: { params: { id: string } }
               <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
             </div>
             <p className="text-sm text-gray-600">Verified Digital Key Store</p>
+            <address className="not-italic text-gray-700 text-sm mt-2">
+              <p>123 Digital Key Street, Suite 456</p>
+              <p>Tech City, TX 78701, USA</p>
+              <p>Phone: +1 (310) 777 8808</p>
+              <p>Email: support@dropskey.com</p>
+            </address>
           </div>
           <div className="text-right">
             <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
