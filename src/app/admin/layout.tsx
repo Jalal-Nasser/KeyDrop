@@ -2,6 +2,8 @@ import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { AdminLayoutClient } from "@/components/admin/admin-layout-client" // Import the new client component
 
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route segment
+
 export default async function AdminLayout({
   children,
 }: {

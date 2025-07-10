@@ -12,6 +12,7 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -33,7 +34,6 @@ import { useSession } from "@/context/session-context"
 import { v4 as uuidv4 } from 'uuid';
 import Image from "next/image"
 import { getImagePath } from "@/lib/utils"
-import { DialogDescription } from "@/components/ui/dialog" // Import DialogDescription
 import { Textarea } from "@/components/ui/textarea" // Import Textarea
 
 const productSchema = z.object({
