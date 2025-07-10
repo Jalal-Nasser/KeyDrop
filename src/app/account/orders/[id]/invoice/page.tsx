@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import Image from "next/image"
+import { Button } from "@/components/ui/button" // Import Button
 
 interface Order {
   id: string;
@@ -152,6 +153,11 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           <p>If you have any questions, please contact us at support@dropskey.com</p>
           <p className="mt-4">Dropskey | +1 (310) 777 8808 | +1 (310) 888 7708</p>
         </div>
+      </div>
+      <div className="flex justify-center mt-6 no-print"> {/* Added no-print class */}
+        <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white">
+          Download / Print Invoice
+        </Button>
       </div>
     </div>
   )
