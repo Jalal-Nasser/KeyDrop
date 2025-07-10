@@ -202,12 +202,39 @@ export type Database = {
           created_at?: string
         }
       }
+      store_notices: {
+        Row: {
+          id: string
+          content: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          content: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          content?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       // Add views if any
     }
     Functions: {
       generate_unique_sku: { // Added
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      update_updated_at_column: {
         Args: Record<PropertyKey, never>;
         Returns: string;
       };

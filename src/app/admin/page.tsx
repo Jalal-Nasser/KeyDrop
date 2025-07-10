@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
-import { DollarSign, Package, ShoppingCart, Users, Tag } from "lucide-react" // Import Tag icon
+import { DollarSign, Package, ShoppingCart, Users, Tag, Bell } from "lucide-react" // Import Tag and Bell icons
 import { format } from "date-fns"
-import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
+import { IncomeChart } from "@/components/admin/income-chart"
 
 export default async function AdminDashboardPage() {
   const supabase = createSupabaseServerClient()
@@ -114,7 +114,7 @@ export default async function AdminDashboardPage() {
                     <div>
                       <p className="font-medium">Order #{order.id.substring(0, 8)}...</p>
                       <p className="text-sm text-muted-foreground">
-                        {order.profiles?.first_name} {order.profiles?.last_name} - {format(new Date(order.created_at), 'MMM dd, yyyy')}
+                        {order.profiles?.[0]?.first_name} {order.profiles?.[0]?.last_name} - {format(new Date(order.created_at), 'MMM dd, yyyy')}
                       </p>
                     </div>
                     <div className="text-right">
@@ -140,6 +140,7 @@ export default async function AdminDashboardPage() {
             <ul className="space-y-4">
               <li><Link href="/admin/products" className="text-blue-600 hover:underline text-lg">Manage Products</Link></li>
               <li><Link href="/admin/coupons" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><Tag className="h-5 w-5" /> Manage Coupons</Link></li>
+              <li><Link href="/admin/store-notice" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><Bell className="h-5 w-5" /> Manage Store Notice</Link></li>
               <li><Link href="/admin/sections" className="text-blue-600 hover:underline text-lg">Manage Section Content</Link></li>
               <li><Link href="/admin/contact-submissions" className="text-blue-600 hover:underline text-lg">View Contact Submissions</Link></li>
             </ul>
