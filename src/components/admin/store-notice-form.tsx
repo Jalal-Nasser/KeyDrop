@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
-import { getStoreNotice, updateOrCreateStoreNotice } from "@/app/admin/store-notice/actions.ts" // Re-confirming this import
+import { getStoreNotice, updateOrCreateStoreNotice } from "@/app/admin/store-notice/actions" // Removed .ts
 import { Loader2 } from "lucide-react"
 
 const storeNoticeSchema = z.object({
