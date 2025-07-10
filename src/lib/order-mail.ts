@@ -1,19 +1,8 @@
-import { Resend } from 'resend'
+import { SupabaseClient } from "@supabase/supabase-js"
 import { Product } from '@/types/product'
 
-// You must set RESEND_API_KEY in your environment variables
-export const resend = new Resend(process.env.RESEND_API_KEY)
-
-export async function sendMail({ to, subject, html }: { to: string, subject: string, html: string }) {
-  return resend.emails.send({
-    from: 'Dropskey <no-reply@dropskey.com>', // Changed to a more professional sender name and domain
-    to,
-    subject,
-    html,
-  })
-}
-
 interface OrderConfirmationEmailProps {
+  supabase: SupabaseClient; // Add supabase client to props
   to: string;
   orderId: string;
   orderDate: string;
@@ -24,6 +13,7 @@ interface OrderConfirmationEmailProps {
 }
 
 export async function sendOrderConfirmationEmail({
+  supabase, // Destructure supabase client
   to,
   orderId,
   orderDate,
@@ -65,9 +55,19 @@ export async function sendOrderConfirmationEmail({
     </div>
   `;
 
-  return sendMail({
-    to,
-    subject: `Your Dropskey Order Confirmation #${orderId.substring(0, 8)}...`,
-    html: htmlContent,
+  // Invoke the Supabase Edge Function
+  const { data, error } = await supabase.functions.invoke('send-order-email', {
+    body: {
+      to,
+      subject: `Your Dropskey Order Confirmation #${orderId.substring(0, 8)}...`,
+      html: htmlContent,
+    },
   });
+
+  if (error) {
+    console.error("Error invoking send-order-email function:", error);
+    throw new Error(`Failed to send order confirmation email: ${error.message}`);
+  }
+
+  return data;
 }

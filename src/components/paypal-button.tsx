@@ -105,6 +105,7 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
             }];
 
             await sendOrderConfirmationEmail({
+              supabase, // Pass supabase client
               to: session.user.email,
               orderId: orderData.id,
               orderDate: format(new Date(orderData.created_at), 'PPP p'),
