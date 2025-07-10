@@ -18,9 +18,11 @@ import { PayPalCartButton } from "@/components/paypal-cart-button"
 import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, ShieldCheck, Lock } from "lucide-react" // Added Lock icon
+import { Loader2, ShieldCheck, Lock } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
-import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label" // Import Label
 
 const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -33,7 +35,7 @@ const profileBillingSchema = z.object({
   state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
   postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
   country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
-});
+})
 
 const checkoutSchema = profileBillingSchema.extend({
   agreedToTerms: z.boolean().refine(val => val === true, {
@@ -76,9 +78,11 @@ const Stepper = ({ step }: { step: number }) => {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { cartItems, cartTotal, cartCount } = useCart()
+  const { cartItems, cartTotal, cartCount, clearCart } = useCart()
   const { session, supabase } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false) // New state for admin status
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'cash'>('paypal') // New state for payment method
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -86,7 +90,7 @@ export default function CheckoutPage() {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
       state_province_region: "", postal_code: "", country: "",
-      agreedToTerms: false, // Default to false
+      agreedToTerms: false,
     },
   })
 
@@ -108,7 +112,6 @@ export default function CheckoutPage() {
           .single()
 
         if (data) {
-          // Set each profile field individually, but do NOT touch agreedToTerms
           form.setValue("first_name", data.first_name || "");
           form.setValue("last_name", data.last_name || "");
           form.setValue("company_name", data.company_name || "");
@@ -119,6 +122,7 @@ export default function CheckoutPage() {
           form.setValue("state_province_region", data.state_province_region || "");
           form.setValue("postal_code", data.postal_code || "");
           form.setValue("country", data.country || "");
+          setIsAdmin(data.is_admin || false); // Set admin status
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -134,8 +138,75 @@ export default function CheckoutPage() {
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
   
-  // Validate only the billing profile data, not the agreedToTerms checkbox for this check
   const isProfileDataComplete = profileBillingSchema.safeParse(form.getValues()).success 
+
+  const handleCashOrder = async () => {
+    if (!session) {
+      toast.error("You must be signed in to place an order.")
+      return
+    }
+
+    const isValid = await form.trigger(); // Trigger validation for all fields
+    if (!isValid) {
+      toast.error("Please fill in all required billing details and agree to the terms.")
+      return
+    }
+
+    const toastId = toast.loading("Placing your cash order...")
+
+    try {
+      // Update profile with current billing details
+      const { error: profileUpdateError } = await supabase
+        .from("profiles")
+        .update(form.getValues())
+        .eq("id", session.user.id)
+
+      if (profileUpdateError) {
+        throw new Error(`Failed to update billing details: ${profileUpdateError.message}`)
+      }
+
+      // Create the order in Supabase
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: session.user.id,
+          status: "pending", // Or 'on_hold', 'processing' depending on your workflow
+          total: finalCartTotal,
+          payment_gateway: "cash",
+          payment_id: null, // No PayPal payment ID for cash orders
+        })
+        .select()
+        .single()
+
+      if (orderError) {
+        throw new Error(`Failed to save your order: ${orderError.message}`)
+      }
+
+      // Insert order items
+      const orderItems = cartItems.map(item => ({
+        order_id: orderData.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_purchase: item.price,
+      }))
+
+      const { error: itemError } = await supabase
+        .from("order_items")
+        .insert(orderItems)
+
+      if (itemError) {
+        throw new Error(`Failed to save order items: ${itemError.message}`)
+      }
+
+      toast.success("Cash order placed successfully! Awaiting payment confirmation.", { id: toastId })
+      clearCart()
+      router.push(`/account/orders/${orderData.id}`) // Redirect to order details page
+
+    } catch (error: any) {
+      console.error("Error placing cash order:", error)
+      toast.error(error.message || "An unexpected error occurred while placing your order.", { id: toastId })
+    }
+  }
 
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
@@ -227,11 +298,10 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
               <Card className="shadow-lg rounded-lg">
-                <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Payment Method</CardTitle></CardHeader>
                 <CardContent>
-                  {/* Wrap the form fields and PayPal button in a Form component */}
                   <Form {...form}>
-                    <form> {/* A dummy form tag is needed for FormField to work */}
+                    <form>
                       <FormField
                         control={form.control}
                         name="agreedToTerms"
@@ -255,7 +325,43 @@ export default function CheckoutPage() {
                           </FormItem>
                         )}
                       />
-                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                      <RadioGroup
+                        onValueChange={(value: "paypal" | "cash") => setSelectedPaymentMethod(value)} // Explicitly cast value
+                        value={selectedPaymentMethod}
+                        className="grid gap-4 mb-6"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="paypal" id="paypal" />
+                          <Label htmlFor="paypal">PayPal</Label>
+                        </div>
+                        {isAdmin && (
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="cash" id="cash" />
+                            <Label htmlFor="cash">Cash Checkout (Admin Only)</Label>
+                          </div>
+                        )}
+                      </RadioGroup>
+
+                      {selectedPaymentMethod === 'paypal' && (
+                        <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                      )}
+                      {selectedPaymentMethod === 'cash' && isAdmin && (
+                        <Button
+                          type="button"
+                          onClick={handleCashOrder}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          disabled={form.formState.isSubmitting || !form.formState.isValid}
+                        >
+                          {form.formState.isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Placing Order...
+                            </>
+                          ) : (
+                            "Place Order (Cash)"
+                          )}
+                        </Button>
+                      )}
                     </form>
                   </Form>
                 </CardContent>
