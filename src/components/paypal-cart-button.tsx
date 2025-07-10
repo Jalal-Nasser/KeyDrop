@@ -5,13 +5,13 @@ import { useSession } from "@/context/session-context"
 import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
-import { sendOrderConfirmationEmail } from "@/lib/order-mail" // Import the new email utility
+import { sendOrderConfirmationEmail } from "@/lib/order-mail"
 import { format } from "date-fns"
 
 interface PayPalCartButtonProps {
   cartTotal: number
   cartItems: CartItem[]
-  billingDetails: any
+  billingDetails: any // This prop contains all form values, including agreedToTerms
   isFormValid: boolean
 }
 
@@ -22,11 +22,12 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
   const handleProfileUpdate = async () => {
     if (!session) return
 
+    // Destructure to exclude agreedToTerms from the billingDetails object
+    const { agreedToTerms, ...profileDataToUpdate } = billingDetails;
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        ...billingDetails,
-      })
+      .update(profileDataToUpdate) // Use the filtered object
       .eq("id", session.user.id)
 
     if (error) {
@@ -97,7 +98,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
-          price_at_purchase: item.price, // Directly use item.price as it's a number
+          price_at_purchase: item.price,
         }))
 
         const { error: itemError } = await supabase
@@ -110,7 +111,6 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           toast.success("Your order has been successfully saved.")
           clearCart()
 
-          // Send order confirmation email
           if (session.user.email) {
             const customerName = `${billingDetails.first_name || ''} ${billingDetails.last_name || ''}`.trim() || session.user.email;
             const invoiceLink = `${window.location.origin}/account/orders/${orderData.id}/invoice`;
@@ -121,7 +121,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
             }));
 
             await sendOrderConfirmationEmail({
-              supabase, // Pass supabase client
+              supabase,
               to: session.user.email,
               orderId: orderData.id,
               orderDate: format(new Date(orderData.created_at), 'PPP p'),

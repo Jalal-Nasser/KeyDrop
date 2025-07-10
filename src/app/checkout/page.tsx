@@ -44,6 +44,7 @@ const checkoutSchema = profileBillingSchema.extend({
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
+type ProfileUpdatePayload = z.infer<typeof profileBillingSchema>; // Define type for profile update
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
@@ -52,7 +53,11 @@ const Stepper = ({ step }: { step: number }) => {
       <div className="flex items-center justify-between w-full max-w-md">
         {steps.map((name, index) => (
           <React.Fragment key={name}>
-            <div className="flex flex-col items-center text-center">
+            <div
+              className={`flex flex-col items-center text-center ${
+                index + 1 === step ? "text-blue-600" : "text-gray-600"
+              }`}
+            >
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300
                   ${index + 1 === step
@@ -81,8 +86,8 @@ export default function CheckoutPage() {
   const { cartItems, cartTotal, cartCount, clearCart } = useCart()
   const { session, supabase } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false) // New state for admin status
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'cash'>('paypal') // New state for payment method
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'cash'>('paypal')
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -122,7 +127,7 @@ export default function CheckoutPage() {
           form.setValue("state_province_region", data.state_province_region || "");
           form.setValue("postal_code", data.postal_code || "");
           form.setValue("country", data.country || "");
-          setIsAdmin(data.is_admin || false); // Set admin status
+          setIsAdmin(data.is_admin || false);
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -146,7 +151,7 @@ export default function CheckoutPage() {
       return
     }
 
-    const isValid = await form.trigger(); // Trigger validation for all fields
+    const isValid = await form.trigger();
     if (!isValid) {
       toast.error("Please fill in all required billing details and agree to the terms.")
       return
@@ -155,25 +160,37 @@ export default function CheckoutPage() {
     const toastId = toast.loading("Placing your cash order...")
 
     try {
-      // Update profile with current billing details
+      // Extract only the profile-related fields from the form values
+      const profileDataToUpdate: ProfileUpdatePayload = {
+        first_name: form.getValues("first_name"),
+        last_name: form.getValues("last_name"),
+        company_name: form.getValues("company_name"),
+        vat_number: form.getValues("vat_number"),
+        address_line_1: form.getValues("address_line_1"),
+        address_line_2: form.getValues("address_line_2"),
+        city: form.getValues("city"),
+        state_province_region: form.getValues("state_province_region"),
+        postal_code: form.getValues("postal_code"),
+        country: form.getValues("country"),
+      };
+
       const { error: profileUpdateError } = await supabase
         .from("profiles")
-        .update(form.getValues())
+        .update(profileDataToUpdate)
         .eq("id", session.user.id)
 
       if (profileUpdateError) {
         throw new Error(`Failed to update billing details: ${profileUpdateError.message}`)
       }
 
-      // Create the order in Supabase
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert({
           user_id: session.user.id,
-          status: "pending", // Or 'on_hold', 'processing' depending on your workflow
+          status: "pending",
           total: finalCartTotal,
           payment_gateway: "cash",
-          payment_id: null, // No PayPal payment ID for cash orders
+          payment_id: null,
         })
         .select()
         .single()
@@ -182,7 +199,6 @@ export default function CheckoutPage() {
         throw new Error(`Failed to save your order: ${orderError.message}`)
       }
 
-      // Insert order items
       const orderItems = cartItems.map(item => ({
         order_id: orderData.id,
         product_id: item.id,
@@ -200,7 +216,7 @@ export default function CheckoutPage() {
 
       toast.success("Cash order placed successfully! Awaiting payment confirmation.", { id: toastId })
       clearCart()
-      router.push(`/account/orders/${orderData.id}`) // Redirect to order details page
+      router.push(`/account/orders/${orderData.id}`)
 
     } catch (error: any) {
       console.error("Error placing cash order:", error)
@@ -212,7 +228,6 @@ export default function CheckoutPage() {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
   }
 
-  // Logged-in user view
   if (session) {
     if (isLoadingProfile) {
       return (
@@ -223,7 +238,6 @@ export default function CheckoutPage() {
       )
     }
 
-    // If profile billing data is not complete, prompt user to update
     if (!isProfileDataComplete) {
       return (
         <div className="container mx-auto py-20">
@@ -244,7 +258,6 @@ export default function CheckoutPage() {
 
     return (
       <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
-        {/* Hero Section for Logged-in User */}
         <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
           <div className="absolute inset-0 bg-black/20 z-0"></div>
           <div className="container mx-auto px-4 relative z-10">
@@ -326,7 +339,7 @@ export default function CheckoutPage() {
                         )}
                       />
                       <RadioGroup
-                        onValueChange={(value: "paypal" | "cash") => setSelectedPaymentMethod(value)} // Explicitly cast value
+                        onValueChange={(value: "paypal" | "cash") => setSelectedPaymentMethod(value)}
                         value={selectedPaymentMethod}
                         className="grid gap-4 mb-6"
                       >
@@ -386,10 +399,8 @@ export default function CheckoutPage() {
     )
   }
 
-  // Guest user view
   return (
     <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
-      {/* Hero Section for Guest User */}
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div>
         <div className="container mx-auto px-4 relative z-10">
