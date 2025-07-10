@@ -139,6 +139,7 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <ul className="space-y-4">
               <li><Link href="/admin/products" className="text-blue-600 hover:underline text-lg">Manage Products</Link></li>
+              <li><Link href="/admin/orders" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><ShoppingCart className="h-5 w-5" /> Manage Orders</Link></li> {/* Updated link */}
               <li><Link href="/admin/coupons" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><Tag className="h-5 w-5" /> Manage Coupons</Link></li>
               <li><Link href="/admin/store-notice" className="text-blue-600 hover:underline text-lg flex items-center gap-2"><Bell className="h-5 w-5" /> Manage Store Notice</Link></li>
               <li><Link href="/admin/sections" className="text-blue-600 hover:underline text-lg">Manage Section Content</Link></li>
