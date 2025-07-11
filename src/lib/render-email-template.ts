@@ -1,5 +1,4 @@
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { InvoiceTemplate } from '@/components/emails/invoice-template';
 
 // Define types that match the InvoiceTemplateProps
@@ -45,7 +44,11 @@ interface Order {
  * @param profile The user profile data.
  * @returns A string containing the static HTML representation of the invoice.
  */
-export function renderInvoiceTemplateToHtml(order: Order, profile: Profile): string {
+export async function renderInvoiceTemplateToHtml(order: Order, profile: Profile): Promise<string> {
+  // Dynamically import react-dom/server to ensure it's only loaded on the server
+  // and not bundled for the client.
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  
   return renderToStaticMarkup(
     React.createElement(InvoiceTemplate, { order, profile })
   );

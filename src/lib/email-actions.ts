@@ -76,7 +76,7 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
     };
 
     // Use the new utility function to render the invoice template
-    const invoiceHtml = renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
+    const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
 
     const productListHtml = fetchedOrder.order_items.map(item => {
       const product = item.products; // Now correctly typed as FetchedProduct | null
