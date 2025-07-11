@@ -3,6 +3,8 @@ import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import Image from "next/image"
 import { InvoiceActions } from "@/components/invoice-actions"
+import { Suspense } from "react"
+import { AutoPrinter } from "@/components/auto-printer"
 
 interface Order {
   id: string;
@@ -62,6 +64,9 @@ export default async function InvoicePage({ params }: { params: { id: string } }
 
   return (
     <div className="container mx-auto p-4 py-8 print:p-0">
+      <Suspense fallback={null}>
+        <AutoPrinter />
+      </Suspense>
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none print:border-none">
         <div className="p-8 border-b border-gray-200">
           <InvoiceActions />

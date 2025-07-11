@@ -13,6 +13,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { OrderStatusUpdater } from "@/components/admin/order-status-updater"
+import { Download } from "lucide-react"
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
@@ -98,9 +99,16 @@ export default async function AdminOrdersPage() {
                         ))}
                       </TableCell>
                       <TableCell>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/account/orders/${order.id}/invoice`}>View Invoice</Link>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/account/orders/${order.id}/invoice`}>View Invoice</Link>
+                          </Button>
+                          <Button asChild variant="secondary" size="sm">
+                            <Link href={`/account/orders/${order.id}/invoice?print=true`} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
