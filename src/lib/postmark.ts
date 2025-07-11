@@ -7,7 +7,7 @@ interface Attachment {
   filename: string;
   content: string; // This will be the raw HTML/file content
   ContentType: string; // e.g., 'text/html', 'application/pdf'
-  ContentID?: string; // Changed to string | undefined to match Postmark API
+  ContentID?: string | null; // Changed to allow null explicitly
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -20,7 +20,7 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
     Name: att.filename,
     Content: Buffer.from(att.content).toString('base64'),
     ContentType: att.ContentType,
-    ContentID: att.ContentID, // Pass if provided
+    ContentID: att.ContentID === undefined ? null : att.ContentID, // Convert undefined to null
   }));
 
   return postmarkClient.sendEmail({
