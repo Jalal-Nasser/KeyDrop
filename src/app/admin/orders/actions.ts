@@ -7,8 +7,6 @@ export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = createSupabaseServerClient()
 
   try {
-    // The .single() method was removed here as it expects exactly one row,
-    // and for an update operation, we don't necessarily need to return the updated row.
     const { error } = await supabase
       .from('orders')
       .update({ status })
@@ -23,6 +21,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
     revalidatePath('/admin/orders')
     revalidatePath(`/account/orders/${orderId}`)
+    revalidatePath(`/account/orders/${orderId}/invoice`) // Add this line to revalidate the invoice page
 
     return { success: true, message: 'Order status updated successfully.' }
   } catch (error: any) {
