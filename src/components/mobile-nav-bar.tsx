@@ -8,7 +8,7 @@ import { useCart } from "@/context/cart-context"
 import { useSession } from "@/context/session-context"
 import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 
-export function MobileNavBar() {
+export function MobileNavBar({ className }: { className?: string }) {
   const pathname = usePathname()
   const { cartCount } = useCart() // Assuming cartCount can be used as a placeholder for wishlist count for now
   const { session } = useSession()
@@ -23,7 +23,7 @@ export function MobileNavBar() {
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden">
+    <div className={cn("fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden", className)}>
       <nav className="flex justify-around items-center h-14">
         {navItems.map((item) => (
           <Link

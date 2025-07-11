@@ -83,10 +83,10 @@ export default function RootLayout({
             <SessionProvider>
               <CartProvider>
                 <WishlistProvider>
-                  <Header />
+                  <Header className="print:hidden" />
                   <main className="flex-grow pb-[60px]">{children}</main>
                   <Footer />
-                  <MobileNavBar />
+                  <MobileNavBar className="print:hidden" />
                 </WishlistProvider>
               </CartProvider>
             </SessionProvider>

@@ -13,7 +13,7 @@ import { CartSheet } from "@/components/cart-sheet"
 import { cn } from "@/lib/utils" // Import cn for conditional classes
 import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 
-export function Header() {
+export function Header({ className }: { className?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
@@ -45,7 +45,7 @@ export function Header() {
   }
 
   return (
-    <header>
+    <header className={className}>
       {/* Top white section with logo and user actions */}
       <div className="bg-white py-4 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
