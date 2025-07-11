@@ -49,6 +49,7 @@
     "@tiptap/react": "^2.24.2",
     "@tiptap/starter-kit": "^2.24.2",
     "@types/crypto-js": "^4.2.2",
+    "@types/postmark": "^2.0.3",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
