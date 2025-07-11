@@ -1,18 +1,20 @@
+import Image from "next/image"; // Import Image component
+
 export function Footer() {
   return (
     <footer className="text-white py-12" style={{ backgroundColor: "#1e73be" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* My account - EXACT content */}
-          <div>
-            <h3 className="font-semibold mb-4 text-white">My account</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="/register" className="text-blue-100 hover:text-white transition-colors">
-                  Register
-                </a>
-              </li>
-            </ul>
+          {/* Kaspersky Partner Logo */}
+          <div className="flex justify-center md:justify-start items-center">
+            <Image
+              src="/kaspersky_b2b_registered_partner-dropskey.png"
+              alt="Kaspersky B2B Registered Partner Dropskey"
+              width={150} // Adjust width as needed
+              height={100} // Adjust height as needed
+              style={{ objectFit: "contain" }}
+              className="max-w-full h-auto"
+            />
           </div>
 
           {/* Terms and Conditions - EXACT content */}
