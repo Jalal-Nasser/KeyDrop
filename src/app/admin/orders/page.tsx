@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { OrderStatusUpdater } from "@/components/admin/order-status-updater"
 import { Download } from "lucide-react"
+import { ReSendInvoiceButton } from "@/components/admin/resend-invoice-button" // Import the new component
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
@@ -108,6 +109,7 @@ export default async function AdminOrdersPage() {
                               <Download className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <ReSendInvoiceButton orderId={order.id} /> {/* Add the new button here */}
                         </div>
                       </TableCell>
                     </TableRow>

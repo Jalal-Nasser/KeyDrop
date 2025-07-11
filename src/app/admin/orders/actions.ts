@@ -2,7 +2,8 @@
 
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { revalidatePath } from "next/cache"
-import { sendOrderCancellation } from "@/lib/email-actions" // Import the new function
+import { sendOrderCancellation, sendOrderConfirmation } from "@/lib/email-actions" // Import sendOrderConfirmation
+import { createClient } from '@supabase/supabase-js' // Import createClient for service role
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = createSupabaseServerClient()
@@ -31,7 +32,12 @@ export async function updateOrderStatus(orderId: string, status: string) {
     }
 
     // Get the user's email from auth.users table
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(order.user_id)
+    // Use a service role client for admin operations
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
 
     if (userError || !user || !user.email) {
       throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)
@@ -64,9 +70,56 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
     return { success: true, message: 'Order status updated successfully.' }
   } catch (error: any) {
-    return { 
-      success: false, 
-      message: `Failed to update order status: ${error.message}` 
+    return {
+      success: false,
+      message: `Failed to update order status: ${error.message}`
+    }
+  }
+}
+
+export async function reSendInvoice(orderId: string) {
+  // Use a service role client for admin operations
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    // Fetch the user_id associated with the order
+    const { data: order, error: orderFetchError } = await supabaseAdmin
+      .from('orders')
+      .select('user_id')
+      .eq('id', orderId)
+      .single()
+
+    if (orderFetchError || !order) {
+      throw new Error(`Failed to fetch order details for re-sending invoice: ${orderFetchError?.message}`)
+    }
+
+    // Get the user's email from auth.users table using the service role client
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
+
+    if (userError || !user || !user.email) {
+      throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)
+    }
+
+    // Send the order confirmation email
+    const { success, message } = await sendOrderConfirmation({ orderId, userEmail: user.email })
+
+    if (!success) {
+      throw new Error(message || 'Failed to send order confirmation email.')
+    }
+
+    revalidatePath('/admin/orders')
+    revalidatePath(`/account/orders/${orderId}`)
+    revalidatePath(`/account/orders/${orderId}/invoice`)
+
+    return { success: true, message: 'Invoice re-sent successfully.' }
+  } catch (error: any) {
+    console.error("Error re-sending invoice:", error.message)
+    return {
+      success: false,
+      message: `Failed to re-send invoice: ${error.message}`
     }
   }
 }
