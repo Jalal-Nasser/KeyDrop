@@ -5,6 +5,7 @@ import { useSession } from "@/context/session-context"
 import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
+import { sendOrderConfirmation } from "@/lib/email-actions"
 
 interface PayPalCartButtonProps {
   cartTotal: number
@@ -109,6 +110,12 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
         } else {
           toast.success("Your order has been successfully saved.")
           clearCart()
+          // Send confirmation email
+          toast.promise(sendOrderConfirmation({ orderId: orderData.id, userEmail: session.user.email! }), {
+            loading: 'Sending confirmation email...',
+            success: 'Confirmation email sent!',
+            error: 'Failed to send confirmation email.',
+          });
         }
       }
     } else {

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Loader2, Banknote } from "lucide-react"
 import { CartItem } from "@/types/cart"
+import { sendOrderConfirmation } from "@/lib/email-actions"
 
 interface CashCheckoutButtonProps {
   cartItems: CartItem[]
@@ -63,6 +64,14 @@ export function CashCheckoutButton({ cartItems, cartTotal }: CashCheckoutButtonP
 
       toast.success("Order created successfully!", { id: toastId })
       clearCart()
+      
+      // Send confirmation email
+      toast.promise(sendOrderConfirmation({ orderId: orderId, userEmail: session.user.email! }), {
+        loading: 'Sending confirmation email...',
+        success: 'Confirmation email sent!',
+        error: 'Failed to send confirmation email.',
+      });
+
       router.push(`/account/orders/${orderId}`)
 
     } catch (error: any) {

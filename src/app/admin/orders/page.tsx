@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { OrderStatusUpdater } from "@/components/admin/order-status-updater"
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
@@ -90,9 +91,7 @@ export default async function AdminOrdersPage() {
                       <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={order.status === 'completed' ? "default" : "secondary"}>
-                          {order.status}
-                        </Badge>
+                        <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
                       </TableCell>
                       <TableCell>
                         {order.order_items.map((item, index) => (
