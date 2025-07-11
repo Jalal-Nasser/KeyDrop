@@ -82,12 +82,8 @@ export default async function AdminOrdersPage() {
                 <TableBody>
                   {orders.map((order) => (
                     <TableRow key={order.id}>
-                      <TableCell className="font-medium">
-                        {order.id.substring(0, 8)}...
-                      </TableCell>
-                      <TableCell>
-                        {order.profiles?.[0]?.first_name || ""} {order.profiles?.[0]?.last_name || ""}
-                      </TableCell>
+                      <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell>
+                      <TableCell>{order.profiles?.[0]?.first_name || ""} {order.profiles?.[0]?.last_name || ""}</TableCell>
                       <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell>
                       <TableCell>
