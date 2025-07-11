@@ -21,6 +21,8 @@ import { Separator } from "@/components/ui/separator"
 import { Loader2, ShieldCheck, Lock } from "lucide-react" // Added Lock icon
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
+import { CashCheckoutButton } from "@/components/cash-checkout-button"
+import { Database } from "@/types/supabase"
 
 const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -42,6 +44,7 @@ const checkoutSchema = profileBillingSchema.extend({
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
@@ -57,14 +60,10 @@ const Stepper = ({ step }: { step: number }) => {
                     ? "bg-blue-600 text-white shadow-md scale-110"
                     : "bg-gray-200 text-gray-600"
                   }`}
-              >
-                {index + 1}
-              </div>
+              >{index + 1}</div>
               <p className={`mt-2 text-sm transition-colors duration-300
                 ${index + 1 === step ? "font-semibold text-blue-600" : "text-muted-foreground"}`}
-              >
-                {name}
-              </p>
+              >{name}</p>
             </div>
             {index < steps.length - 1 && <div className="flex-1 h-px bg-gray-300 mx-2" />}
           </React.Fragment>
@@ -79,6 +78,7 @@ export default function CheckoutPage() {
   const { cartItems, cartTotal, cartCount } = useCart()
   const { session, supabase } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(null)
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -108,6 +108,7 @@ export default function CheckoutPage() {
           .single()
 
         if (data) {
+          setProfile(data)
           // Set each profile field individually, but do NOT touch agreedToTerms
           form.setValue("first_name", data.first_name || "");
           form.setValue("last_name", data.last_name || "");
@@ -256,6 +257,20 @@ export default function CheckoutPage() {
                         )}
                       />
                       <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                      {profile?.is_admin && (
+                        <>
+                          <div className="relative my-6">
+                            <Separator />
+                            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-2 text-sm text-muted-foreground">
+                              Admin Only
+                            </span>
+                          </div>
+                          <CashCheckoutButton
+                            cartTotal={finalCartTotal}
+                            cartItems={cartItems}
+                          />
+                        </>
+                      )}
                     </form>
                   </Form>
                 </CardContent>

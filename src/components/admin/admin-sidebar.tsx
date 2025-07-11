@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package, Tag, X } from "lucide-react" // Import Tag icon
+import { Home, Package, Tag, X, ClipboardList } from "lucide-react" // Import Tag icon
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -16,6 +16,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: Home },
+    { href: "/admin/orders", label: "Orders", icon: ClipboardList },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/coupons", label: "Coupons", icon: Tag }, // New nav item
   ]
