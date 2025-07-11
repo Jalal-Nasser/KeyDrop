@@ -11,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { format, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval, eachYearOfInterval, isValid } from "date-fns" // Import isValid
+import { format, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval, eachYearOfInterval } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
@@ -37,7 +37,7 @@ export function IncomeChart() {
       setError(null)
       const { data, error } = await supabase
         .from("orders")
-        .select("id, created_at, total")
+        .select("id, created_at, total") // Added 'id' to the select statement
         .order("created_at", { ascending: true })
 
       if (error) {
@@ -53,16 +53,9 @@ export function IncomeChart() {
   }, [supabase])
 
   const aggregateData = (data: Order[], timeframe: Timeframe) => {
-    // Filter out orders with invalid or missing created_at dates
-    const validOrders = data.filter(order => order.created_at && isValid(parseISO(order.created_at)));
-
-    if (validOrders.length === 0) {
-      return [];
-    }
-
     const aggregated: { [key: string]: number } = {}
 
-    validOrders.forEach((order) => {
+    data.forEach((order) => {
       const date = parseISO(order.created_at)
       let key: string
 
@@ -77,13 +70,11 @@ export function IncomeChart() {
       aggregated[key] = (aggregated[key] || 0) + parseFloat(order.total.toString())
     })
 
-    const firstDate = parseISO(validOrders[0].created_at);
-    const lastDate = parseISO(validOrders[validOrders.length - 1].created_at);
+    // Fill in missing dates/months/years with 0 for a continuous chart
+    if (data.length === 0) return []
 
-    // Ensure firstDate and lastDate are valid before proceeding
-    if (!isValid(firstDate) || !isValid(lastDate)) {
-      return [];
-    }
+    const firstDate = parseISO(data[0].created_at);
+    const lastDate = parseISO(data[data.length - 1].created_at);
 
     let dateRange: Date[] = [];
     if (timeframe === "daily") {
@@ -117,16 +108,10 @@ export function IncomeChart() {
   const chartData = aggregateData(orders, timeframe)
 
   const formatXAxis = (tickItem: string) => {
-    // Ensure tickItem is a valid date string before parsing
-    const date = parseISO(tickItem);
-    if (!isValid(date)) {
-      return "Invalid Date"; // Or handle as appropriate
-    }
-
     if (timeframe === "daily") {
-      return format(date, "MMM dd")
+      return format(parseISO(tickItem), "MMM dd")
     } else if (timeframe === "monthly") {
-      return format(date, "MMM yy")
+      return format(parseISO(tickItem + "-01"), "MMM yy")
     } else {
       return tickItem
     }

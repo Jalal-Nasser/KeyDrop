@@ -5,13 +5,11 @@ import { useSession } from "@/context/session-context"
 import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
-import { sendOrderConfirmationEmail } from "@/lib/order-mail"
-import { format } from "date-fns"
 
 interface PayPalCartButtonProps {
   cartTotal: number
   cartItems: CartItem[]
-  billingDetails: any // This prop contains all form values, including agreedToTerms
+  billingDetails: any
   isFormValid: boolean
 }
 
@@ -19,15 +17,16 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
   const { session, supabase } = useSession()
   const { clearCart } = useCart()
 
+  // Removed parsePrice as item.price is now a number
+
   const handleProfileUpdate = async () => {
     if (!session) return
 
-    // Destructure to exclude agreedToTerms from the billingDetails object
-    const { agreedToTerms, ...profileDataToUpdate } = billingDetails;
-
     const { error } = await supabase
       .from("profiles")
-      .update(profileDataToUpdate) // Use the filtered object
+      .update({
+        ...billingDetails,
+      })
       .eq("id", session.user.id)
 
     if (error) {
@@ -98,7 +97,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
-          price_at_purchase: item.price,
+          price_at_purchase: item.price, // Directly use item.price as it's a number
         }))
 
         const { error: itemError } = await supabase
@@ -110,28 +109,6 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
         } else {
           toast.success("Your order has been successfully saved.")
           clearCart()
-
-          if (session.user.email) {
-            const customerName = `${billingDetails.first_name || ''} ${billingDetails.last_name || ''}`.trim() || session.user.email;
-            const invoiceLink = `${window.location.origin}/account/orders/${orderData.id}/invoice`;
-            const itemsForEmail = cartItems.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-            }));
-
-            await sendOrderConfirmationEmail({
-              supabase,
-              to: session.user.email,
-              orderId: orderData.id,
-              orderDate: format(new Date(orderData.created_at), 'PPP p'),
-              totalAmount: cartTotal,
-              items: itemsForEmail,
-              customerName: customerName,
-              invoiceLink: invoiceLink,
-            });
-            toast.success("Order confirmation email sent!", { duration: 3000 });
-          }
         }
       }
     } else {

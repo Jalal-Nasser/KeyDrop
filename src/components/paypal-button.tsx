@@ -6,8 +6,6 @@ import {
 import { useSession } from "@/context/session-context"
 import { toast } from "sonner"
 import { Product } from "@/types/product"
-import { sendOrderConfirmationEmail } from "@/lib/order-mail" // Import the new email utility
-import { format } from "date-fns"
 
 interface PayPalButtonProps {
   product: Product
@@ -17,13 +15,15 @@ interface PayPalButtonProps {
 export function PayPalButton({ product, quantity }: PayPalButtonProps) {
   const { session, supabase } = useSession()
 
-  const createOrder = (data: any, actions: any) => {
+  // Removed parsePrice as product.price is now a number
+
+  const createOrder = (data: any, actions: any) => { // Changed type from CreateOrderData to any
     if (!session) {
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
     }
 
-    const price = product.price
+    const price = product.price // Directly use product.price as it's a number
     const totalValue = (price * quantity).toFixed(2)
 
     return actions.order.create({
@@ -39,14 +39,14 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
     })
   }
 
-  const onApprove = async (data: any, actions: any) => {
+  const onApprove = async (data: any, actions: any) => { // Changed type from OnApproveData to any
     if (!actions.order) {
       toast.error("Something went wrong with the PayPal order. Please try again.")
       return Promise.reject(new Error("Order actions not available"))
     }
 
     const details = await actions.order.capture()
-    const price = product.price
+    const price = product.price // Directly use product.price as it's a number
     const total = price * quantity
 
     if (details.status === "COMPLETED") {
@@ -74,48 +74,13 @@ export function PayPalButton({ product, quantity }: PayPalButtonProps) {
           order_id: orderData.id,
           product_id: product.id,
           quantity: quantity,
-          price_at_purchase: price,
+          price_at_purchase: price, // Directly use price as it's a number
         })
 
         if (itemError) {
           toast.error(`Failed to save order items: ${itemError.message}`)
         } else {
           toast.success("Your order has been successfully saved.")
-
-          // Fetch user profile for billing details
-          const { data: profileData, error: profileError } = await supabase
-            .from("profiles")
-            .select("first_name, last_name")
-            .eq("id", session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error("Error fetching profile for email:", profileError);
-            toast.error("Order saved, but failed to fetch profile for email. Please check your account.");
-          }
-
-          // Send order confirmation email
-          if (session.user.email) {
-            const customerName = profileData ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || session.user.email : session.user.email;
-            const invoiceLink = `${window.location.origin}/account/orders/${orderData.id}/invoice`;
-            const itemsForEmail = [{
-              name: product.name,
-              quantity: quantity,
-              price: product.price,
-            }];
-
-            await sendOrderConfirmationEmail({
-              supabase, // Pass supabase client
-              to: session.user.email,
-              orderId: orderData.id,
-              orderDate: format(new Date(orderData.created_at), 'PPP p'),
-              totalAmount: total,
-              items: itemsForEmail,
-              customerName: customerName,
-              invoiceLink: invoiceLink,
-            });
-            toast.success("Order confirmation email sent!", { duration: 3000 });
-          }
         }
       }
     } else {

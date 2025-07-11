@@ -2,7 +2,6 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import Image from "next/image"
-import { Button } from "@/components/ui/button" // Import Button
 
 interface Order {
   id: string;
@@ -72,12 +71,6 @@ export default async function InvoicePage({ params }: { params: { id: string } }
               <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
             </div>
             <p className="text-sm text-gray-600">Verified Digital Key Store</p>
-            <address className="not-italic text-gray-700 text-sm mt-2">
-              <p>123 Digital Key Street, Suite 456</p>
-              <p>Tech City, TX 78701, USA</p>
-              <p>Phone: +1 (310) 777 8808</p>
-              <p>Email: support@dropskey.com</p>
-            </address>
           </div>
           <div className="text-right">
             <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
@@ -153,11 +146,6 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           <p>If you have any questions, please contact us at support@dropskey.com</p>
           <p className="mt-4">Dropskey | +1 (310) 777 8808 | +1 (310) 888 7708</p>
         </div>
-      </div>
-      <div className="flex justify-center mt-6 no-print"> {/* Added no-print class */}
-        <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white">
-          Download / Print Invoice
-        </Button>
       </div>
     </div>
   )
