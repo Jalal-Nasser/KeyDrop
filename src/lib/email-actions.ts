@@ -121,3 +121,46 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
     return { success: false, message: error.message }
   }
 }
+
+export async function sendOrderCancellation(payload: { orderId: string; userEmail: string; }) {
+  const supabase = createSupabaseServerClient()
+
+  try {
+    const { data: fetchedOrder, error: orderError } = await supabase
+      .from('orders')
+      .select(`
+        id, created_at, total, status, payment_gateway,
+        profiles ( first_name, last_name )
+      `)
+      .eq('id', payload.orderId)
+      .single() as { data: FullFetchedOrder | null, error: any };
+
+    if (orderError || !fetchedOrder) {
+      throw new Error(`Failed to fetch order details for cancellation email: ${orderError?.message}`)
+    }
+
+    const profile = fetchedOrder.profiles;
+    if (!profile) {
+      throw new Error('User profile not found for this order cancellation.')
+    }
+
+    await sendMail({
+      to: payload.userEmail,
+      subject: `Your Dropskey Order #${fetchedOrder.id.substring(0, 8)} Has Been Cancelled`,
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.6;">
+          <h2>Dear ${profile!.first_name},</h2>
+          <p>We regret to inform you that your order <strong>#${fetchedOrder.id.substring(0, 8)}</strong> placed on ${new Date(fetchedOrder.created_at).toLocaleDateString()} has been cancelled.</p>
+          <p>If you have any questions or concerns regarding this cancellation, please do not hesitate to contact our support team by replying to this email.</p>
+          <p>We apologize for any inconvenience this may cause.</p>
+          <p>Thanks,<br/>The Dropskey Team</p>
+        </div>
+      `,
+    })
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error sending cancellation email:", error.message)
+    return { success: false, message: error.message }
+  }
+}
