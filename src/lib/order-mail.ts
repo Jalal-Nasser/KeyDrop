@@ -1,4 +1,4 @@
-import { sendMail } from './resend'
+import { sendMail } from './postmark'
 
 export async function sendOrderDeliveryMail({ to, orderId, productList }: { to: string, orderId: string, productList: string }) {
   return sendMail({

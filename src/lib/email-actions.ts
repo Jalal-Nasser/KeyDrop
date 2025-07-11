@@ -1,7 +1,8 @@
 'use server'
 
+import React from 'react'; // Import React for React.createElement
 import { createSupabaseServerClient } from '@/lib/supabaseServer'
-import { sendMail } from '@/lib/resend'
+import { sendMail } from '@/lib/postmark'
 import { InvoiceTemplate } from '@/components/emails/invoice-template'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -76,7 +77,10 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       order_items: fetchedOrder.order_items,
     };
 
-    const invoiceHtml = renderToStaticMarkup(<InvoiceTemplate order={orderForInvoiceTemplate} profile={profile} />);
+    // Use React.createElement to bypass potential JSX parsing issues in server context
+    const invoiceHtml = renderToStaticMarkup(
+      React.createElement(InvoiceTemplate, { order: orderForInvoiceTemplate, profile: profile })
+    );
 
     const productListHtml = fetchedOrder.order_items.map(item => {
       const product = item.products; // Now correctly typed as FetchedProduct | null
@@ -91,7 +95,7 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       subject: `Your Dropskey Order Confirmation #${fetchedOrder.id.substring(0, 8)}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.6;">
-          <h2>Thank you for your order, ${profile.first_name}!</h2>
+          <h2>Thank you for your order, ${profile!.first_name}!</h2>
           <p>Your order has been confirmed and is being processed. You can find your invoice attached to this email.</p>
           <h3>Your Products:</h3>
           <ul>${productListHtml}</ul>
@@ -106,6 +110,7 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
         {
           filename: `invoice-${fetchedOrder.id.substring(0, 8)}.html`,
           content: invoiceHtml,
+          ContentType: 'text/html', // Specify content type for the attachment
         },
       ],
     })
