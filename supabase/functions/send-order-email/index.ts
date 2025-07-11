@@ -1,7 +1,7 @@
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 // @ts-ignore
-import { Resend } from "https://esm.sh/resend@4.6.0"
+import { ServerClient } from "https://esm.sh/postmark@4.0.5" // Changed to PostMark
 
 // Declare Deno.env to satisfy TypeScript for this file
 declare global {
@@ -33,22 +33,23 @@ serve(async (req: Request) => {
       })
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY")
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY is not set in environment variables.")
+    const postmarkApiKey = Deno.env.get("POSTMARK_API_TOKEN") // Changed to POSTMARK_API_TOKEN
+    if (!postmarkApiKey) {
+      throw new Error("POSTMARK_API_TOKEN is not set in environment variables.")
     }
 
-    const resend = new Resend(resendApiKey)
+    const postmarkClient = new ServerClient(postmarkApiKey) // Initialize PostMark client
 
-    const { data, error } = await resend.emails.send({
-      from: 'Dropskey <no-reply@dropskey.com>', // Ensure this is a verified sender in Resend
-      to,
-      subject,
-      html,
+    const { data, error } = await postmarkClient.sendEmail({ // Changed to PostMark send method
+      From: 'no-reply@dropskey.com', // Ensure this is a verified sender in PostMark
+      To: to,
+      Subject: subject,
+      HtmlBody: html,
+      MessageStream: "outbound" // Use 'outbound' for transactional emails
     })
 
     if (error) {
-      console.error('Resend email error:', error)
+      console.error('PostMark email error:', error) // Changed log message
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
