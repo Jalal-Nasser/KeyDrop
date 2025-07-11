@@ -34,7 +34,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     // Get the user's email from auth.users table
     // Use a service role client for admin operations
     const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_URL!, // Changed from NEXT_PUBLIC_SUPABASE_URL
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
@@ -80,7 +80,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function reSendInvoice(orderId: string) {
   // Use a service role client for admin operations
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_URL!, // Changed from NEXT_PUBLIC_SUPABASE_URL
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
