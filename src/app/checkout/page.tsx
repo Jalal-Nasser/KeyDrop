@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { Loader2, ShieldCheck, Lock } from "lucide-react" // Added Lock icon
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
-import { CashCheckoutButton } from "@/components/cash-checkout-button"
+import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
 import { Database } from "@/types/supabase"
 
 const profileBillingSchema = z.object({
@@ -265,7 +265,7 @@ export default function CheckoutPage() {
                               Admin Only
                             </span>
                           </div>
-                          <CashCheckoutButton
+                          <WalletCheckoutButton
                             cartTotal={finalCartTotal}
                             cartItems={cartItems}
                           />

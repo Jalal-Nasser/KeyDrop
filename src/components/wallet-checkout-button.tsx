@@ -6,29 +6,29 @@ import { useCart } from "@/context/cart-context"
 import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { Loader2, Banknote } from "lucide-react"
+import { Loader2, Wallet } from "lucide-react"
 import { CartItem } from "@/types/cart"
 import { sendOrderConfirmation } from "@/lib/email-actions"
 
-interface CashCheckoutButtonProps {
+interface WalletCheckoutButtonProps {
   cartItems: CartItem[]
   cartTotal: number
 }
 
-export function CashCheckoutButton({ cartItems, cartTotal }: CashCheckoutButtonProps) {
+export function WalletCheckoutButton({ cartItems, cartTotal }: WalletCheckoutButtonProps) {
   const router = useRouter()
   const { clearCart } = useCart()
   const { session, supabase } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleCashCheckout = async () => {
+  const handleWalletCheckout = async () => {
     if (!session) {
       toast.error("You must be logged in to perform this action.")
       return
     }
 
     setIsLoading(true)
-    const toastId = toast.loading("Processing cash order...")
+    const toastId = toast.loading("Processing wallet order...")
 
     try {
       // 1. Create the order
@@ -38,8 +38,8 @@ export function CashCheckoutButton({ cartItems, cartTotal }: CashCheckoutButtonP
           user_id: session.user.id,
           total: cartTotal,
           status: "completed",
-          payment_gateway: "cash",
-          payment_id: `cash_${new Date().getTime()}`,
+          payment_gateway: "wallet",
+          payment_id: `wallet_${new Date().getTime()}`,
         })
         .select()
         .single()
@@ -75,7 +75,7 @@ export function CashCheckoutButton({ cartItems, cartTotal }: CashCheckoutButtonP
       router.push(`/account/orders/${orderId}`)
 
     } catch (error: any) {
-      console.error("Cash checkout error:", error)
+      console.error("Wallet checkout error:", error)
       toast.error(`Error: ${error.message || "Could not complete the order."}`, { id: toastId })
     } finally {
       setIsLoading(false)
@@ -84,16 +84,16 @@ export function CashCheckoutButton({ cartItems, cartTotal }: CashCheckoutButtonP
 
   return (
     <Button
-      onClick={handleCashCheckout}
+      onClick={handleWalletCheckout}
       disabled={isLoading}
       className="w-full bg-green-600 hover:bg-green-700"
     >
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       ) : (
-        <Banknote className="mr-2 h-4 w-4" />
+        <Wallet className="mr-2 h-4 w-4" />
       )}
-      Complete Order (Cash)
+      Complete with Wallet
     </Button>
   )
 }
