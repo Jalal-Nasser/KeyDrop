@@ -1,20 +1,25 @@
 import Image from "next/image"; // Import Image component
+import Link from "next/link"; // Import Link component
 
 export function Footer() {
+  const kasperskyPdfUrl = "https://notncpmpmgostfxesrvk.supabase.co/storage/v1/object/public/product-images/public/documents/Kasper%20Registered%20Partner%20Certificate.pdf";
+
   return (
     <footer className="text-white py-12" style={{ backgroundColor: "#1e73be" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Kaspersky Partner Logo */}
           <div className="flex justify-center md:justify-start items-center">
-            <Image
-              src="/kaspersky_b2b_registered_partner-dropskey.png"
-              alt="Kaspersky B2B Registered Partner Dropskey"
-              width={150} // Adjust width as needed
-              height={100} // Adjust height as needed
-              style={{ objectFit: "contain" }}
-              className="max-w-full h-auto"
-            />
+            <Link href={kasperskyPdfUrl} target="_blank" rel="noopener noreferrer">
+              <Image
+                src="/kaspersky_b2b_registered_partner-dropskey.png"
+                alt="Kaspersky B2B Registered Partner Dropskey"
+                width={150} // Adjust width as needed
+                height={100} // Adjust height as needed
+                style={{ objectFit: "contain" }}
+                className="max-w-full h-auto"
+              />
+            </Link>
           </div>
 
           {/* Terms and Conditions - EXACT content */}
