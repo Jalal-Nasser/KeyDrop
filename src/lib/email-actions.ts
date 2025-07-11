@@ -1,10 +1,8 @@
 'use server'
 
-import React from 'react'; // Import React for React.createElement
 import { createSupabaseServerClient } from '@/lib/supabaseServer'
 import { sendMail } from '@/lib/postmark'
-import { InvoiceTemplate } from '@/components/emails/invoice-template'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { renderInvoiceTemplateToHtml } from '@/lib/render-email-template'; // Import the new rendering utility
 
 // Define types that match the Supabase query result structure
 interface FetchedProduct {
@@ -77,10 +75,8 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       order_items: fetchedOrder.order_items,
     };
 
-    // Use React.createElement to bypass potential JSX parsing issues in server context
-    const invoiceHtml = renderToStaticMarkup(
-      React.createElement(InvoiceTemplate, { order: orderForInvoiceTemplate, profile: profile })
-    );
+    // Use the new utility function to render the invoice template
+    const invoiceHtml = renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
 
     const productListHtml = fetchedOrder.order_items.map(item => {
       const product = item.products; // Now correctly typed as FetchedProduct | null
