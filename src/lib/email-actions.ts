@@ -14,7 +14,7 @@ interface FetchedProduct {
 interface FetchedOrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: FetchedProduct | null; // Supabase returns single object for related
+  products: FetchedProduct[] | null; // Changed to array of FetchedProduct
 }
 
 interface FetchedProfile {
@@ -79,7 +79,7 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
     const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
 
     const productListHtml = fetchedOrder.order_items.map(item => {
-      const product = item.products; // Now correctly typed as FetchedProduct | null
+      const product = item.products?.[0]; // Access the first product in the array
       if (product?.is_digital && product.download_url) {
         return `<li>${product.name}: <a href="${process.env.NEXT_PUBLIC_BASE_URL}${product.download_url}">Download Now</a></li>`
       }

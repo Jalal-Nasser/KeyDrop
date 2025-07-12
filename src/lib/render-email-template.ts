@@ -11,7 +11,7 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: Product | null; // Changed to single Product object
+  products: { name: string; }[] | null; // Corrected back to array of objects
 }
 
 interface Profile {

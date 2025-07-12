@@ -11,7 +11,7 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: Product | null; // Changed to single Product object
+  products: { name: string; }[] | null; // Corrected back to array of objects
 }
 
 interface Profile {
@@ -135,8 +135,8 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             </thead>
             <tbody>
               {order.order_items.map((item, index) => {
-                // Access the product directly
-                const product = item.products;
+                // Access the first product in the array
+                const product = item.products?.[0];
                 return (
                   <tr key={index}>
                     <td style={td}>{product?.name || 'Unknown Product'}</td>

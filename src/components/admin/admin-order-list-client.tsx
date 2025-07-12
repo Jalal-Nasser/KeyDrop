@@ -87,11 +87,8 @@ export function AdminOrderListClient({ initialOrders }: AdminOrderListClientProp
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell> {/* Shortened ID */}
                   <TableCell>
-                    {order.profiles?.[0]?.is_admin ? (
-                      <span className="font-semibold text-blue-600">Admin</span>
-                    ) : (
-                      `${order.profiles?.[0]?.first_name || ""} ${order.profiles?.[0]?.last_name || ""}`
-                    )}
+                    {/* Always display the customer's name */}
+                    {`${order.profiles?.[0]?.first_name || ""} ${order.profiles?.[0]?.last_name || ""}`}
                   </TableCell>
                   <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                   <TableCell>${order.total.toFixed(2)}</TableCell>
