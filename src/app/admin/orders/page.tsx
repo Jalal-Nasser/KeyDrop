@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { OrderStatusUpdater } from "@/components/admin/order-status-updater"
 import { Download } from "lucide-react"
-import { ReSendInvoiceButton } from "@/components/admin/resend-invoice-button" // Import the new component
+import { ReSendInvoiceButton } from "@/components/admin/resend-invoice-button"
+import { AdminOrderListClient } from "@/components/admin/admin-order-list-client" // Import the new client component
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
@@ -26,6 +27,7 @@ interface Order {
   profiles: {
     first_name: string | null;
     last_name: string | null;
+    is_admin: boolean | null; // Added is_admin
   }[] | null;
   order_items: {
     product_id: number;
@@ -44,7 +46,7 @@ export default async function AdminOrdersPage() {
       created_at,
       total,
       status,
-      profiles (first_name, last_name),
+      profiles (first_name, last_name, is_admin),
       order_items (product_id, quantity, products (name))
     `)
     .order("created_at", { ascending: false })
@@ -66,61 +68,8 @@ export default async function AdminOrdersPage() {
         <CardHeader>
           <CardTitle>Order List</CardTitle>
         </CardHeader>
-        <CardContent>
-          {orders && orders.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell>
-                      <TableCell>{order.profiles?.[0]?.first_name || ""} {order.profiles?.[0]?.last_name || ""}</TableCell>
-                      <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                      <TableCell>${order.total.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
-                      </TableCell>
-                      <TableCell>
-                        {order.order_items.map((item, index) => (
-                          <div key={item.product_id}>
-                            {item.quantity} x {item.products?.[0]?.name || `Product ${item.product_id}`}
-                            {index < order.order_items.length - 1 ? ',' : ''}
-                          </div>
-                        ))}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/account/orders/${order.id}/invoice`}>View Invoice</Link>
-                          </Button>
-                          <Button asChild variant="secondary" size="sm">
-                            <Link href={`/account/orders/${order.id}/invoice?print=true`} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <ReSendInvoiceButton orderId={order.id} /> {/* Add the new button here */}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-4">No orders found.</p>
-          )}
-        </CardContent>
+        {/* Render the client component and pass the fetched orders */}
+        <AdminOrderListClient initialOrders={orders || []} />
       </Card>
     </div>
   )
