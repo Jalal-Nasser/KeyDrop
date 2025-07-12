@@ -15,7 +15,7 @@ type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
 }
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
-  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'>[] | null
+  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'> | null // Changed from array to single object
   order_items: OrderItem[]
 }
 

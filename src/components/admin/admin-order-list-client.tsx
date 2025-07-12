@@ -18,7 +18,7 @@ type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
 }
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
-  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'>[] | null
+  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'> | null
   order_items: OrderItem[]
 }
 
@@ -47,8 +47,8 @@ export function AdminOrderListClient({ orders }: AdminOrderListClientProps) {
               <TableCell className="font-medium">#{order.id.substring(0, 8)}</TableCell>
               <TableCell>{format(new Date(order.created_at), "PPP")}</TableCell>
               <TableCell>
-                {order.profiles?.[0]?.first_name || order.profiles?.[0]?.last_name ?
-                  `${order.profiles?.[0]?.first_name || ''} ${order.profiles?.[0]?.last_name || ''}`.trim() :
+                {order.profiles?.first_name || order.profiles?.last_name ?
+                  `${order.profiles?.first_name || ''} ${order.profiles?.last_name || ''}`.trim() :
                   `User: ${order.user_id.substring(0, 8)}...`}
               </TableCell>
               <TableCell>
