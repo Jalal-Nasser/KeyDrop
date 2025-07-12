@@ -13,16 +13,23 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
 import { PayPalCartButton } from "@/components/paypal-cart-button"
 import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, ShieldCheck, Lock } from "lucide-react" // Added Lock icon
+import { Loader2, ShieldCheck, Lock } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
-import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
+import { Checkbox } from "@/components/ui/checkbox"
 import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
 import { Database } from "@/types/supabase"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -45,6 +52,7 @@ const checkoutSchema = profileBillingSchema.extend({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
 type Profile = Database['public']['Tables']['profiles']['Row']
+type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>; // New type for client selection
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
@@ -79,6 +87,9 @@ export default function CheckoutPage() {
   const { session, supabase } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [users, setUsers] = useState<ClientProfileOption[]>([]) // Updated type here
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
+  const [selectedClientId, setSelectedClientId] = useState<string>("")
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -86,7 +97,7 @@ export default function CheckoutPage() {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
       state_province_region: "", postal_code: "", country: "",
-      agreedToTerms: false, // Default to false
+      agreedToTerms: false,
     },
   })
 
@@ -98,7 +109,7 @@ export default function CheckoutPage() {
   }, [cartCount, router])
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndUsers = async () => {
       if (session) {
         setIsLoadingProfile(true)
         const { data, error } = await supabase
@@ -109,7 +120,7 @@ export default function CheckoutPage() {
 
         if (data) {
           setProfile(data)
-          // Set each profile field individually, but do NOT touch agreedToTerms
+          setSelectedClientId(data.id) // Default to self
           form.setValue("first_name", data.first_name || "");
           form.setValue("last_name", data.last_name || "");
           form.setValue("company_name", data.company_name || "");
@@ -120,6 +131,21 @@ export default function CheckoutPage() {
           form.setValue("state_province_region", data.state_province_region || "");
           form.setValue("postal_code", data.postal_code || "");
           form.setValue("country", data.country || "");
+
+          if (data.is_admin) {
+            setIsLoadingUsers(true)
+            const { data: allUsers, error: usersError } = await supabase
+              .from("profiles")
+              .select("id, first_name, last_name")
+              .order("first_name", { ascending: true })
+            
+            if (usersError) {
+              toast.error("Failed to load users for client selection.")
+            } else {
+              setUsers(allUsers || [])
+            }
+            setIsLoadingUsers(false)
+          }
         }
         if (error && error.code !== 'PGRST116') {
           toast.error("Could not fetch your profile information.")
@@ -129,20 +155,18 @@ export default function CheckoutPage() {
         setIsLoadingProfile(false)
       }
     }
-    fetchProfile()
+    fetchProfileAndUsers()
   }, [session, supabase, form])
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
   
-  // Validate only the billing profile data, not the agreedToTerms checkbox for this check
   const isProfileDataComplete = profileBillingSchema.safeParse(form.getValues()).success 
 
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
   }
 
-  // Logged-in user view
   if (session) {
     if (isLoadingProfile) {
       return (
@@ -153,7 +177,6 @@ export default function CheckoutPage() {
       )
     }
 
-    // If profile billing data is not complete, prompt user to update
     if (!isProfileDataComplete) {
       return (
         <div className="container mx-auto py-20">
@@ -174,7 +197,6 @@ export default function CheckoutPage() {
 
     return (
       <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
-        {/* Hero Section for Logged-in User */}
         <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
           <div className="absolute inset-0 bg-black/20 z-0"></div>
           <div className="container mx-auto px-4 relative z-10">
@@ -230,9 +252,8 @@ export default function CheckoutPage() {
               <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
                 <CardContent>
-                  {/* Wrap the form fields and PayPal button in a Form component */}
                   <Form {...form}>
-                    <form> {/* A dummy form tag is needed for FormField to work */}
+                    <form>
                       <FormField
                         control={form.control}
                         name="agreedToTerms"
@@ -265,10 +286,47 @@ export default function CheckoutPage() {
                               Admin Only
                             </span>
                           </div>
-                          <WalletCheckoutButton
-                            cartTotal={finalCartTotal}
-                            cartItems={cartItems}
-                          />
+                          <div className="space-y-4">
+                            <FormItem>
+                              <FormLabel>Purchase for Client</FormLabel>
+                              <Select
+                                onValueChange={setSelectedClientId}
+                                value={selectedClientId}
+                                disabled={isLoadingUsers}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a client" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {isLoadingUsers ? (
+                                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                                  ) : (
+                                    <>
+                                      <SelectItem value={session.user.id}>For Myself</SelectItem>
+                                      {users
+                                        .filter(user => user.id !== session.user.id)
+                                        .map(user => (
+                                          <SelectItem key={user.id} value={user.id}>
+                                            {user.first_name} {user.last_name}
+                                          </SelectItem>
+                                        ))}
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Select a client to make a purchase on their behalf.
+                              </FormDescription>
+                            </FormItem>
+                            <WalletCheckoutButton
+                              cartTotal={finalCartTotal}
+                              cartItems={cartItems}
+                              targetUserId={selectedClientId}
+                              isFormValid={form.formState.isValid}
+                            />
+                          </div>
                         </>
                       )}
                     </form>
@@ -295,10 +353,9 @@ export default function CheckoutPage() {
     )
   }
 
-  // Guest user view
+  // Guest user view remains the same
   return (
     <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
-      {/* Hero Section for Guest User */}
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div>
         <div className="container mx-auto px-4 relative z-10">

@@ -3,27 +3,32 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
-import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Loader2, Wallet } from "lucide-react"
 import { CartItem } from "@/types/cart"
-import { sendOrderConfirmation } from "@/lib/email-actions"
+import { createWalletOrder } from "@/app/checkout/actions"
 
 interface WalletCheckoutButtonProps {
   cartItems: CartItem[]
   cartTotal: number
+  targetUserId: string
+  isFormValid: boolean
 }
 
-export function WalletCheckoutButton({ cartItems, cartTotal }: WalletCheckoutButtonProps) {
+export function WalletCheckoutButton({ cartItems, cartTotal, targetUserId, isFormValid }: WalletCheckoutButtonProps) {
   const router = useRouter()
   const { clearCart } = useCart()
-  const { session, supabase } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleWalletCheckout = async () => {
-    if (!session) {
-      toast.error("You must be logged in to perform this action.")
+    if (!isFormValid) {
+      toast.error("You must agree to the terms and conditions to proceed.");
+      return;
+    }
+    
+    if (!targetUserId) {
+      toast.error("A target user must be selected for this transaction.")
       return
     }
 
@@ -31,52 +36,24 @@ export function WalletCheckoutButton({ cartItems, cartTotal }: WalletCheckoutBut
     const toastId = toast.loading("Processing wallet order...")
 
     try {
-      // 1. Create the order
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: session.user.id,
-          total: cartTotal,
-          status: "completed",
-          payment_gateway: "wallet",
-          payment_id: `wallet_${new Date().getTime()}`,
-        })
-        .select()
-        .single()
+      const result = await createWalletOrder({
+        cartItems,
+        cartTotal,
+        targetUserId,
+      })
 
-      if (orderError) throw orderError
-
-      const orderId = orderData.id
-
-      // 2. Create order items
-      const orderItemsToInsert = cartItems.map(item => ({
-        order_id: orderId,
-        product_id: item.id,
-        quantity: item.quantity,
-        price_at_purchase: item.price,
-      }))
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItemsToInsert)
-
-      if (itemsError) throw itemsError
+      if (!result.success || !result.orderId) {
+        throw new Error(result.message || "Failed to create order.")
+      }
 
       toast.success("Order created successfully!", { id: toastId })
       clearCart()
       
-      // Send confirmation email
-      toast.promise(sendOrderConfirmation({ orderId: orderId, userEmail: session.user.email! }), {
-        loading: 'Sending confirmation email...',
-        success: 'Confirmation email sent!',
-        error: 'Failed to send confirmation email.',
-      });
-
-      router.push(`/account/orders/${orderId}`)
+      router.push(`/account/orders/${result.orderId}`)
 
     } catch (error: any) {
       console.error("Wallet checkout error:", error)
-      toast.error(`Error: ${error.message || "Could not complete the order."}`, { id: toastId })
+      toast.error(`Error: ${error.message}`, { id: toastId })
     } finally {
       setIsLoading(false)
     }
@@ -85,8 +62,9 @@ export function WalletCheckoutButton({ cartItems, cartTotal }: WalletCheckoutBut
   return (
     <Button
       onClick={handleWalletCheckout}
-      disabled={isLoading}
+      disabled={isLoading || !isFormValid}
       className="w-full bg-green-600 hover:bg-green-700"
+      type="button"
     >
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
