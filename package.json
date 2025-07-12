@@ -6,11 +6,11 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start"
+}
+
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@paypal/react-paypal-js": "^8.8.3",
