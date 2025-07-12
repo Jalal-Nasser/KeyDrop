@@ -87,19 +87,15 @@ export function IncomeChart() {
 
     return dateRange.map(date => {
       let key: string;
-      let label: string;
       if (timeframe === "daily") {
         key = format(date, "yyyy-MM-dd");
-        label = format(date, "MMM dd");
       } else if (timeframe === "monthly") {
         key = format(date, "yyyy-MM");
-        label = format(date, "MMM yyyy");
       } else { // yearly
         key = format(date, "yyyy");
-        label = format(date, "yyyy");
       }
       return {
-        name: label,
+        name: key, // Use the parsable key as the name
         total: aggregated[key] || 0,
       };
     });
@@ -111,9 +107,11 @@ export function IncomeChart() {
     if (timeframe === "daily") {
       return format(parseISO(tickItem), "MMM dd")
     } else if (timeframe === "monthly") {
-      return format(parseISO(tickItem + "-01"), "MMM yy")
-    } else {
-      return tickItem
+      // Append '-01' to make it a valid ISO date for parseISO (e.g., "2023-01-01")
+      return format(parseISO(`${tickItem}-01`), "MMM yy")
+    } else { // yearly
+      // Append '-01-01' to make it a valid ISO date for parseISO (e.g., "2023-01-01")
+      return format(parseISO(`${tickItem}-01-01`), "yyyy")
     }
   }
 
