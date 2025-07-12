@@ -47,7 +47,9 @@ export function AdminOrderListClient({ orders }: AdminOrderListClientProps) {
               <TableCell className="font-medium">#{order.id.substring(0, 8)}</TableCell>
               <TableCell>{format(new Date(order.created_at), "PPP")}</TableCell>
               <TableCell>
-                {order.profiles?.[0]?.first_name || 'Unknown'} {order.profiles?.[0]?.last_name || ''}
+                {order.profiles?.[0]?.first_name || order.profiles?.[0]?.last_name ?
+                  `${order.profiles?.[0]?.first_name || ''} ${order.profiles?.[0]?.last_name || ''}`.trim() :
+                  `User: ${order.user_id.substring(0, 8)}...`}
               </TableCell>
               <TableCell>
                 {order.order_items.map((item, index) => (
