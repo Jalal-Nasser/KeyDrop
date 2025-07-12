@@ -26,7 +26,7 @@ interface Order {
     state_province_region: string | null;
     postal_code: string | null;
     country: string | null;
-  }[] | null; // Changed to array
+  }[] | null;
 }
 
 interface OrderItem {
@@ -36,7 +36,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  }[] | null; // Changed to array
+  }[] | null; // Changed to array of objects
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -60,7 +60,6 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   const processingFee = order.total * 0.15;
   const finalTotal = order.total + processingFee;
 
-  // Access the first profile object if profiles array exists and is not empty
   const profile = order.profiles?.[0];
 
   return (
