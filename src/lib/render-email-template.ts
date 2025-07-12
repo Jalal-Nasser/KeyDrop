@@ -11,7 +11,7 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: Product | null;
+  products: Product | null; // Changed to single Product object
 }
 
 interface Profile {

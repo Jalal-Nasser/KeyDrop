@@ -11,7 +11,7 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: Product | null; // Corrected to single Product or null
+  products: Product | null; // Changed to single Product object
 }
 
 interface Profile {
@@ -135,7 +135,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             </thead>
             <tbody>
               {order.order_items.map((item, index) => {
-                // item.products is now correctly typed as Product | null
+                // Access the product directly
                 const product = item.products;
                 return (
                   <tr key={index}>
