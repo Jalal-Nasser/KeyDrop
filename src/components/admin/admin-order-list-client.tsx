@@ -85,7 +85,7 @@ export function AdminOrderListClient({ initialOrders }: AdminOrderListClientProp
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell> {/* Full ID */}
+                  <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell> {/* Shortened ID */}
                   <TableCell>
                     {order.profiles?.[0]?.is_admin ? (
                       <span className="font-semibold text-blue-600">Admin</span>
