@@ -37,7 +37,11 @@ export default function RootLayout({
       {/* Google Tag Manager - Part 1 (Head) */}
       {gtmId && (
         <Script id="google-tag-manager-head" strategy="afterInteractive">
+<<<<<<< HEAD
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+=======
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+>>>>>>> main
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
@@ -70,7 +74,11 @@ export default function RootLayout({
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', '${gaMeasurementId}');
+<<<<<<< HEAD
             `}
+=======
+            `}
+>>>>>>> main
           </Script>
         )}
         <ThemeProvider
@@ -78,15 +86,26 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+<<<<<<< HEAD
         >
+=======
+        >
+>>>>>>> main
           <PayPalProvider>
             <SessionProvider>
               <CartProvider>
                 <WishlistProvider>
+<<<<<<< HEAD
                   <Header />
                   <main className="flex-grow pb-[60px]">{children}</main>
                   <Footer />
                   <MobileNavBar />
+=======
+                  <Header className="print:hidden" />
+                  <main className="flex-grow pb-[60px]">{children}</main>
+                  <Footer />
+                  <MobileNavBar className="print:hidden" />
+>>>>>>> main
                 </WishlistProvider>
               </CartProvider>
             </SessionProvider>

@@ -2,7 +2,9 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import Image from "next/image"
-import { Button } from "@/components/ui/button" // Import Button
+import { InvoiceActions } from "@/components/invoice-actions"
+import { Suspense } from "react"
+import { AutoPrinter } from "@/components/auto-printer"
 
 interface Order {
   id: string;
@@ -23,7 +25,7 @@ interface Order {
     state_province_region: string | null;
     postal_code: string | null;
     country: string | null;
-  }[] | null; // Changed to array
+  }[] | null;
 }
 
 interface OrderItem {
@@ -33,7 +35,7 @@ interface OrderItem {
   price_at_purchase: number;
   products: {
     name: string;
-  }[] | null; // Changed to array
+  }[] | null; // Changed to array of objects
 }
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
@@ -57,32 +59,31 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const processingFee = order.total * 0.15;
   const finalTotal = order.total + processingFee;
 
-  // Access the first profile object if profiles array exists and is not empty
   const profile = order.profiles?.[0];
 
   return (
     <div className="container mx-auto p-4 py-8 print:p-0">
+      <Suspense fallback={null}>
+        <AutoPrinter />
+      </Suspense>
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none print:border-none">
-        <div className="p-8 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="w-8 h-8 relative">
-                <Image src="/panda.png" alt="Dropskey Logo" fill sizes="32px" style={{ objectFit: "contain" }} />
+        <div className="p-8 border-b border-gray-200">
+          <InvoiceActions />
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-8 h-8 relative">
+                  <Image src="/panda.png" alt="Dropskey Logo" fill sizes="32px" style={{ objectFit: "contain" }} />
+                </div>
+                <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
               </div>
-              <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
+              <p className="text-sm text-gray-600">Verified Digital Key Store</p>
             </div>
-            <p className="text-sm text-gray-600">Verified Digital Key Store</p>
-            <address className="not-italic text-gray-700 text-sm mt-2">
-              <p>123 Digital Key Street, Suite 456</p>
-              <p>Tech City, TX 78701, USA</p>
-              <p>Phone: +1 (310) 777 8808</p>
-              <p>Email: support@dropskey.com</p>
-            </address>
-          </div>
-          <div className="text-right">
-            <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
-            <p className="text-sm text-gray-600">Invoice ID: {order.id.substring(0, 8)}</p>
-            <p className="text-sm text-gray-600">Date: {format(new Date(order.created_at), 'PPP')}</p>
+            <div className="text-right">
+              <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
+              <p className="text-sm text-gray-600">Invoice ID: {order.id.substring(0, 8)}</p>
+              <p className="text-sm text-gray-600">Date: {format(new Date(order.created_at), 'PPP')}</p>
+            </div>
           </div>
         </div>
 
@@ -153,11 +154,6 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           <p>If you have any questions, please contact us at support@dropskey.com</p>
           <p className="mt-4">Dropskey | +1 (310) 777 8808 | +1 (310) 888 7708</p>
         </div>
-      </div>
-      <div className="flex justify-center mt-6 no-print"> {/* Added no-print class */}
-        <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white">
-          Download / Print Invoice
-        </Button>
       </div>
     </div>
   )
