@@ -1,1 +1,0 @@
--- This is a dummy migration file created to reset the migration state and clear a persistent cache error.
