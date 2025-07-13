@@ -12,8 +12,8 @@ const renderOptions = { pretty: true };
 
 async function renderTemplate<P>(Component: React.FunctionComponent<P>, props: P): Promise<string> {
   try {
-    // Create the React element explicitly, casting Component to 'any' to bypass strict type checking
-    const element = React.createElement(Component as any, props);
+    // Create the React element explicitly, casting Component to 'any' and props to Record<string, unknown>
+    const element = React.createElement(Component as any, props as Record<string, unknown>);
     // Cast the element to React.ReactElement<any> to bypass strict prop type checking by @react-email/render's types
     const html = render(element as React.ReactElement<any>, renderOptions);
     return html;
