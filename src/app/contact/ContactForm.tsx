@@ -45,7 +45,7 @@ export default function ContactForm() {
     const toastId = toast.loading("Sending your message...")
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/contact/api", { // Changed from "/api/contact" to "/contact/api"
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values)
