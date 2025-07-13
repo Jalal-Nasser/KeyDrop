@@ -24,7 +24,7 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   }));
 
   return postmarkClient.sendEmail({
-    From: 'your-verified-sender@yourdomain.com', // <--- CHANGE THIS TO YOUR VERIFIED SENDER EMAIL IN POSTMARK
+    From: 'admin@dropskey.com', // Using a verified sender email
     To: to,
     Subject: subject,
     HtmlBody: html,
