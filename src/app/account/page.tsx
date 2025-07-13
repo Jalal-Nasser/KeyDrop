@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import Link from "next/link"
+import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
 
 const profileSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -65,15 +66,23 @@ export default function AccountPage() {
           .eq("id", session.user.id)
           .single()
 
-        if (data) {
-          // Explicitly convert nulls to empty strings for form fields
+        if (error && error.code === 'PGRST116') {
+          // This likely means it's a new user whose profile hasn't been fully populated yet.
+          // We can send a registration confirmation email here.
+          // Note: This is a simple way to trigger this. A more robust solution would use webhooks.
+          if (session.user.email && session.user.user_metadata.first_name) {
+             sendRegistrationConfirmation({
+               userEmail: session.user.email,
+               firstName: session.user.user_metadata.first_name,
+             });
+          }
+        } else if (data) {
           const cleanedData = Object.fromEntries(
             Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
-          ) as ProfileFormValues; // Cast back to ProfileFormValues
+          ) as ProfileFormValues;
           form.reset(cleanedData);
           setIsAdmin(data.is_admin || false);
-        }
-        if (error && error.code !== 'PGRST116') {
+        } else if (error) {
           toast.error("Could not fetch your profile information.")
         }
       }
@@ -82,7 +91,7 @@ export default function AccountPage() {
   }, [session, supabase, form])
 
   const onSubmit = async (values: ProfileFormValues) => {
-    if (!session) return
+    if (!session?.user?.email) return
 
     const { error } = await supabase
       .from("profiles")
@@ -93,6 +102,10 @@ export default function AccountPage() {
       toast.error(`Failed to update profile: ${error.message}`)
     } else {
       toast.success("Profile updated successfully!")
+      await sendProfileUpdateConfirmation({
+        userEmail: session.user.email,
+        firstName: values.first_name || 'Valued Customer',
+      })
     }
   }
 

@@ -14,7 +14,7 @@ interface OrderItem {
   products: { name: string; }[] | null; // Corrected back to array of objects
 }
 
-interface Profile {
+export interface Profile { // Fix 2: Export Profile
   first_name: string | null;
   last_name: string | null;
   company_name: string | null;
@@ -27,7 +27,7 @@ interface Profile {
   vat_number: string | null;
 }
 
-interface Order {
+export interface Order { // Fix 2: Export Order
   id: string;
   created_at: string;
   total: number;

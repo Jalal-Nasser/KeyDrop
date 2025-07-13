@@ -2,14 +2,13 @@
 
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { revalidatePath } from "next/cache"
-import { sendOrderCancellation, sendOrderConfirmation } from "@/lib/email-actions" // Import sendOrderConfirmation
-import { createClient } from '@supabase/supabase-js' // Import createClient for service role
+import { sendOrderStatusUpdate, sendOrderConfirmation } from "@/lib/email-actions"
+import { createClient } from '@supabase/supabase-js'
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = createSupabaseServerClient()
 
   try {
-    // First, get the current order details to retrieve the user's email
     const { data: order, error: fetchError } = await supabase
       .from('orders')
       .select(`user_id`)
@@ -20,19 +19,6 @@ export async function updateOrderStatus(orderId: string, status: string) {
       throw new Error(`Failed to fetch order for status update: ${fetchError?.message}`)
     }
 
-    // Get the user's email from their profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id') // We only need the ID to get the email from auth.users
-      .eq('id', order.user_id)
-      .single()
-
-    if (profileError || !profile) {
-      throw new Error(`Failed to fetch profile for user ${order.user_id}: ${profileError?.message}`)
-    }
-
-    // Get the user's email from auth.users table
-    // Use a service role client for admin operations
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -42,8 +28,13 @@ export async function updateOrderStatus(orderId: string, status: string) {
     if (userError || !user || !user.email) {
       throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)
     }
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name')
+      .eq('id', order.user_id)
+      .single();
 
-    // Update the order status
     const { error: updateError } = await supabase
       .from('orders')
       .update({ status })
@@ -53,16 +44,12 @@ export async function updateOrderStatus(orderId: string, status: string) {
       throw new Error(updateError.message)
     }
 
-    // If the status is 'cancelled', send the cancellation email
-    if (status === 'cancelled') {
-      const { success, message } = await sendOrderCancellation({ orderId, userEmail: user.email });
-      if (!success) {
-        console.error(`Failed to send cancellation email: ${message}`);
-        // Optionally, you might want to throw an error here or handle it differently
-        // depending on whether email sending failure should block the status update.
-        // For now, we'll just log it and let the status update succeed.
-      }
-    }
+    await sendOrderStatusUpdate({ 
+      orderId, 
+      userEmail: user.email, 
+      status, 
+      firstName: profile?.first_name || 'Valued Customer' 
+    });
 
     revalidatePath('/admin/orders')
     revalidatePath(`/account/orders/${orderId}`)
@@ -78,14 +65,12 @@ export async function updateOrderStatus(orderId: string, status: string) {
 }
 
 export async function reSendInvoice(orderId: string) {
-  // Use a service role client for admin operations
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
   try {
-    // Fetch the user_id associated with the order
     const { data: order, error: orderFetchError } = await supabaseAdmin
       .from('orders')
       .select('user_id')
@@ -96,14 +81,12 @@ export async function reSendInvoice(orderId: string) {
       throw new Error(`Failed to fetch order details for re-sending invoice: ${orderFetchError?.message}`)
     }
 
-    // Get the user's email from auth.users table using the service role client
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
 
     if (userError || !user || !user.email) {
       throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)
     }
 
-    // Send the order confirmation email
     const { success, message } = await sendOrderConfirmation({ orderId, userEmail: user.email })
 
     if (!success) {
