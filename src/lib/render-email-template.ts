@@ -12,7 +12,10 @@ const renderOptions = { pretty: true };
 
 async function renderTemplate<P>(Component: React.ComponentType<P>, props: P): Promise<string> {
   try {
-    const html = render(React.createElement(Component, props), renderOptions); // Fixed: Use React.createElement
+    // Create the React element explicitly
+    const element = React.createElement(Component, props);
+    // Cast the element to React.ReactElement<any> to bypass strict prop type checking by @react-email/render's types
+    const html = render(element as React.ReactElement<any>, renderOptions);
     return html;
   } catch (error) {
     console.error(`Error rendering ${Component.name} template:`, error);
