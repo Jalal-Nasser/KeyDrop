@@ -3,6 +3,7 @@
     import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
     import { createClientComponentClient, Session, SupabaseClient } from "@supabase/auth-helpers-nextjs"
     import { Database } from "@/types/supabase"
+    import { supabase } from "@/integrations/supabase/client" // Import the existing supabase client
 
     type SessionContextType = {
       session: Session | null
@@ -15,7 +16,6 @@
     export function SessionProvider({ children }: { children: ReactNode }) {
       const [session, setSession] = useState<Session | null>(null)
       const [isLoading, setIsLoading] = useState(true)
-      const supabase = createClientComponentClient<Database>()
 
       useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -29,7 +29,7 @@
         })
 
         return () => subscription.unsubscribe()
-      }, [supabase])
+      }, []) // Dependency array updated as 'supabase' is now a stable import
 
       return (
         <SessionContext.Provider value={{ session, supabase, isLoading }}>
