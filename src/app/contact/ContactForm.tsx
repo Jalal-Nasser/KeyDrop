@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
+import Turnstile from "react-turnstile"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,21 +40,23 @@ export default function ContactForm() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   async function onSubmit(values: ContactFormValues) {
     setIsSubmitting(true)
     const toastId = toast.loading("Sending your message...")
 
     try {
-      const res = await fetch("/contact/api", { // Changed from "/api/contact" to "/contact/api"
+      const res = await fetch("/contact/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values)
+        body: JSON.stringify({ ...values, turnstileToken })
       })
 
       if (res.ok) {
         toast.success("Message sent successfully!", { id: toastId })
         form.reset()
+        // Reset turnstile after successful submission if needed, though it's often handled automatically
       } else {
         const errorData = await res.json()
         toast.error(`Failed to send message: ${errorData.error || "An unknown error occurred."}`, { id: toastId })
@@ -118,7 +121,13 @@ export default function ContactForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Turnstile
+              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => toast.error("Turnstile challenge failed. Please refresh the page.")}
+            />
+            <Button type="submit" className="w-full" disabled={isSubmitting || !turnstileToken}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
