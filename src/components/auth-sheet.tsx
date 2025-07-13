@@ -39,6 +39,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         </SheetHeader>
         <div className="py-4">
           <Auth
+            key={open ? "auth-sheet-open" : "auth-sheet-closed"} // Add this line
             supabaseClient={supabase}
             providers={['google', 'github']}
             appearance={{
