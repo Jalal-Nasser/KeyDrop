@@ -1,1 +1,0 @@
-SELECT id, name, image FROM public.products;
