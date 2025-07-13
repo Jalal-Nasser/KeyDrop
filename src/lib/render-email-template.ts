@@ -10,10 +10,10 @@ import { ProfileUpdateTemplate } from '@/components/emails/profile-update-templa
 
 const renderOptions = { pretty: true };
 
-async function renderTemplate<P>(Component: React.ComponentType<P>, props: P): Promise<string> {
+async function renderTemplate<P>(Component: React.FunctionComponent<P>, props: P): Promise<string> {
   try {
-    // Create the React element explicitly
-    const element = React.createElement(Component, props);
+    // Create the React element explicitly, casting Component to 'any' to bypass strict type checking
+    const element = React.createElement(Component as any, props);
     // Cast the element to React.ReactElement<any> to bypass strict prop type checking by @react-email/render's types
     const html = render(element as React.ReactElement<any>, renderOptions);
     return html;
