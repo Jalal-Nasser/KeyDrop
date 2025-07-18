@@ -56,7 +56,6 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
             theme="light"
             showLinks={false}
             redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
-            {/* showCaptcha={true} // Removed to fix TypeScript error */}
           />
         </div>
       </SheetContent>
