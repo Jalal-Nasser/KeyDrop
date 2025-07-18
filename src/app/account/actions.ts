@@ -3,6 +3,7 @@
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { z } from "zod"
+import { revalidatePath } from "next/cache"
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -39,6 +40,10 @@ export async function updateCurrentUserProfile(profileData: unknown) {
     console.error("Error updating user profile in server action:", error)
     return { error }
   }
+
+  // Invalidate the cache for pages that rely on profile data
+  revalidatePath('/account')
+  revalidatePath('/checkout')
 
   return { error: null }
 }
