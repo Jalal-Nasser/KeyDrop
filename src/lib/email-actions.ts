@@ -156,6 +156,7 @@ export async function sendProfileUpdateConfirmation(payload: { userEmail: string
           content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
           encoding: 'base64', 
           ContentID: 'logo_image', 
+          ContentType: 'image/png', // Added missing ContentType
         },
       ],
     });
@@ -185,6 +186,7 @@ export async function sendRegistrationConfirmation(payload: { userEmail: string;
           content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
           encoding: 'base64', 
           ContentID: 'logo_image', 
+          ContentType: 'image/png', // Added missing ContentType
         },
       ],
     });
