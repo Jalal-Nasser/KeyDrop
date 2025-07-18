@@ -7,8 +7,10 @@ interface Attachment {
   filename: string;
   content: string; // This will be the raw HTML/file content (or base64 string if encoding is 'base64')
   ContentType: string; // e.g., 'text/html', 'application/pdf'
-  ContentID?: string | null; // Changed to allow null explicitly
-  encoding?: string; // Add encoding property
+  ContentID?: string | null;
+  encoding?: string;
+  // Add ContentDisposition to the interface
+  ContentDisposition?: string; 
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -19,9 +21,11 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
 
   const postmarkAttachments = attachments?.map(att => ({
     Name: att.filename,
-    Content: att.content, // Content is already base64 if encoding is 'base64'
+    Content: att.content,
     ContentType: att.ContentType,
-    ContentID: att.ContentID === undefined ? null : att.ContentID, // Convert undefined to null
+    ContentID: att.ContentID === undefined ? null : att.ContentID,
+    // Set ContentDisposition to 'inline' if ContentID is present, otherwise omit or set to 'attachment'
+    ContentDisposition: att.ContentID ? 'inline' : undefined, 
   }));
 
   return postmarkClient.sendEmail({
