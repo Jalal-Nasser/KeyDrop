@@ -31,14 +31,23 @@ export async function updateCurrentUserProfile(profileData: unknown) {
     return { error: { message: "Invalid profile data.", issues: validation.error.issues } }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .update(validation.data)
     .eq("id", session.user.id)
+    .select() // Add .select() to confirm the update and get the result back.
 
   if (error) {
     console.error("Error updating user profile in server action:", error)
-    return { error }
+    // Make sure to return the actual error message from Supabase.
+    return { error: { message: error.message } }
+  }
+
+  // If the update was successful, Supabase returns the updated row(s).
+  // If it returns no data and no error, it means no row was found to update.
+  if (!data || data.length === 0) {
+    console.error("Profile update failed: No matching user profile found to update.");
+    return { error: { message: "Update failed: User profile not found." } };
   }
 
   // Invalidate the cache for pages that rely on profile data
