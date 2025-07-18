@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { getCurrentUserProfile } from "@/app/account/actions"
 
 const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -112,13 +113,7 @@ export default function CheckoutPage() {
     const fetchProfileAndUsers = async () => {
       if (session) {
         setIsLoadingProfile(true)
-        const { data: profiles, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .limit(1)
-
-        const data = profiles?.[0]
+        const { data, error } = await getCurrentUserProfile()
 
         if (data) {
           setProfile(data)
@@ -150,7 +145,7 @@ export default function CheckoutPage() {
           }
         }
         if (error) {
-          toast.error(`Could not fetch your profile information: ${error.message}`)
+          toast.error(`Could not fetch your profile information: ${error}`)
         }
         setIsLoadingProfile(false)
       } else {

@@ -21,6 +21,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import Link from "next/link"
 import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
+import { getCurrentUserProfile } from "@/app/account/actions"
 
 const profileSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -60,16 +61,10 @@ export default function AccountPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (session) {
-        const { data: profiles, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .limit(1)
-
-        const data = profiles?.[0]
+        const { data, error } = await getCurrentUserProfile()
 
         if (error) {
-          toast.error(`Could not fetch your profile information: ${error.message}`)
+          toast.error(`Could not fetch your profile information: ${error}`)
         } else if (data) {
           const cleanedData = Object.fromEntries(
             Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
@@ -77,9 +72,6 @@ export default function AccountPage() {
           form.reset(cleanedData);
           setIsAdmin(data.is_admin || false);
         } else {
-          // This likely means it's a new user whose profile hasn't been fully populated yet.
-          // We can send a registration confirmation email here.
-          // Note: This is a simple way to trigger this. A more robust solution would use webhooks.
           if (session.user.email && session.user.user_metadata.first_name) {
              sendRegistrationConfirmation({
                userEmail: session.user.email,
@@ -90,7 +82,7 @@ export default function AccountPage() {
       }
     }
     fetchProfile()
-  }, [session, supabase, form])
+  }, [session, form])
 
   const onSubmit = async (values: ProfileFormValues) => {
     if (!session?.user?.email) return
