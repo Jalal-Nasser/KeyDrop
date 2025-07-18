@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetDescription, // Import SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
@@ -56,6 +56,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
             theme="light"
             showLinks={false}
             redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
+            {...{ showCaptcha: true }} 
           />
         </div>
       </SheetContent>
