@@ -5,9 +5,10 @@ const postmarkClient = new ServerClient(process.env.POSTMARK_API_TOKEN || "");
 
 interface Attachment {
   filename: string;
-  content: string; // This will be the raw HTML/file content
+  content: string; // This will be the raw HTML/file content (or base64 string if encoding is 'base64')
   ContentType: string; // e.g., 'text/html', 'application/pdf'
   ContentID?: string | null; // Changed to allow null explicitly
+  encoding?: string; // Add encoding property
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -18,7 +19,7 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
 
   const postmarkAttachments = attachments?.map(att => ({
     Name: att.filename,
-    Content: Buffer.from(att.content).toString('base64'),
+    Content: att.content, // Content is already base64 if encoding is 'base64'
     ContentType: att.ContentType,
     ContentID: att.ContentID === undefined ? null : att.ContentID, // Convert undefined to null
   }));

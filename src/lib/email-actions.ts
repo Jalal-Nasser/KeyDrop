@@ -10,6 +10,9 @@ import {
   renderRegistrationConfirmationTemplateToHtml
 } from '@/lib/render-email-template';
 
+import fs from 'fs/promises'; // Import fs for file system operations
+import path from 'path'; // Import path for path manipulation
+
 // Define types that match the Supabase query result structure
 interface FetchedProduct {
   name: string;
@@ -45,6 +48,9 @@ interface FullFetchedOrder {
   order_items: FetchedOrderItem[];
   profiles: FetchedProfile | null;
 }
+
+// Define the path to the logo image
+const LOGO_IMAGE_PATH = path.join(process.cwd(), 'public', 'images', 'dropskey-logo.png');
 
 export async function sendOrderConfirmation(payload: { orderId: string; userEmail: string; }) {
   const supabase = createSupabaseServerClient()
@@ -137,10 +143,21 @@ export async function sendProfileUpdateConfirmation(payload: { userEmail: string
     const { userEmail, firstName } = payload;
     const html = await renderProfileUpdateTemplateToHtml(firstName);
 
+    // Read the logo image file and attach it
+    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
+
     await sendMail({
       to: userEmail,
       subject: 'Your Dropskey Profile Has Been Updated',
       html,
+      attachments: [
+        {
+          filename: 'dropskey-logo.png',
+          content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
+          encoding: 'base64', 
+          ContentID: 'logo_image', 
+        },
+      ],
     });
 
     return { success: true };
@@ -155,10 +172,21 @@ export async function sendRegistrationConfirmation(payload: { userEmail: string;
     const { userEmail, firstName } = payload;
     const html = await renderRegistrationConfirmationTemplateToHtml(firstName);
 
+    // Read the logo image file and attach it
+    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
+
     await sendMail({
       to: userEmail,
       subject: 'Welcome to Dropskey!',
       html,
+      attachments: [
+        {
+          filename: 'dropskey-logo.png',
+          content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
+          encoding: 'base64', 
+          ContentID: 'logo_image', 
+        },
+      ],
     });
 
     return { success: true };
