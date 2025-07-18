@@ -39,7 +39,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         </SheetHeader>
         <div className="py-4">
           <Auth
-            key={open ? "auth-sheet-open" : "auth-sheet-closed"} // Add this line
+            key={open ? "auth-sheet-open" : "auth-sheet-closed"}
             supabaseClient={supabase}
             providers={['google', 'github']}
             appearance={{
@@ -54,6 +54,9 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
               },
             }}
             theme="light"
+            showLinks={false}
+            redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
+            {/* showCaptcha={true} // Removed to fix TypeScript error */}
           />
         </div>
       </SheetContent>
