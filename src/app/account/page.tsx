@@ -21,7 +21,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import Link from "next/link"
 import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
-import { getCurrentUserProfile } from "@/app/account/actions"
+import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/account/actions"
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -87,10 +87,7 @@ export default function AccountPage() {
   const onSubmit = async (values: ProfileFormValues) => {
     if (!session?.user?.email) return
 
-    const { error } = await supabase
-      .from("profiles")
-      .update(values)
-      .eq("id", session.user.id)
+    const { error } = await updateCurrentUserProfile(values)
 
     if (error) {
       toast.error(`Failed to update profile: ${error.message}`)
