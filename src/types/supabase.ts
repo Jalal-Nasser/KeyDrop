@@ -140,6 +140,7 @@ export type Database = {
           product_id: number
           quantity: number
           price_at_purchase: number
+          product_key: string | null // Added
         }
         Insert: {
           id?: string
@@ -147,6 +148,7 @@ export type Database = {
           product_id: number
           quantity: number
           price_at_purchase: number
+          product_key?: string | null // Added
         }
         Update: {
           id?: string
@@ -154,6 +156,7 @@ export type Database = {
           product_id?: number
           quantity?: number
           price_at_purchase?: number
+          product_key?: string | null // Added
         }
       }
       wishlist_items: {

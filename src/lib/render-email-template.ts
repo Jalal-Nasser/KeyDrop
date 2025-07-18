@@ -7,14 +7,13 @@ import { RegistrationConfirmationTemplate } from '@/components/emails/registrati
 import { PurchaseConfirmationTemplate } from '@/components/emails/purchase-confirmation-template'
 import { OrderStatusChangedTemplate } from '@/components/emails/order-status-changed-template'
 import { ProfileUpdateTemplate } from '@/components/emails/profile-update-template'
+import { ProductDeliveryTemplate } from '@/components/emails/product-delivery-template' // Added
 
 const renderOptions = { pretty: true };
 
 async function renderTemplate<P>(Component: React.FunctionComponent<P>, props: P): Promise<string> {
   try {
-    // Create the React element explicitly, casting Component to 'any' and props to Record<string, unknown>
     const element = React.createElement(Component as any, props as Record<string, unknown>);
-    // Cast the element to React.ReactElement<any> to bypass strict prop type checking by @react-email/render's types
     const html = render(element as React.ReactElement<any>, renderOptions);
     return html;
   } catch (error) {
@@ -41,4 +40,8 @@ export async function renderOrderStatusChangedTemplateToHtml(firstName: string, 
 
 export async function renderProfileUpdateTemplateToHtml(firstName: string): Promise<string> {
   return renderTemplate(ProfileUpdateTemplate, { firstName });
+}
+
+export async function renderProductDeliveryTemplateToHtml(firstName: string, orderId: string, productName: string, productKey: string): Promise<string> {
+  return renderTemplate(ProductDeliveryTemplate, { firstName, orderId, productName, productKey });
 }

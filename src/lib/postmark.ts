@@ -24,9 +24,8 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       Name: att.filename, // Map filename to Name
       Content: att.content,
       ContentType: att.ContentType,
-      // Ensure ContentID is string | undefined as per Models.Attachment
-      // Convert null from our interface to undefined for Models.Attachment
-      ContentID: att.ContentID === null ? undefined : att.ContentID,
+      // Corrected: Convert undefined to null for ContentID
+      ContentID: att.ContentID === undefined ? null : att.ContentID,
       // ContentDisposition property is removed here because the compiler indicates it does not exist in Models.Attachment
       // This might mean the Postmark library version or its type definitions in your environment are older
       // and do not include this property. The email client will rely on ContentID for inline display.

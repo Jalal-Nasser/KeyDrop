@@ -2,8 +2,81 @@
 
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { revalidatePath } from "next/cache"
-import { sendOrderStatusUpdate, sendOrderConfirmation } from "@/lib/email-actions"
+import { sendOrderStatusUpdate, sendOrderConfirmation, sendProductDelivery } from "@/lib/email-actions"
 import { createClient } from '@supabase/supabase-js'
+
+// Define a type for the expected structure of updatedItem
+interface UpdatedOrderItemResult {
+  order_id: string;
+  products: { name: string } | null;
+  orders: { user_id: string; profiles: { first_name: string | null } | null } | null;
+}
+
+export async function fulfillOrderItem(orderItemId: string, productKey: string) {
+  const supabase = createSupabaseServerClient()
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    // 1. Update the order item with the product key
+    const { data: updatedItem, error: itemUpdateError } = await supabase
+      .from('order_items')
+      .update({ product_key: productKey })
+      .eq('id', orderItemId)
+      .select(`
+        order_id,
+        products (name),
+        orders ( user_id, profiles (first_name) )
+      `)
+      .single() as { data: UpdatedOrderItemResult | null, error: any }; // Explicitly cast to the defined type
+
+    if (itemUpdateError || !updatedItem) throw new Error(`Failed to update order item: ${itemUpdateError?.message}`)
+
+    // Access properties safely with optional chaining and null checks
+    const { order_id, products, orders } = updatedItem;
+    if (!products || !orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
+
+    // 2. Send the delivery email
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(orders.user_id)
+    if (userError || !user?.email) throw new Error(`Could not get user email: ${userError?.message}`)
+
+    await sendProductDelivery({
+      userEmail: user.email,
+      firstName: orders.profiles.first_name || 'Valued Customer',
+      orderId: order_id,
+      productName: products.name,
+      productKey: productKey,
+    })
+
+    // 3. Check if all items in the order are fulfilled
+    const { data: allItems, error: allItemsError } = await supabase
+      .from('order_items')
+      .select('product_key')
+      .eq('order_id', order_id)
+
+    if (allItemsError) throw new Error(`Could not check order status: ${allItemsError.message}`)
+
+    const allFulfilled = allItems.every(item => item.product_key !== null)
+
+    // 4. If all fulfilled, update order status to 'completed'
+    if (allFulfilled) {
+      const { error: orderUpdateError } = await supabase
+        .from('orders')
+        .update({ status: 'completed' })
+        .eq('id', order_id)
+
+      if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
+    }
+
+    revalidatePath('/admin/orders')
+    return { success: true, message: 'Product key delivered successfully!' }
+
+  } catch (error: any) {
+    return { success: false, message: `Fulfillment failed: ${error.message}` }
+  }
+}
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = createSupabaseServerClient()

@@ -29,13 +29,13 @@ export function OrderStatusUpdater({ orderId, currentStatus }: OrderStatusUpdate
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={status} onValueChange={handleStatusChange} disabled={isPending}>
+      <Select value={status} onValueChange={handleStatusChange} disabled={isPending || status === 'completed'}>
         <SelectTrigger className="w-[150px]">
           <SelectValue placeholder="Change status" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="pending">Pending</SelectItem>
-          <SelectItem value="completed">Completed</SelectItem>
+          {/* 'Completed' is now set automatically when all items are fulfilled */}
           <SelectItem value="cancelled">Cancelled</SelectItem>
         </SelectContent>
       </Select>

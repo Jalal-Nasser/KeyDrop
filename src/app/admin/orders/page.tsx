@@ -10,12 +10,14 @@ import {
 import { AdminOrderListClient } from "@/components/admin/admin-order-list-client"
 import { Database } from "@/types/supabase"
 
+type ProductInfo = Pick<Database['public']['Tables']['products']['Row'], 'name' | 'is_digital'>
+
 type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
-  products: Pick<Database['public']['Tables']['products']['Row'], 'name'> | null
+  products: ProductInfo | null
 }
 
-type Order = Database['public']['Tables']['orders']['Row'] & {
-  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'> | null // Changed from array to single object
+export type OrderWithDetails = Database['public']['Tables']['orders']['Row'] & {
+  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'> | null
   order_items: OrderItem[]
 }
 
@@ -48,13 +50,14 @@ export default async function AdminOrdersPage() {
       order_items (
         *,
         products (
-          name
+          name,
+          is_digital
         )
       )
     `)
     .order('created_at', { ascending: false })
 
-  const orders: Order[] = data || []
+  const orders: OrderWithDetails[] = data || []
 
   if (error) {
     console.error("Error fetching orders:", error)
@@ -65,7 +68,7 @@ export default async function AdminOrdersPage() {
     <Card>
       <CardHeader>
         <CardTitle>All Orders</CardTitle>
-        <CardDescription>Manage all customer orders.</CardDescription>
+        <CardDescription>Manage and fulfill customer orders.</CardDescription>
       </CardHeader>
       <CardContent>
         <AdminOrderListClient orders={orders} />

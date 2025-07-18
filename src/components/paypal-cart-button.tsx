@@ -18,18 +18,15 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
   const { session, supabase } = useSession()
   const { clearCart } = useCart()
 
-  // Removed parsePrice as item.price is now a number
-
   const handleProfileUpdate = async () => {
     if (!session) return
 
-    // Destructure billingDetails to exclude agreedToTerms
     const { agreedToTerms, ...profileDataToUpdate } = billingDetails;
 
     const { error } = await supabase
       .from("profiles")
       .update({
-        ...profileDataToUpdate, // Only send valid profile fields
+        ...profileDataToUpdate,
       })
       .eq("id", session.user.id)
 
@@ -84,7 +81,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           .from("orders")
           .insert({
             user_id: session.user.id,
-            status: "completed",
+            status: "pending", // Changed from "completed"
             total: cartTotal,
             payment_gateway: "paypal",
             payment_id: details.id,
@@ -101,7 +98,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           order_id: orderData.id,
           product_id: item.id,
           quantity: item.quantity,
-          price_at_purchase: item.price, // Directly use item.price as it's a number
+          price_at_purchase: item.price,
         }))
 
         const { error: itemError } = await supabase
@@ -113,7 +110,6 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
         } else {
           toast.success("Your order has been successfully saved.")
           clearCart()
-          // Send confirmation email
           toast.promise(sendOrderConfirmation({ orderId: orderData.id, userEmail: session.user.email! }), {
             loading: 'Sending confirmation email...',
             success: 'Confirmation email sent!',

@@ -7,11 +7,12 @@ import {
   renderPurchaseConfirmationTemplateToHtml,
   renderOrderStatusChangedTemplateToHtml,
   renderProfileUpdateTemplateToHtml,
-  renderRegistrationConfirmationTemplateToHtml
+  renderRegistrationConfirmationTemplateToHtml,
+  renderProductDeliveryTemplateToHtml // Added
 } from '@/lib/render-email-template';
 
-import fs from 'fs/promises'; // Import fs for file system operations
-import path from 'path'; // Import path for path manipulation
+import fs from 'fs/promises';
+import path from 'path';
 
 // Define types that match the Supabase query result structure
 interface FetchedProduct {
@@ -23,7 +24,7 @@ interface FetchedProduct {
 interface FetchedOrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: FetchedProduct[] | null;
+  products: FetchedProduct | null; // Changed to single object
 }
 
 interface FetchedProfile {
@@ -49,8 +50,22 @@ interface FullFetchedOrder {
   profiles: FetchedProfile | null;
 }
 
-// Define the path to the logo image
 const LOGO_IMAGE_PATH = path.join(process.cwd(), 'public', 'images', 'dropskey-logo.png');
+
+async function getLogoAttachment() {
+  try {
+    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
+    return {
+      filename: 'dropskey-logo.png',
+      content: logoBuffer.toString('base64'),
+      ContentType: 'image/png',
+      ContentID: 'cid:logo_image',
+    };
+  } catch (error) {
+    console.error("Could not read logo file for email attachment:", error);
+    return null;
+  }
+}
 
 export async function sendOrderConfirmation(payload: { orderId: string; userEmail: string; }) {
   const supabase = createSupabaseServerClient()
@@ -81,36 +96,37 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       total: fetchedOrder.total,
       status: fetchedOrder.status,
       payment_gateway: fetchedOrder.payment_gateway,
-      order_items: fetchedOrder.order_items,
+      order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: [oi.products!] })), // Adapt to InvoiceTemplate's expectation
     };
 
     const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
 
-    const productListHtml = fetchedOrder.order_items.map(item => {
-      const product = item.products?.[0];
-      if (product?.is_digital && product.download_url) {
-        return `<li>${product.name}: <a href="${process.env.NEXT_PUBLIC_BASE_URL}${product.download_url}">Download Now</a></li>`
-      }
-      return `<li>${product?.name || 'Product'}</li>`
-    }).join('')
+    const productListHtml = `<ul>${fetchedOrder.order_items.map(item => {
+      const product = item.products;
+      return `<li>${item.quantity} x ${product?.name || 'Product'}</li>`
+    }).join('')}</ul>`
 
     const purchaseConfirmationHtml = await renderPurchaseConfirmationTemplateToHtml(
       profile.first_name || 'Valued Customer',
       fetchedOrder.id,
       productListHtml
     );
+    
+    const logoAttachment = await getLogoAttachment();
+    const attachments = [
+      {
+        filename: `invoice-${fetchedOrder.id.substring(0, 8)}.html`,
+        content: invoiceHtml,
+        ContentType: 'text/html',
+      },
+    ];
+    if (logoAttachment) attachments.push(logoAttachment as any);
 
     await sendMail({
       to: payload.userEmail,
       subject: `Your Dropskey Order Confirmation #${fetchedOrder.id.substring(0, 8)}`,
       html: purchaseConfirmationHtml,
-      attachments: [
-        {
-          filename: `invoice-${fetchedOrder.id.substring(0, 8)}.html`,
-          content: invoiceHtml,
-          ContentType: 'text/html',
-        },
-      ],
+      attachments,
     })
 
     return { success: true }
@@ -120,15 +136,39 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
   }
 }
 
+export async function sendProductDelivery(payload: { userEmail: string, firstName: string, orderId: string, productName: string, productKey: string }) {
+  try {
+    const { userEmail, firstName, orderId, productName, productKey } = payload;
+    const html = await renderProductDeliveryTemplateToHtml(firstName, orderId, productName, productKey);
+    const logoAttachment = await getLogoAttachment();
+    const attachments = logoAttachment ? [logoAttachment as any] : [];
+
+    await sendMail({
+      to: userEmail,
+      subject: `Your Product Key for ${productName}`,
+      html,
+      attachments,
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error sending product delivery email:", error.message);
+    return { success: false, message: error.message };
+  }
+}
+
 export async function sendOrderStatusUpdate(payload: { orderId: string; userEmail: string; status: string; firstName: string; }) {
   try {
     const { orderId, userEmail, status, firstName } = payload;
     const html = await renderOrderStatusChangedTemplateToHtml(firstName, orderId, status);
+    const logoAttachment = await getLogoAttachment();
+    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: `Your Dropskey Order #${orderId.substring(0, 8)} has been ${status}`,
       html,
+      attachments,
     });
 
     return { success: true };
@@ -142,23 +182,14 @@ export async function sendProfileUpdateConfirmation(payload: { userEmail: string
   try {
     const { userEmail, firstName } = payload;
     const html = await renderProfileUpdateTemplateToHtml(firstName);
-
-    // Read the logo image file and attach it
-    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
+    const logoAttachment = await getLogoAttachment();
+    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: 'Your Dropskey Profile Has Been Updated',
       html,
-      attachments: [
-        {
-          filename: 'dropskey-logo.png',
-          content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
-          encoding: 'base64', 
-          ContentID: 'logo_image', 
-          ContentType: 'image/png', // Added missing ContentType
-        },
-      ],
+      attachments,
     });
 
     return { success: true };
@@ -172,53 +203,19 @@ export async function sendRegistrationConfirmation(payload: { userEmail: string;
   try {
     const { userEmail, firstName } = payload;
     const html = await renderRegistrationConfirmationTemplateToHtml(firstName);
-
-    // Read the logo image file and attach it
-    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
+    const logoAttachment = await getLogoAttachment();
+    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: 'Welcome to Dropskey!',
       html,
-      attachments: [
-        {
-          filename: 'dropskey-logo.png',
-          content: logoBuffer.toString('base64'), // Convert Buffer to base64 string
-          encoding: 'base64', 
-          ContentID: 'logo_image', 
-          ContentType: 'image/png', // Added missing ContentType
-        },
-      ],
+      attachments,
     });
 
     return { success: true };
   } catch (error: any) {
     console.error("Error sending registration email:", error.message);
     return { success: false, message: error.message };
-  }
-}
-
-// Note: The original sendOrderCancellation is now covered by sendOrderStatusUpdate
-// and can be removed if no longer directly used elsewhere. For now, it's left for compatibility.
-export async function sendOrderCancellation(payload: { orderId: string; userEmail: string; }) {
-  const supabase = createSupabaseServerClient()
-
-  try {
-    const { data: fetchedOrder, error: orderError } = await supabase
-      .from('orders')
-      .select(`id, created_at, profiles ( first_name )`)
-      .eq('id', payload.orderId)
-      .single() as { data: { id: string, created_at: string, profiles: { first_name: string | null } | null }, error: any };
-
-    if (orderError || !fetchedOrder || !fetchedOrder.profiles) {
-      throw new Error(`Failed to fetch order details for cancellation email: ${orderError?.message}`)
-    }
-    
-    const firstName = fetchedOrder.profiles.first_name || 'Valued Customer';
-    return await sendOrderStatusUpdate({ ...payload, status: 'cancelled', firstName });
-
-  } catch (error: any) {
-    console.error("Error sending cancellation email:", error.message)
-    return { success: false, message: error.message }
   }
 }

@@ -16,13 +16,13 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
   const supabase = createSupabaseServerClient()
 
   try {
-    // 1. Create the order for the target user
+    // 1. Create the order for the target user with 'pending' status
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: targetUserId,
         total: cartTotal,
-        status: "completed",
+        status: "pending", // Changed from "completed"
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,
       })
