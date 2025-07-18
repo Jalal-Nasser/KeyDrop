@@ -1,4 +1,4 @@
-import { ServerClient } from "postmark";
+import { ServerClient, Models } from "postmark"; // Import Models
 
 // You must set POSTMARK_API_TOKEN in your environment variables
 const postmarkClient = new ServerClient(process.env.POSTMARK_API_TOKEN || "");
@@ -7,10 +7,9 @@ interface Attachment {
   filename: string;
   content: string; // This will be the raw HTML/file content (or base64 string if encoding is 'base64')
   ContentType: string; // e.g., 'text/html', 'application/pdf'
-  ContentID?: string | null;
+  ContentID?: string | null; // Allow string or null
   encoding?: string;
-  // Add ContentDisposition to the interface
-  ContentDisposition?: string; 
+  // ContentDisposition is removed from this interface as it's not recognized by Models.Attachment in user's environment
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -19,14 +18,21 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
     throw new Error("PostMark API token is not configured.");
   }
 
-  const postmarkAttachments = attachments?.map(att => ({
-    Name: att.filename,
-    Content: att.content,
-    ContentType: att.ContentType,
-    ContentID: att.ContentID === undefined ? null : att.ContentID,
-    // Set ContentDisposition to 'inline' if ContentID is present, otherwise omit or set to 'attachment'
-    ContentDisposition: att.ContentID ? 'inline' : undefined, 
-  }));
+  const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map(att => {
+    // Transform our Attachment to Postmark's Models.Attachment
+    const transformedAttachment: Models.Attachment = {
+      Name: att.filename, // Map filename to Name
+      Content: att.content,
+      ContentType: att.ContentType,
+      // Ensure ContentID is string | undefined as per Models.Attachment
+      // Convert null from our interface to undefined for Models.Attachment
+      ContentID: att.ContentID === null ? undefined : att.ContentID,
+      // ContentDisposition property is removed here because the compiler indicates it does not exist in Models.Attachment
+      // This might mean the Postmark library version or its type definitions in your environment are older
+      // and do not include this property. The email client will rely on ContentID for inline display.
+    };
+    return transformedAttachment;
+  });
 
   return postmarkClient.sendEmail({
     From: 'admin@dropskey.com', // Using a verified sender email
