@@ -33,21 +33,17 @@ export async function updateCurrentUserProfile(profileData: unknown) {
 
   const { data, error } = await supabase
     .from("profiles")
-    .update(validation.data)
-    .eq("id", session.user.id)
-    .select() // Add .select() to confirm the update and get the result back.
+    .upsert({ ...validation.data, id: session.user.id })
+    .select()
 
   if (error) {
-    console.error("Error updating user profile in server action:", error)
-    // Make sure to return the actual error message from Supabase.
+    console.error("Error during profile upsert in server action:", error)
     return { error: { message: error.message } }
   }
 
-  // If the update was successful, Supabase returns the updated row(s).
-  // If it returns no data and no error, it means no row was found to update.
   if (!data || data.length === 0) {
-    console.error("Profile update failed: No matching user profile found to update.");
-    return { error: { message: "Update failed: User profile not found." } };
+    console.error("Profile upsert failed: No data returned after operation.");
+    return { error: { message: "Profile operation failed unexpectedly." } };
   }
 
   // Invalidate the cache for pages that rely on profile data
