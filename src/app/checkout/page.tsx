@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getCurrentUserProfile } from "@/app/account/actions"
+import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account/actions"
 
 const profileBillingSchema = z.object({
   first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
@@ -85,7 +85,7 @@ const Stepper = ({ step }: { step: number }) => {
 export default function CheckoutPage() {
   const router = useRouter()
   const { cartItems, cartTotal, cartCount } = useCart()
-  const { session, supabase } = useSession()
+  const { session } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<ClientProfileOption[]>([]) // Updated type here
@@ -131,13 +131,10 @@ export default function CheckoutPage() {
 
           if (data.is_admin) {
             setIsLoadingUsers(true)
-            const { data: allUsers, error: usersError } = await supabase
-              .from("profiles")
-              .select("id, first_name, last_name")
-              .order("first_name", { ascending: true })
+            const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
             
             if (usersError) {
-              toast.error("Failed to load users for client selection.")
+              toast.error(`Failed to load users for client selection: ${usersError}`)
             } else {
               setUsers(allUsers || [])
             }
@@ -153,7 +150,7 @@ export default function CheckoutPage() {
       }
     }
     fetchProfileAndUsers()
-  }, [session, supabase, form])
+  }, [session, form])
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
