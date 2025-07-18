@@ -112,11 +112,13 @@ export default function CheckoutPage() {
     const fetchProfileAndUsers = async () => {
       if (session) {
         setIsLoadingProfile(true)
-        const { data, error } = await supabase
+        const { data: profiles, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single()
+          .limit(1)
+
+        const data = profiles?.[0]
 
         if (data) {
           setProfile(data)
@@ -147,8 +149,8 @@ export default function CheckoutPage() {
             setIsLoadingUsers(false)
           }
         }
-        if (error && error.code !== 'PGRST116') {
-          toast.error("Could not fetch your profile information.")
+        if (error) {
+          toast.error(`Could not fetch your profile information: ${error.message}`)
         }
         setIsLoadingProfile(false)
       } else {

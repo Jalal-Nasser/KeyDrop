@@ -60,13 +60,23 @@ export default function AccountPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (session) {
-        const { data, error } = await supabase
+        const { data: profiles, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single()
+          .limit(1)
 
-        if (error && error.code === 'PGRST116') {
+        const data = profiles?.[0]
+
+        if (error) {
+          toast.error(`Could not fetch your profile information: ${error.message}`)
+        } else if (data) {
+          const cleanedData = Object.fromEntries(
+            Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
+          ) as ProfileFormValues;
+          form.reset(cleanedData);
+          setIsAdmin(data.is_admin || false);
+        } else {
           // This likely means it's a new user whose profile hasn't been fully populated yet.
           // We can send a registration confirmation email here.
           // Note: This is a simple way to trigger this. A more robust solution would use webhooks.
@@ -76,14 +86,6 @@ export default function AccountPage() {
                firstName: session.user.user_metadata.first_name,
              });
           }
-        } else if (data) {
-          const cleanedData = Object.fromEntries(
-            Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
-          ) as ProfileFormValues;
-          form.reset(cleanedData);
-          setIsAdmin(data.is_admin || false);
-        } else if (error) {
-          toast.error("Could not fetch your profile information.")
         }
       }
     }
