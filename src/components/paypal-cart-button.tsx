@@ -23,10 +23,13 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
   const handleProfileUpdate = async () => {
     if (!session) return
 
+    // Destructure billingDetails to exclude agreedToTerms
+    const { agreedToTerms, ...profileDataToUpdate } = billingDetails;
+
     const { error } = await supabase
       .from("profiles")
       .update({
-        ...billingDetails,
+        ...profileDataToUpdate, // Only send valid profile fields
       })
       .eq("id", session.user.id)
 
