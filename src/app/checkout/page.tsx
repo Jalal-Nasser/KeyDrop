@@ -33,16 +33,16 @@ import {
 import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account/actions"
 
 const profileBillingSchema = z.object({
-  first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
-  last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
-  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  address_line_1: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Address is required")),
-  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  city: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "City is required")),
-  state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
-  postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
-  country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  company_name: z.string().optional(),
+  vat_number: z.string().optional(),
+  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_2: z.string().optional(),
+  city: z.string().trim().min(1, "City is required"),
+  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().min(1, "Country is required"),
 });
 
 const checkoutSchema = profileBillingSchema.extend({
@@ -53,7 +53,7 @@ const checkoutSchema = profileBillingSchema.extend({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
 type Profile = Database['public']['Tables']['profiles']['Row']
-type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>; // New type for client selection
+type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>;
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
@@ -88,7 +88,7 @@ export default function CheckoutPage() {
   const { session } = useSession()
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [users, setUsers] = useState<ClientProfileOption[]>([]) // Updated type here
+  const [users, setUsers] = useState<ClientProfileOption[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<string>("")
 
@@ -117,17 +117,20 @@ export default function CheckoutPage() {
 
         if (data) {
           setProfile(data)
-          setSelectedClientId(data.id) // Default to self
-          form.setValue("first_name", data.first_name || "");
-          form.setValue("last_name", data.last_name || "");
-          form.setValue("company_name", data.company_name || "");
-          form.setValue("vat_number", data.vat_number || "");
-          form.setValue("address_line_1", data.address_line_1 || "");
-          form.setValue("address_line_2", data.address_line_2 || "");
-          form.setValue("city", data.city || "");
-          form.setValue("state_province_region", data.state_province_region || "");
-          form.setValue("postal_code", data.postal_code || "");
-          form.setValue("country", data.country || "");
+          setSelectedClientId(data.id)
+          form.reset({
+            first_name: data.first_name || "",
+            last_name: data.last_name || "",
+            company_name: data.company_name || "",
+            vat_number: data.vat_number || "",
+            address_line_1: data.address_line_1 || "",
+            address_line_2: data.address_line_2 || "",
+            city: data.city || "",
+            state_province_region: data.state_province_region || "",
+            postal_code: data.postal_code || "",
+            country: data.country || "",
+            agreedToTerms: form.getValues().agreedToTerms,
+          });
 
           if (data.is_admin) {
             setIsLoadingUsers(true)
@@ -155,8 +158,6 @@ export default function CheckoutPage() {
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
   
-  const isProfileDataComplete = profileBillingSchema.safeParse(form.getValues()).success 
-
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
   }
@@ -171,17 +172,26 @@ export default function CheckoutPage() {
       )
     }
 
-    if (!isProfileDataComplete) {
+    const validationResult = profileBillingSchema.safeParse(form.getValues());
+    if (!validationResult.success) {
+      const errorFields = Object.keys(validationResult.error.flatten().fieldErrors)
+        .map(f => f.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+
       return (
         <div className="container mx-auto py-20">
           <Card className="max-w-lg mx-auto shadow-lg rounded-lg">
             <CardHeader>
-              <CardTitle>Complete Your Profile</CardTitle>
-              <CardDescription>Your billing information is incomplete. Please update your profile to proceed with the checkout.</CardDescription>
+              <CardTitle>Complete Your Profile to Continue</CardTitle>
+              <CardDescription>
+                Your billing information is incomplete. The following fields are missing or invalid:
+              </CardDescription>
             </CardHeader>
             <CardContent>
+              <ul className="list-disc list-inside text-sm text-destructive space-y-1 my-4">
+                {errorFields.map(field => <li key={field}>{field}</li>)}
+              </ul>
               <Button asChild>
-                <Link href="/account">Go to Your Account</Link>
+                <Link href="/account">Go to Your Account to Update</Link>
               </Button>
             </CardContent>
           </Card>

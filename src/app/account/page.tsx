@@ -24,16 +24,16 @@ import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/l
 import { getCurrentUserProfile } from "@/app/account/actions"
 
 const profileSchema = z.object({
-  first_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "First name is required")),
-  last_name: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Last name is required")),
-  company_name: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  vat_number: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  address_line_1: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Address is required")),
-  address_line_2: z.string().nullable().optional().transform(val => val === null ? "" : val),
-  city: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "City is required")),
-  state_province_region: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "State/Province/Region is required")),
-  postal_code: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Postal code is required")),
-  country: z.string().nullable().transform(val => val === null ? "" : val).pipe(z.string().min(1, "Country is required")),
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  company_name: z.string().optional(),
+  vat_number: z.string().optional(),
+  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_2: z.string().optional(),
+  city: z.string().trim().min(1, "City is required"),
+  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().min(1, "Country is required"),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -151,40 +151,40 @@ export default function AccountPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="first_name" render={({ field }) => (
-                  <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="last_name" render={({ field }) => (
-                  <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="company_name" render={({ field }) => (
-                  <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="vat_number" render={({ field }) => (
-                  <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <FormField control={form.control} name="address_line_1" render={({ field }) => (
-                <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="address_line_2" render={({ field }) => (
-                <FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="city" render={({ field }) => (
-                  <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="state_province_region" render={({ field }) => (
-                  <FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="postal_code" render={({ field }) => (
-                  <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="country" render={({ field }) => (
-                  <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
