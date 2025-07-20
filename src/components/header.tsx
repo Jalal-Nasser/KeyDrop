@@ -7,7 +7,7 @@ import Link from "next/link"
 import Image from "next/image" // Import Image component
 import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
-import { AuthSheet } from "@/components/auth-sheet"
+import { AuthDialog } from "@/components/auth-dialog" // Changed from AuthSheet
 import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
 import { cn } from "@/lib/utils" // Import cn for conditional classes
@@ -196,7 +196,7 @@ export function Header({ className }: { className?: string }) {
           </div>
         </div>
       )}
-      <AuthSheet open={isAuthSheetOpen} onOpenChange={setIsAuthSheetOpen} />
+      <AuthDialog open={isAuthSheetOpen} onOpenChange={setIsAuthSheetOpen} />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
     </header>
   )
