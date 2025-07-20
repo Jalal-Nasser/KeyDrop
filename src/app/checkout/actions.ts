@@ -63,6 +63,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     // 5. Send Discord notification via Edge Function
     const { data: discordData, error: discordError } = await supabaseAdmin.functions.invoke('discord-order-notification', {
       body: {
+        notificationType: 'new_order',
         orderId: orderId,
         cartTotal: cartTotal,
         userEmail: user.email,

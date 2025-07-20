@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js'
 interface UpdatedOrderItemResult {
   order_id: string;
   products: { name: string } | null;
-  orders: { user_id: string; profiles: { first_name: string | null } | null } | null;
+  orders: { user_id: string; total: number; profiles: { first_name: string | null } | null } | null;
 }
 
 export async function fulfillOrderItem(orderItemId: string, productKey: string) {
@@ -28,13 +28,12 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
       .select(`
         order_id,
         products (name),
-        orders ( user_id, profiles (first_name) )
+        orders ( user_id, total, profiles (first_name) )
       `)
-      .single() as { data: UpdatedOrderItemResult | null, error: any }; // Explicitly cast to the defined type
+      .single() as { data: UpdatedOrderItemResult | null, error: any };
 
     if (itemUpdateError || !updatedItem) throw new Error(`Failed to update order item: ${itemUpdateError?.message}`)
 
-    // Access properties safely with optional chaining and null checks
     const { order_id, products, orders } = updatedItem;
     if (!products || !orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
 
@@ -68,6 +67,16 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
         .eq('id', order_id)
 
       if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
+      
+      // Send Discord notification for completed order
+      await supabaseAdmin.functions.invoke('discord-order-notification', {
+        body: {
+          notificationType: 'order_completed',
+          orderId: order_id,
+          cartTotal: orders.total,
+          userEmail: user.email
+        }
+      }).catch(err => console.error("Discord notification for completed order failed:", err));
     }
 
     revalidatePath('/admin/orders')
@@ -84,7 +93,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
   try {
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select(`user_id`)
+      .select(`user_id, total`)
       .eq('id', orderId)
       .single()
 
@@ -123,6 +132,18 @@ export async function updateOrderStatus(orderId: string, status: string) {
       status, 
       firstName: profile?.first_name || 'Valued Customer' 
     });
+
+    // Send Discord notification for cancelled order
+    if (status === 'cancelled') {
+      await supabaseAdmin.functions.invoke('discord-order-notification', {
+        body: {
+          notificationType: 'order_cancelled',
+          orderId: orderId,
+          cartTotal: order.total,
+          userEmail: user.email
+        }
+      }).catch(err => console.error("Discord notification for cancelled order failed:", err));
+    }
 
     revalidatePath('/admin/orders')
     revalidatePath(`/account/orders/${orderId}`)
