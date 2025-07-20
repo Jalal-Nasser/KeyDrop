@@ -60,6 +60,23 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     // 4. Send confirmation email to the client
     await sendOrderConfirmation({ orderId: orderId, userEmail: user.email })
     
+    // 5. Send Discord notification via Edge Function
+    const { data: discordData, error: discordError } = await supabaseAdmin.functions.invoke('discord-order-notification', {
+      body: {
+        orderId: orderId,
+        cartTotal: cartTotal,
+        userEmail: user.email,
+        cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity })) // Only send necessary info
+      }
+    })
+
+    if (discordError) {
+      console.error("Error invoking Discord notification function:", discordError)
+      // This error will not prevent the order from being created, but it will be logged.
+    } else {
+      console.log("Discord notification function invoked:", discordData)
+    }
+
     revalidatePath('/admin/orders')
     revalidatePath(`/account/orders/${orderId}`)
 
