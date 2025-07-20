@@ -61,7 +61,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           {/* Cloudflare Turnstile Integration */}
           <div className="mt-4">
             <Turnstile
-              sitekey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY || ''}
+              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
               onVerify={(token) => {
                 setTurnstileToken(token)
                 console.log("Turnstile token:", token)
