@@ -24,7 +24,10 @@ const allowedDomains = [
   "outlook.com"
 ];
 
+const adminEmail = "admin@dropskey.com";
+
 function isAllowedEmail(email: string) {
+  if (email.toLowerCase() === adminEmail) return true;
   const domain = email.split("@")[1]?.toLowerCase();
   return allowedDomains.includes(domain);
 }
@@ -57,8 +60,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             const email = input.value.trim();
             if (email && !isAllowedEmail(email)) {
               e.preventDefault();
-              setEmailError("Only Gmail, Hotmail, and Outlook email addresses are allowed.");
-              toast.error("Only Gmail, Hotmail, and Outlook email addresses are allowed.");
+              setEmailError("Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed.");
+              toast.error("Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed.");
               input.focus();
               return false;
             } else {
@@ -83,7 +86,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Sign In / Sign Up</DialogTitle>
           <DialogDescription>
-            Only Gmail, Hotmail, and Outlook email addresses are allowed for registration.
+            Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed for registration.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-6">
