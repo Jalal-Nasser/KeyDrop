@@ -54,9 +54,8 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
               },
             }}
             theme="light"
-            showLinks={true} // Changed to true to show signup and forgot password links
+            showLinks={true}
             redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
-            // Removed showCaptcha prop to let Auth component handle it automatically
           />
         </div>
       </SheetContent>
