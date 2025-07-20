@@ -11,7 +11,6 @@ import {
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { useSession } from "@/context/session-context"
-import Turnstile from "react-turnstile"
 
 interface AuthDialogProps {
   open: boolean;
@@ -20,7 +19,6 @@ interface AuthDialogProps {
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { supabase, session } = useSession()
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   // Close the dialog automatically when a session is established (user signs in)
   useEffect(() => {
@@ -58,22 +56,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             showLinks={true}
             redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
           />
-          {/* Cloudflare Turnstile Integration */}
-          <div className="mt-4">
-            <Turnstile
-              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
-              onVerify={(token) => {
-                setTurnstileToken(token)
-                console.log("Turnstile token:", token)
-                // In a custom auth flow, you would send this token to your backend for verification
-              }}
-              onExpire={() => setTurnstileToken(null)}
-              onLoad={() => console.log("Turnstile loaded")}
-            />
-            {!turnstileToken && (
-              <p className="text-red-500 text-sm mt-2">Please complete the CAPTCHA.</p>
-            )}
-          </div>
         </div>
       </DialogContent>
     </Dialog>
