@@ -1,20 +1,23 @@
-import { ServerClient, Models } from "postmark"; // Import Models
+import { ServerClient, Models } from "postmark";
 
 // You must set POSTMARK_API_TOKEN in your environment variables
 const postmarkClient = new ServerClient(process.env.POSTMARK_API_TOKEN || "");
+
+// Define a local type that explicitly includes ContentEncoding, mirroring Postmark's expected structure
+interface PostmarkAttachment {
+  Name: string;
+  Content: string;
+  ContentType: string;
+  ContentID?: string | null;
+  ContentEncoding: 'base64' | 'None' | string; // Use string to be flexible with Postmark's internal types
+}
 
 interface CustomAttachment {
   Name: string;
   Content: string;
   ContentType: string;
   ContentID?: string | null;
-  ContentEncoding: 'base64' | 'None'; // Keep this as it's the internal type
-}
-
-// Define a type that explicitly includes ContentEncoding, extending Models.Attachment
-// This is a common pattern when library types are incomplete.
-interface PostmarkAttachmentWithEncoding extends Models.Attachment {
-  ContentEncoding: 'base64' | 'None' | string; // Allow string as Postmark might expect it
+  ContentEncoding?: 'base64' | 'None'; // Keep this as optional for our input
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Partial<CustomAttachment>[] }) {
@@ -24,13 +27,17 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   }
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map((rawAtt) => {
+    // Ensure all required properties are non-nullable strings
     const att: CustomAttachment = {
-      ...rawAtt,
-      ContentEncoding: rawAtt.ContentEncoding ?? 'None' // Provide default if missing
-    } as CustomAttachment; // Cast to ensure it's seen as CustomAttachment
+      Name: rawAtt.Name ?? '', // Default to empty string if undefined
+      Content: rawAtt.Content ?? '', // Default to empty string if undefined
+      ContentType: rawAtt.ContentType ?? '', // Default to empty string if undefined
+      ContentID: rawAtt.ContentID,
+      ContentEncoding: rawAtt.ContentEncoding ?? 'None', // Provide default if missing
+    };
 
     let encodedContent = att.Content;
-    let encodingType: 'base64' | 'None' = att.ContentEncoding; // Now it's guaranteed to exist
+    let encodingType: 'base64' | 'None' = att.ContentEncoding;
 
     // If it's HTML, force base64 encoding for reliability
     if (att.ContentType === 'text/html' && encodingType === 'None') {
@@ -38,15 +45,14 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
-    // Cast the object to the extended interface
-    const transformedAttachment: PostmarkAttachmentWithEncoding = {
+    const transformedAttachment: PostmarkAttachment = { // Cast to our local PostmarkAttachment type
       Name: att.Name,
       Content: encodedContent,
       ContentType: att.ContentType,
       ContentID: att.ContentID === undefined ? null : att.ContentID,
-      ContentEncoding: encodingType, // This should now be valid
+      ContentEncoding: encodingType,
     };
-    return transformedAttachment as Models.Attachment; // Cast back to Models.Attachment for the array
+    return transformedAttachment as Models.Attachment; // Cast the array to Postmark's expected Models.Attachment[]
   });
 
   return postmarkClient.sendEmail({
