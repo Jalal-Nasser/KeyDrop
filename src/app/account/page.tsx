@@ -195,7 +195,7 @@ export default function AccountPage() {
                    <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/account/orders">View Order History</Link>
                   </Button>
-                  <Button onClick={() => supabase.auth.signOut()} variant="secondary" className="w-full sm:w-auto">
+                  <Button type="button" onClick={() => supabase.auth.signOut()} variant="secondary" className="w-full sm:w-auto">
                     Sign Out
                   </Button>
                 </div>
