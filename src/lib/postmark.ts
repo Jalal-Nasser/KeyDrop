@@ -4,12 +4,11 @@ import { ServerClient, Models } from "postmark"; // Import Models
 const postmarkClient = new ServerClient(process.env.POSTMARK_API_TOKEN || "");
 
 interface Attachment {
-  filename: string;
-  content: string; // This will be the raw HTML/file content (or base64 string if encoding is 'base64')
-  ContentType: string; // e.g., 'text/html', 'application/pdf'
-  ContentID?: string | null; // Allow string or null
-  encoding?: string;
-  // ContentDisposition is removed from this interface as it's not recognized by Models.Attachment in user's environment
+  Name: string; // Renamed from filename
+  Content: string; // Renamed from content
+  ContentType: string;
+  ContentID?: string | null;
+  Encoding?: 'base64' | 'None'; // Renamed from encoding, matching Models.Attachment
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -19,16 +18,24 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   }
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map(att => {
-    // Transform our Attachment to Postmark's Models.Attachment
+    let encodedContent = att.Content; // Use att.Content
+    // Explicitly assert that att.Encoding exists and is of the correct type
+    let encodingType: Models.Attachment["Encoding"] = (att.Encoding as Models.Attachment["Encoding"]) || "None";
+
+    // If encoding is explicitly 'base64' or if it's HTML and we want to force base64
+    if (encodingType === 'base64' || att.ContentType === 'text/html') {
+      // Node.js Buffer is available in Next.js server actions
+      encodedContent = Buffer.from(att.Content).toString('base64');
+      encodingType = 'base64';
+    }
+
     const transformedAttachment: Models.Attachment = {
-      Name: att.filename, // Map filename to Name
-      Content: att.content,
+      Name: att.Name,
+      Content: encodedContent,
       ContentType: att.ContentType,
-      // Corrected: Convert undefined to null for ContentID
       ContentID: att.ContentID === undefined ? null : att.ContentID,
-      // ContentDisposition property is removed here because the compiler indicates it does not exist in Models.Attachment
-      // This might mean the Postmark library version or its type definitions in your environment are older
-      // and do not include this property. The email client will rely on ContentID for inline display.
+      // Explicitly assert that Encoding property exists on Models.Attachment
+      Encoding: encodingType as Models.Attachment["Encoding"],
     };
     return transformedAttachment;
   });

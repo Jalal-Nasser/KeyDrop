@@ -21,7 +21,7 @@ interface FetchedProduct {
 interface FetchedOrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: FetchedProduct | null; // Changed to single object
+  products: FetchedProduct[] | null; // Changed to array
 }
 
 interface FetchedProfile {
@@ -76,13 +76,13 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       total: fetchedOrder.total,
       status: fetchedOrder.status,
       payment_gateway: fetchedOrder.payment_gateway,
-      order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: [oi.products!] })), // Adapt to InvoiceTemplate's expectation
+      order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: oi.products || [] })), // Ensure products is an array
     };
 
     const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
 
     const productListHtml = `<ul>${fetchedOrder.order_items.map(item => {
-      const product = item.products;
+      const product = item.products?.[0]; // Access first element of products array
       return `<li>${item.quantity} x ${product?.name || 'Product'}</li>`
     }).join('')}</ul>`
 
@@ -94,8 +94,8 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
     
     const attachments = [
       {
-        filename: `invoice-${fetchedOrder.id.substring(0, 8)}.html`,
-        content: invoiceHtml,
+        Name: `invoice-${fetchedOrder.id.substring(0, 8)}.html`, // Changed from filename
+        Content: invoiceHtml, // Changed from content
         ContentType: 'text/html',
       },
     ];
