@@ -8,7 +8,13 @@ interface CustomAttachment {
   Content: string;
   ContentType: string;
   ContentID?: string | null;
-  ContentEncoding: 'base64' | 'None'; // Made non-optional to ensure it always exists
+  ContentEncoding: 'base64' | 'None'; // Keep this as it's the internal type
+}
+
+// Define a type that explicitly includes ContentEncoding, extending Models.Attachment
+// This is a common pattern when library types are incomplete.
+interface PostmarkAttachmentWithEncoding extends Models.Attachment {
+  ContentEncoding: 'base64' | 'None' | string; // Allow string as Postmark might expect it
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Partial<CustomAttachment>[] }) {
@@ -18,7 +24,6 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   }
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map((rawAtt) => {
-    // Ensure rawAtt has ContentEncoding, defaulting if necessary
     const att: CustomAttachment = {
       ...rawAtt,
       ContentEncoding: rawAtt.ContentEncoding ?? 'None' // Provide default if missing
@@ -33,14 +38,15 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
-    const transformedAttachment: Models.Attachment = {
+    // Cast the object to the extended interface
+    const transformedAttachment: PostmarkAttachmentWithEncoding = {
       Name: att.Name,
       Content: encodedContent,
       ContentType: att.ContentType,
       ContentID: att.ContentID === undefined ? null : att.ContentID,
-      ContentEncoding: encodingType as Models.Attachment["ContentEncoding"], // Explicitly cast here to resolve TS2353
+      ContentEncoding: encodingType, // This should now be valid
     };
-    return transformedAttachment;
+    return transformedAttachment as Models.Attachment; // Cast back to Models.Attachment for the array
   });
 
   return postmarkClient.sendEmail({
