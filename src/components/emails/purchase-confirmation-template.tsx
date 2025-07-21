@@ -7,7 +7,7 @@ interface PurchaseConfirmationTemplateProps {
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-const LOGO_URL = "https://i.imgur.com/626b44t.png";
+const LOGO_URL = "https://i.imgur.com/dcJe2iS.png";
 
 export const PurchaseConfirmationTemplate: React.FC<PurchaseConfirmationTemplateProps> = ({ firstName, orderId, productListHtml }) => (
   <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#333' }}>

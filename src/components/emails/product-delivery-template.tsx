@@ -8,7 +8,7 @@ interface ProductDeliveryTemplateProps {
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-const LOGO_URL = "https://i.imgur.com/626b44t.png";
+const LOGO_URL = "https://i.imgur.com/dcJe2iS.png";
 
 export const ProductDeliveryTemplate: React.FC<ProductDeliveryTemplateProps> = ({ firstName, orderId, productName, productKey }) => (
   <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#333' }}>

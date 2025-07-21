@@ -4,7 +4,7 @@ interface RegistrationConfirmationTemplateProps {
   firstName: string;
 }
 
-const LOGO_URL = "https://i.imgur.com/626b44t.png";
+const LOGO_URL = "https://i.imgur.com/dcJe2iS.png";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 export const RegistrationConfirmationTemplate: React.FC<RegistrationConfirmationTemplateProps> = ({ firstName }) => (
