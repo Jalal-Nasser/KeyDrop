@@ -30,7 +30,8 @@ function createNewOrderEmbed(orderId: string, cartTotal: number, userEmail: stri
   };
 }
 
-function createOrderCompletedEmbed(orderId: string, cartTotal: number, userEmail: string) {
+// Modified to accept productImage
+function createOrderCompletedEmbed(orderId: string, cartTotal: number, userEmail: string, productImage: string | null) {
   return {
     title: "Order Completed! ✅",
     description: `An order has been successfully fulfilled and marked as completed.`,
@@ -40,12 +41,14 @@ function createOrderCompletedEmbed(orderId: string, cartTotal: number, userEmail
       { name: "Total", value: `$${cartTotal.toFixed(2)}`, inline: true },
       { name: "Customer Email", value: userEmail, inline: false }
     ],
+    thumbnail: productImage ? { url: productImage } : undefined, // Add thumbnail if image exists
     timestamp: new Date().toISOString(),
     footer: { text: "Dropskey Store" }
   };
 }
 
-function createOrderCancelledEmbed(orderId: string, cartTotal: number, userEmail: string) {
+// Modified to accept productImage
+function createOrderCancelledEmbed(orderId: string, cartTotal: number, userEmail: string, productImage: string | null) {
   return {
     title: "Order Cancelled ❌",
     description: `An order has been cancelled.`,
@@ -55,6 +58,7 @@ function createOrderCancelledEmbed(orderId: string, cartTotal: number, userEmail
       { name: "Total", value: `$${cartTotal.toFixed(2)}`, inline: true },
       { name: "Customer Email", value: userEmail, inline: false }
     ],
+    thumbnail: productImage ? { url: productImage } : undefined, // Add thumbnail if image exists
     timestamp: new Date().toISOString(),
     footer: { text: "Dropskey Store" }
   };
@@ -67,7 +71,8 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { notificationType, orderId, cartTotal, userEmail, cartItems } = await req.json()
+    // Added productImage to destructuring
+    const { notificationType, orderId, cartTotal, userEmail, cartItems, productImage } = await req.json()
 
     const DISCORD_WEBHOOK_URL = Deno.env.get('DISCORD_WEBHOOK_URL')
     if (!DISCORD_WEBHOOK_URL) {
@@ -80,10 +85,10 @@ serve(async (req: Request) => {
         embed = createNewOrderEmbed(orderId, cartTotal, userEmail, cartItems);
         break;
       case 'order_completed':
-        embed = createOrderCompletedEmbed(orderId, cartTotal, userEmail);
+        embed = createOrderCompletedEmbed(orderId, cartTotal, userEmail, productImage); // Passed productImage
         break;
       case 'order_cancelled':
-        embed = createOrderCancelledEmbed(orderId, cartTotal, userEmail);
+        embed = createOrderCancelledEmbed(orderId, cartTotal, userEmail, productImage); // Passed productImage
         break;
       default:
         throw new Error(`Invalid notification type: ${notificationType}`);

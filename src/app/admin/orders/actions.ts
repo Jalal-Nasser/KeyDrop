@@ -53,7 +53,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     // 3. Check if all items in the order are fulfilled
     const { data: allItems, error: allItemsError } = await supabase
       .from('order_items')
-      .select('product_key')
+      .select('product_key, products (image)') // Fetch product image
       .eq('order_id', order_id)
 
     if (allItemsError) throw new Error(`Could not check order status: ${allItemsError.message}`)
@@ -69,13 +69,17 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
 
       if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
       
+      // Determine the product image for the notification (use first available)
+      const firstProductImage = allItems.find(item => item.products?.image)?.products?.image || null;
+
       // Send Discord notification for completed order
       await supabaseAdmin.functions.invoke('discord-order-notification', {
         body: {
           notificationType: 'order_completed',
           orderId: order_id,
           cartTotal: orders.total,
-          userEmail: user.email
+          userEmail: user.email,
+          productImage: firstProductImage // Pass the image
         }
       }).catch(err => console.error("Discord notification for completed order failed:", err));
     }
@@ -94,7 +98,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
   try {
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select(`user_id, total`)
+      .select(`user_id, total, order_items (products (image))`) // Fetch order items with product images
       .eq('id', orderId)
       .single()
 
@@ -136,12 +140,16 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
     // Send Discord notification for cancelled order
     if (status === 'cancelled') {
+      // Determine the product image for the notification (use first available)
+      const firstProductImage = order.order_items.find(item => item.products?.image)?.products?.image || null;
+
       await supabaseAdmin.functions.invoke('discord-order-notification', {
         body: {
           notificationType: 'order_cancelled',
           orderId: orderId,
           cartTotal: order.total,
-          userEmail: user.email
+          userEmail: user.email,
+          productImage: firstProductImage // Pass the image
         }
       }).catch(err => console.error("Discord notification for cancelled order failed:", err));
     }

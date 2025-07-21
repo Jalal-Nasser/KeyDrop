@@ -10,7 +10,7 @@ import {
 import { AdminOrderListClient } from "@/components/admin/admin-order-list-client"
 import { Database } from "@/types/supabase"
 
-type ProductInfo = Pick<Database['public']['Tables']['products']['Row'], 'name' | 'is_digital'>
+type ProductInfo = Pick<Database['public']['Tables']['products']['Row'], 'name' | 'is_digital' | 'image'>
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
   products: ProductInfo | null
