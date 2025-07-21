@@ -4,11 +4,11 @@ import { ServerClient, Models } from "postmark"; // Import Models
 const postmarkClient = new ServerClient(process.env.POSTMARK_API_TOKEN || "");
 
 interface Attachment {
-  Name: string; // Renamed from filename
-  Content: string; // Renamed from content
+  Name: string;
+  Content: string;
   ContentType: string;
   ContentID?: string | null;
-  Encoding?: 'base64' | 'None'; // Renamed from encoding, matching Models.Attachment
+  ContentEncoding?: 'base64' | 'None';
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -18,9 +18,9 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   }
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map(att => {
-    let encodedContent = att.Content; // Use att.Content
-    // Explicitly assert that att.Encoding exists and is of the correct type
-    let encodingType: Models.Attachment["Encoding"] = (att.Encoding as Models.Attachment["Encoding"]) || "None";
+    let encodedContent = att.Content;
+    // Explicitly cast 'att' to Models.Attachment to ensure 'ContentEncoding' is recognized
+    let encodingType: Models.Attachment["ContentEncoding"] = (att as Models.Attachment).ContentEncoding || "None";
 
     // If encoding is explicitly 'base64' or if it's HTML and we want to force base64
     if (encodingType === 'base64' || att.ContentType === 'text/html') {
@@ -29,13 +29,13 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
+    // Explicitly cast the object literal to Models.Attachment
     const transformedAttachment: Models.Attachment = {
       Name: att.Name,
       Content: encodedContent,
       ContentType: att.ContentType,
       ContentID: att.ContentID === undefined ? null : att.ContentID,
-      // Explicitly assert that Encoding property exists on Models.Attachment
-      Encoding: encodingType as Models.Attachment["Encoding"],
+      ContentEncoding: encodingType,
     };
     return transformedAttachment;
   });
