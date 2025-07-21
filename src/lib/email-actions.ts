@@ -4,11 +4,11 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer'
 import { sendMail } from '@/lib/postmark'
 import { 
   renderInvoiceTemplateToHtml,
-  renderPurchaseConfirmationTemplateToHtml,
+  renderPurchaseConfirmationTemplateToHtml, // Still imported, but not used for main body
   renderOrderStatusChangedTemplateToHtml,
   renderProfileUpdateTemplateToHtml,
   renderRegistrationConfirmationTemplateToHtml,
-  renderProductDeliveryTemplateToHtml // Added
+  renderProductDeliveryTemplateToHtml
 } from '@/lib/render-email-template';
 
 // Define types that match the Supabase query result structure
@@ -79,32 +79,17 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: oi.products || [] })), // Ensure products is an array
     };
 
+    // Render the invoice HTML to be the main body of the email
     const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
-
-    const productListHtml = `<ul>${fetchedOrder.order_items.map(item => {
-      const product = item.products?.[0]; // Access first element of products array
-      return `<li>${item.quantity} x ${product?.name || 'Product'}</li>`
-    }).join('')}</ul>`
-
-    const purchaseConfirmationHtml = await renderPurchaseConfirmationTemplateToHtml(
-      profile.first_name || 'Valued Customer',
-      fetchedOrder.id,
-      productListHtml
-    );
     
-    const attachments = [
-      {
-        Name: `invoice-${fetchedOrder.id.substring(0, 8)}.html`, // Changed from filename
-        Content: invoiceHtml, // Changed from content
-        ContentType: 'text/html',
-      },
-    ];
+    // No longer sending purchaseConfirmationHtml as the main body, nor attaching the invoice.
+    // The invoice IS the email body now.
 
     await sendMail({
       to: payload.userEmail,
-      subject: `Your Dropskey Order Confirmation #${fetchedOrder.id.substring(0, 8)}`,
-      html: purchaseConfirmationHtml,
-      attachments,
+      subject: `Your Dropskey Invoice #${fetchedOrder.id.substring(0, 8)}`, // Updated subject
+      html: invoiceHtml, // Send invoice HTML as the main body
+      attachments: [], // No attachments needed if invoice is the body
     })
 
     return { success: true }
