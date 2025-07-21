@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { format } from "date-fns";
 
-// Define more specific types for the email template
 interface Product {
   name: string;
   download_url?: string | null;
@@ -11,7 +10,7 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: { name: string; }[] | null; // Corrected back to array of objects
+  products: { name: string; }[] | null;
 }
 
 export interface Profile {
@@ -33,8 +32,7 @@ export interface Order {
   total: number;
   status: string;
   payment_gateway: string | null;
-  order_items: OrderItem[]; // Added order_items here
-  // Note: 'profiles' is NOT part of this 'Order' interface, as it's passed separately to InvoiceTemplateProps
+  order_items: OrderItem[];
 }
 
 interface InvoiceTemplateProps {
@@ -42,161 +40,143 @@ interface InvoiceTemplateProps {
   profile: Profile;
 }
 
-// Base styles
 const main = {
-  fontFamily: '"Helvetica Neue", "Arial", sans-serif',
-  backgroundColor: '#f4f4f4',
-  padding: '20px',
+  fontFamily: '"Helvetica Neue", Arial, sans-serif',
+  backgroundColor: '#fff',
+  padding: '0',
+  margin: '0',
 };
 
 const container = {
-  maxWidth: '600px',
+  maxWidth: '800px',
   margin: '0 auto',
-  backgroundColor: '#ffffff',
-  border: '1px solid #dddddd',
-  borderRadius: '8px',
+  border: '1px solid #ddd',
+  borderRadius: '4px',
   overflow: 'hidden',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  boxShadow: '0 0 10px rgba(0,0,0,0.1)',
 };
 
-// Top header with logo and company info
-const topHeader = {
+const headerTable = {
+  width: '100%',
+  borderCollapse: 'collapse' as const,
+  backgroundColor: '#fff',
   padding: '20px',
-  borderBottom: '1px solid #eee',
 };
 
-const logoContainer = {
+const logoStyle = {
+  width: '150px',
+  height: 'auto',
+};
+
+const companyInfoStyle = {
+  fontSize: '12px',
+  color: '#333',
+  lineHeight: '1.4',
+  textAlign: 'right' as const,
+  paddingTop: '10px',
+  fontWeight: 'normal' as const,
+};
+
+const greenBar = {
+  backgroundColor: '#4CAF50',
+  color: 'white',
+  fontWeight: 'bold' as const,
+  fontSize: '20px',
+  padding: '15px 30px',
   display: 'flex',
+  justifyContent: 'space-between',
   alignItems: 'center',
 };
 
-const logoText = {
-  color: '#1e73be',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  marginLeft: '10px',
-};
-
-const companyInfo = {
-  textAlign: 'right' as const,
-  fontSize: '13px',
+const detailsSection = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  padding: '20px 30px',
+  fontSize: '12px',
   color: '#555',
   lineHeight: '1.5',
 };
 
-// Green invoice header bar
-const invoiceHeaderBar = {
-  backgroundColor: '#28a645', // Green color from image
-  color: 'white',
-  padding: '15px 20px',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  fontSize: '20px',
-  fontWeight: 'bold',
-};
-
-// Details section (Invoice Date, Invoiced To)
-const detailsSection = {
-  padding: '20px',
-  display: 'flex',
-  justifyContent: 'space-between',
-  fontSize: '14px',
-  lineHeight: '1.6',
-};
-
 const detailsColumn = {
-  flex: '1',
-  paddingRight: '10px',
+  width: '45%',
 };
 
-const detailsColumnRight = {
-  flex: '1',
-  paddingLeft: '10px',
-  textAlign: 'right' as const,
+const labelStyle = {
+  fontWeight: 'bold' as const,
+  color: '#777',
+  marginBottom: '6px',
 };
 
-const addressStyle = {
-  fontStyle: 'normal' as const,
-  marginTop: '5px',
-};
-
-// Items table
 const itemsTable = {
   width: '100%',
   borderCollapse: 'collapse' as const,
-  marginTop: '20px',
+  fontSize: '12px',
+  color: '#333',
 };
 
 const itemsTh = {
+  backgroundColor: '#f2f2f2',
+  padding: '10px',
   textAlign: 'left' as const,
-  padding: '10px 8px',
   borderBottom: '1px solid #ddd',
-  color: '#666',
-  fontSize: '13px',
-  fontWeight: 'normal',
 };
 
 const itemsTd = {
-  padding: '10px 8px',
+  padding: '10px',
   borderBottom: '1px solid #eee',
-  fontSize: '14px',
-  color: '#333',
+  verticalAlign: 'top' as const,
 };
 
 const itemsTdRight = {
   ...itemsTd,
   textAlign: 'right' as const,
+  whiteSpace: 'nowrap' as const,
 };
 
-// Totals section
 const totalsSection = {
-  padding: '20px',
-  paddingTop: '0',
-  textAlign: 'right' as const,
-  fontSize: '14px',
+  width: '100%',
+  padding: '20px 30px',
+  fontSize: '12px',
   color: '#333',
+  textAlign: 'right' as const,
 };
 
 const totalRow = {
+  marginBottom: '6px',
   display: 'flex',
   justifyContent: 'flex-end',
-  marginBottom: '5px',
 };
 
 const totalLabel = {
   width: '150px',
-  paddingRight: '10px',
-  fontWeight: 'normal',
+  fontWeight: 'normal' as const,
 };
 
 const totalValue = {
   width: '100px',
-  fontWeight: 'bold',
+  fontWeight: 'bold' as const,
 };
 
-const finalTotalBar = {
-  backgroundColor: '#28a645', // Green color from image
+const totalBar = {
+  backgroundColor: '#4CAF50',
   color: 'white',
-  padding: '15px 20px',
+  fontWeight: 'bold' as const,
+  fontSize: '16px',
+  padding: '15px 30px',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  fontSize: '18px',
-  fontWeight: 'bold',
 };
 
 const footer = {
-  padding: '20px',
-  borderTop: '1px solid #dddddd',
-  textAlign: 'center' as const,
+  padding: '20px 30px',
   fontSize: '12px',
-  color: '#666666',
-  backgroundColor: '#f8f8f8',
+  color: '#777',
+  textAlign: 'center' as const,
+  backgroundColor: '#f9f9f9',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-const LOGO_URL = `${BASE_URL}/panda.png`; // Corrected logo URL
+const logoUrl = "https://notncpmpmgostfxesrvk.supabase.co/storage/v1/object/public/product-images/public/dropskey-logo.png";
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile }) => {
   const processingFee = order.total * 0.15;
@@ -205,102 +185,105 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
   return (
     <div style={main}>
       <div style={container}>
-        {/* Top Header with Logo, Invoice ID, and Company Info */}
-        <table width="100%" cellPadding="0" cellSpacing="0" style={topHeader}>
+        {/* Header with logo and company info */}
+        <table style={headerTable}>
           <tbody>
             <tr>
-              <td style={{ verticalAlign: 'top', width: '50%' }}>
-                <div style={logoContainer}>
-                  <img src={LOGO_URL} alt="Dropskey Logo" width="40" height="40" style={{ display: 'block' }} />
-                  <span style={logoText}>Dropskey</span>
-                </div>
+              <td style={{ width: '50%' }}>
+                <img src={logoUrl} alt="Dropskey Logo" style={logoStyle} />
               </td>
-              <td style={{ verticalAlign: 'top', width: '50%', textAlign: 'right' as const }}>
-                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', margin: '0 0 5px 0' }}>INVOICE</h2>
-                <p style={{ fontSize: '13px', color: '#555', margin: '0 0 2px 0' }}>Invoice ID: #{order.id.substring(0, 8)}</p>
-                <p style={{ fontSize: '13px', color: '#555', margin: '0 0 15px 0' }}>Date: {format(new Date(order.created_at), 'PPP')}</p>
-                <div style={companyInfo}>
-                  <p style={{ margin: '0' }}>Dropskey</p>
-                  <p style={{ margin: '0' }}>123 Digital Key Street</p>
-                  <p style={{ margin: '0' }}>Suite 456</p>
-                  <p style={{ margin: '0' }}>Tech City, TX 78701</p>
-                  <p style={{ margin: '0' }}>USA</p>
-                  <p style={{ margin: '0' }}>VAT Number: N/A</p>
+              <td style={{ width: '50%', verticalAlign: 'top' }}>
+                <div style={companyInfoStyle}>
+                  <div><strong>Dropskey</strong></div>
+                  <div>4283 Express Lane</div>
+                  <div>Suite 193-395</div>
+                  <div>Sarasota, FL 34249</div>
+                  <div>VAT Number: 20115192</div>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
 
-        {/* Green Invoice Header Bar - Removed as per new design */}
+        {/* Green bar with Invoice # and Paid */}
+        <div style={greenBar}>
+          <div>Invoice #{order.id.substring(0, 8)}</div>
+          <div>Paid</div>
+        </div>
 
-        {/* Details Section */}
+        {/* Invoice details */}
         <div style={detailsSection}>
           <div style={detailsColumn}>
-            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Billed To:</p>
-            <address style={addressStyle}>
-              {profile.company_name && <p style={{ fontWeight: 'bold', margin: '0' }}>{profile.company_name}</p>}
-              <p style={{ margin: '0' }}>{profile.first_name} {profile.last_name}</p>
-              <p style={{ margin: '0' }}>{profile.address_line_1}</p>
-              {profile.address_line_2 && <p style={{ margin: '0' }}>{profile.address_line_2}</p>}
-              <p style={{ margin: '0' }}>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
-              <p style={{ margin: '0' }}>{profile.country}</p>
-              {profile.vat_number && <p style={{ margin: '0' }}>VAT Number: {profile.vat_number}</p>}
-            </address>
+            <div style={labelStyle}>Invoice Date</div>
+            <div>{format(new Date(order.created_at), 'EEEE, MMMM do, yyyy')}</div>
+            <div style={{ marginTop: '20px', ...labelStyle }}>PAID</div>
+            <div>{order.payment_gateway || 'N/A'} | {format(new Date(order.created_at), 'EEEE, MMMM do, yyyy')}</div>
           </div>
-          <div style={detailsColumnRight}>
-            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Payment Details:</p>
-            <p style={{ margin: '0' }}><strong>Method:</strong> {order.payment_gateway || 'N/A'}</p>
-            <p style={{ margin: '0' }}><strong>Status:</strong> <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>{order.status}</span></p>
-            <p style={{ margin: '0' }}><strong>Date:</strong> {format(new Date(order.created_at), 'PPP')}</p>
+          <div style={detailsColumn}>
+            <div style={labelStyle}>Invoiced To</div>
+            <div>
+              {profile.company_name && <div><strong>{profile.company_name}</strong></div>}
+              <div>{profile.first_name} {profile.last_name}</div>
+              <div>{profile.address_line_1}</div>
+              {profile.address_line_2 && <div>{profile.address_line_2}</div>}
+              <div>{profile.city}, {profile.state_province_region} {profile.postal_code}</div>
+              <div>{profile.country}</div>
+              {profile.vat_number && <div>VAT Number: {profile.vat_number}</div>}
+            </div>
           </div>
         </div>
 
-        {/* Items Table */}
+        {/* Items table */}
         <table style={itemsTable}>
           <thead>
             <tr>
-              <th style={itemsTh}>Item</th>
-              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Qty</th>
-              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Unit Price</th>
-              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Amount</th>
+              <th style={itemsTh}>Description</th>
+              <th style={itemsTh}></th>
+              <th style={itemsTh}></th>
+              <th style={itemsTh}>Total</th>
             </tr>
           </thead>
           <tbody>
-            {order.order_items.map((item: OrderItem, index: number) => {
+            {order.order_items.map((item, idx) => {
               const product = item.products?.[0];
               return (
-                <tr key={index}>
+                <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#f7f7f7' : 'transparent' }}>
                   <td style={itemsTd}>{product?.name || 'Unknown Product'}</td>
-                  <td style={itemsTdRight}>{item.quantity}</td>
-                  <td style={itemsTdRight}>${item.price_at_purchase.toFixed(2)}</td>
-                  <td style={itemsTdRight}>${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
+                  <td style={itemsTd}></td>
+                  <td style={itemsTd}></td>
+                  <td style={itemsTdRight}>${(item.quantity * item.price_at_purchase).toFixed(2)} USD</td>
                 </tr>
               );
             })}
           </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontWeight: 'bold', borderTop: '1px solid #ddd' }}>Subtotal:</td>
-              <td style={{ ...itemsTdRight, fontWeight: 'bold', borderTop: '1px solid #ddd' }}>${order.total.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontWeight: 'bold' }}>Processing Fee (15%):</td>
-              <td style={{ ...itemsTdRight, fontWeight: 'bold' }}>${processingFee.toFixed(2)}</td>
-            </tr>
-            <tr style={{ backgroundColor: '#f8f8f8' }}>
-              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontSize: '18px', fontWeight: 'bold', padding: '15px 8px' }}>TOTAL:</td>
-              <td style={{ ...itemsTdRight, fontSize: '18px', fontWeight: 'bold', padding: '15px 8px' }}>${finalTotal.toFixed(2)}</td>
-            </tr>
-          </tfoot>
         </table>
 
-        {/* Final Total Bar - Removed as per new design */}
+        {/* Totals */}
+        <div style={totalsSection}>
+          <div style={totalRow}>
+            <div style={totalLabel}>Sub Total</div>
+            <div style={totalValue}>${order.total.toFixed(2)} USD</div>
+          </div>
+          <div style={totalRow}>
+            <div style={totalLabel}>15.00% Process Fees</div>
+            <div style={totalValue}>${processingFee.toFixed(2)} USD</div>
+          </div>
+          <div style={totalRow}>
+            <div style={totalLabel}>Credit</div>
+            <div style={totalValue}>$0.00 USD</div>
+          </div>
+        </div>
+
+        {/* Total bar */}
+        <div style={totalBar}>
+          <div>Total</div>
+          <div>${finalTotal.toFixed(2)} USD</div>
+        </div>
 
         {/* Footer */}
         <div style={footer}>
-          <p style={{ margin: '0 0 5px 0' }}>Thank you for your business!</p>
-          <p style={{ margin: '0' }}>Dropskey | support@dropskey.com</p>
+          <div>Thank you for your business!</div>
+          <div>Dropskey | support@dropskey.com</div>
         </div>
       </div>
     </div>

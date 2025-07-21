@@ -8,7 +8,7 @@ interface Attachment {
   Content: string;
   ContentType: string;
   ContentID?: string | null;
-  ContentEncoding?: 'base64' | 'None';
+  ContentEncoding?: 'base64' | 'None'; // Ensure this property exists
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -19,8 +19,8 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map(att => {
     let encodedContent = att.Content;
-    // Explicitly cast 'att' to Models.Attachment to ensure 'ContentEncoding' is recognized
-    let encodingType: Models.Attachment["ContentEncoding"] = (att as Models.Attachment).ContentEncoding || "None";
+    // Assert att as Attachment to access ContentEncoding without error
+    let encodingType: Models.Attachment["ContentEncoding"] = ((att as Attachment).ContentEncoding) || "None";
 
     // If encoding is explicitly 'base64' or if it's HTML and we want to force base64
     if (encodingType === 'base64' || att.ContentType === 'text/html') {
@@ -29,7 +29,6 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
-    // Explicitly cast the object literal to Models.Attachment
     const transformedAttachment: Models.Attachment = {
       Name: att.Name,
       Content: encodedContent,
