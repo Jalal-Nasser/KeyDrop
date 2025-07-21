@@ -11,9 +11,6 @@ import {
   renderProductDeliveryTemplateToHtml // Added
 } from '@/lib/render-email-template';
 
-import fs from 'fs/promises';
-import path from 'path';
-
 // Define types that match the Supabase query result structure
 interface FetchedProduct {
   name: string;
@@ -48,23 +45,6 @@ interface FullFetchedOrder {
   payment_gateway: string | null;
   order_items: FetchedOrderItem[];
   profiles: FetchedProfile | null;
-}
-
-const LOGO_IMAGE_PATH = path.join(process.cwd(), 'public', 'images', 'dropskey-logo.png');
-
-async function getLogoAttachment() {
-  try {
-    const logoBuffer = await fs.readFile(LOGO_IMAGE_PATH);
-    return {
-      filename: 'dropskey-logo.png',
-      content: logoBuffer.toString('base64'),
-      ContentType: 'image/png',
-      ContentID: 'cid:logo_image',
-    };
-  } catch (error) {
-    console.error("Could not read logo file for email attachment:", error);
-    return null;
-  }
 }
 
 export async function sendOrderConfirmation(payload: { orderId: string; userEmail: string; }) {
@@ -112,7 +92,6 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       productListHtml
     );
     
-    const logoAttachment = await getLogoAttachment();
     const attachments = [
       {
         filename: `invoice-${fetchedOrder.id.substring(0, 8)}.html`,
@@ -120,7 +99,6 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
         ContentType: 'text/html',
       },
     ];
-    if (logoAttachment) attachments.push(logoAttachment as any);
 
     await sendMail({
       to: payload.userEmail,
@@ -140,14 +118,12 @@ export async function sendProductDelivery(payload: { userEmail: string, firstNam
   try {
     const { userEmail, firstName, orderId, productName, productKey } = payload;
     const html = await renderProductDeliveryTemplateToHtml(firstName, orderId, productName, productKey);
-    const logoAttachment = await getLogoAttachment();
-    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: `Your Product Key for ${productName}`,
       html,
-      attachments,
+      attachments: [],
     });
 
     return { success: true };
@@ -161,14 +137,12 @@ export async function sendOrderStatusUpdate(payload: { orderId: string; userEmai
   try {
     const { orderId, userEmail, status, firstName } = payload;
     const html = await renderOrderStatusChangedTemplateToHtml(firstName, orderId, status);
-    const logoAttachment = await getLogoAttachment();
-    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: `Your Dropskey Order #${orderId.substring(0, 8)} has been ${status}`,
       html,
-      attachments,
+      attachments: [],
     });
 
     return { success: true };
@@ -182,14 +156,12 @@ export async function sendProfileUpdateConfirmation(payload: { userEmail: string
   try {
     const { userEmail, firstName } = payload;
     const html = await renderProfileUpdateTemplateToHtml(firstName);
-    const logoAttachment = await getLogoAttachment();
-    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: 'Your Dropskey Profile Has Been Updated',
       html,
-      attachments,
+      attachments: [],
     });
 
     return { success: true };
@@ -203,14 +175,12 @@ export async function sendRegistrationConfirmation(payload: { userEmail: string;
   try {
     const { userEmail, firstName } = payload;
     const html = await renderRegistrationConfirmationTemplateToHtml(firstName);
-    const logoAttachment = await getLogoAttachment();
-    const attachments = logoAttachment ? [logoAttachment as any] : [];
 
     await sendMail({
       to: userEmail,
       subject: 'Welcome to Dropskey!',
       html,
-      attachments,
+      attachments: [],
     });
 
     return { success: true };
