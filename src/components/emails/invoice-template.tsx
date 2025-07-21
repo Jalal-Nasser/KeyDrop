@@ -62,9 +62,6 @@ const container = {
 // Top header with logo and company info
 const topHeader = {
   padding: '20px',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
   borderBottom: '1px solid #eee',
 };
 
@@ -198,7 +195,8 @@ const footer = {
   backgroundColor: '#f8f8f8',
 };
 
-const LOGO_URL = "https://notncpmpmgostfxesrvk.supabase.co/storage/v1/object/public/product-images/public/panda.png"; // Use the Supabase URL for the logo
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const LOGO_URL = `${BASE_URL}/panda.png`; // Corrected logo URL
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile }) => {
   const processingFee = order.total * 0.15;
@@ -207,48 +205,54 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
   return (
     <div style={main}>
       <div style={container}>
-        {/* Top Header with Logo and Company Info */}
-        <div style={topHeader}>
-          <div style={logoContainer}>
-            <img src={LOGO_URL} alt="Dropskey Logo" width="40" height="40" />
-            <span style={logoText}>Dropskey</span>
-          </div>
-          <div style={companyInfo}>
-            <p>Dropskey</p>
-            <p>123 Digital Key Street</p>
-            <p>Suite 456</p>
-            <p>Tech City, TX 78701</p>
-            <p>USA</p>
-            {/* Assuming a static VAT for the company for now, or remove if not applicable */}
-            <p>VAT Number: N/A</p>
-          </div>
-        </div>
+        {/* Top Header with Logo, Invoice ID, and Company Info */}
+        <table width="100%" cellPadding="0" cellSpacing="0" style={topHeader}>
+          <tbody>
+            <tr>
+              <td style={{ verticalAlign: 'top', width: '50%' }}>
+                <div style={logoContainer}>
+                  <img src={LOGO_URL} alt="Dropskey Logo" width="40" height="40" style={{ display: 'block' }} />
+                  <span style={logoText}>Dropskey</span>
+                </div>
+              </td>
+              <td style={{ verticalAlign: 'top', width: '50%', textAlign: 'right' as const }}>
+                <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', margin: '0 0 5px 0' }}>INVOICE</h2>
+                <p style={{ fontSize: '13px', color: '#555', margin: '0 0 2px 0' }}>Invoice ID: #{order.id.substring(0, 8)}</p>
+                <p style={{ fontSize: '13px', color: '#555', margin: '0 0 15px 0' }}>Date: {format(new Date(order.created_at), 'PPP')}</p>
+                <div style={companyInfo}>
+                  <p style={{ margin: '0' }}>Dropskey</p>
+                  <p style={{ margin: '0' }}>123 Digital Key Street</p>
+                  <p style={{ margin: '0' }}>Suite 456</p>
+                  <p style={{ margin: '0' }}>Tech City, TX 78701</p>
+                  <p style={{ margin: '0' }}>USA</p>
+                  <p style={{ margin: '0' }}>VAT Number: N/A</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-        {/* Green Invoice Header Bar */}
-        <div style={invoiceHeaderBar}>
-          <span>Invoice #{order.id.substring(0, 8)}</span>
-          <span>Paid</span>
-        </div>
+        {/* Green Invoice Header Bar - Removed as per new design */}
 
         {/* Details Section */}
         <div style={detailsSection}>
           <div style={detailsColumn}>
-            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Invoice Date</p>
-            <p>{format(new Date(order.created_at), 'EEEE, MMMM do, yyyy')}</p>
-            <p style={{ fontWeight: 'bold', marginTop: '15px', marginBottom: '5px' }}>PAID</p>
-            <p>{order.payment_gateway || 'N/A'} | {format(new Date(order.created_at), 'EEEE, MMMM do, yyyy')}</p>
+            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Billed To:</p>
+            <address style={addressStyle}>
+              {profile.company_name && <p style={{ fontWeight: 'bold', margin: '0' }}>{profile.company_name}</p>}
+              <p style={{ margin: '0' }}>{profile.first_name} {profile.last_name}</p>
+              <p style={{ margin: '0' }}>{profile.address_line_1}</p>
+              {profile.address_line_2 && <p style={{ margin: '0' }}>{profile.address_line_2}</p>}
+              <p style={{ margin: '0' }}>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
+              <p style={{ margin: '0' }}>{profile.country}</p>
+              {profile.vat_number && <p style={{ margin: '0' }}>VAT Number: {profile.vat_number}</p>}
+            </address>
           </div>
           <div style={detailsColumnRight}>
-            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Invoiced To</p>
-            <address style={addressStyle}>
-              {profile.company_name && <p style={{ fontWeight: 'bold' }}>{profile.company_name}</p>}
-              <p>{profile.first_name} {profile.last_name}</p>
-              <p>{profile.address_line_1}</p>
-              {profile.address_line_2 && <p>{profile.address_line_2}</p>}
-              <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
-              <p>{profile.country}</p>
-              {profile.vat_number && <p>VAT Number: {profile.vat_number}</p>}
-            </address>
+            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Payment Details:</p>
+            <p style={{ margin: '0' }}><strong>Method:</strong> {order.payment_gateway || 'N/A'}</p>
+            <p style={{ margin: '0' }}><strong>Status:</strong> <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>{order.status}</span></p>
+            <p style={{ margin: '0' }}><strong>Date:</strong> {format(new Date(order.created_at), 'PPP')}</p>
           </div>
         </div>
 
@@ -256,10 +260,10 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
         <table style={itemsTable}>
           <thead>
             <tr>
-              <th style={itemsTh}>Description</th>
-              <th style={itemsTh}></th> {/* Empty header for spacing */}
-              <th style={itemsTh}></th> {/* Empty header for spacing */}
-              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Total</th>
+              <th style={itemsTh}>Item</th>
+              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Qty</th>
+              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Unit Price</th>
+              <th style={{ ...itemsTh, textAlign: 'right' as const }}>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -268,41 +272,35 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
               return (
                 <tr key={index}>
                   <td style={itemsTd}>{product?.name || 'Unknown Product'}</td>
-                  <td style={itemsTd}></td>
-                  <td style={itemsTd}></td>
-                  <td style={itemsTdRight}>${(item.quantity * item.price_at_purchase).toFixed(2)} USD</td>
+                  <td style={itemsTdRight}>{item.quantity}</td>
+                  <td style={itemsTdRight}>${item.price_at_purchase.toFixed(2)}</td>
+                  <td style={itemsTdRight}>${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
                 </tr>
               );
             })}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontWeight: 'bold', borderTop: '1px solid #ddd' }}>Subtotal:</td>
+              <td style={{ ...itemsTdRight, fontWeight: 'bold', borderTop: '1px solid #ddd' }}>${order.total.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontWeight: 'bold' }}>Processing Fee (15%):</td>
+              <td style={{ ...itemsTdRight, fontWeight: 'bold' }}>${processingFee.toFixed(2)}</td>
+            </tr>
+            <tr style={{ backgroundColor: '#f8f8f8' }}>
+              <td colSpan={3} style={{ ...itemsTd, textAlign: 'right' as const, fontSize: '18px', fontWeight: 'bold', padding: '15px 8px' }}>TOTAL:</td>
+              <td style={{ ...itemsTdRight, fontSize: '18px', fontWeight: 'bold', padding: '15px 8px' }}>${finalTotal.toFixed(2)}</td>
+            </tr>
+          </tfoot>
         </table>
 
-        {/* Totals Section */}
-        <div style={totalsSection}>
-          <div style={totalRow}>
-            <span style={totalLabel}>Sub Total</span>
-            <span style={totalValue}>${order.total.toFixed(2)} USD</span>
-          </div>
-          <div style={totalRow}>
-            <span style={totalLabel}>15.00% Process Fees</span>
-            <span style={totalValue}>${processingFee.toFixed(2)} USD</span>
-          </div>
-          <div style={totalRow}>
-            <span style={totalLabel}>Credit</span>
-            <span style={totalValue}>$0.00 USD</span> {/* Placeholder for credit */}
-          </div>
-        </div>
-
-        {/* Final Total Bar */}
-        <div style={finalTotalBar}>
-          <span>Total</span>
-          <span>${finalTotal.toFixed(2)} USD</span>
-        </div>
+        {/* Final Total Bar - Removed as per new design */}
 
         {/* Footer */}
         <div style={footer}>
-          <p>Thank you for your business!</p>
-          <p>Dropskey | support@dropskey.com</p>
+          <p style={{ margin: '0 0 5px 0' }}>Thank you for your business!</p>
+          <p style={{ margin: '0' }}>Dropskey | support@dropskey.com</p>
         </div>
       </div>
     </div>
