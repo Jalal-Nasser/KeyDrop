@@ -17,28 +17,27 @@ interface CustomAttachment {
   Content: string;
   ContentType: string;
   ContentID?: string | null;
-  ContentEncoding?: 'base64' | 'None'; // Keep this as optional for our input
+  ContentEncoding: 'base64' | 'None'; // Keep this as optional for our input
 }
 
-export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Partial<CustomAttachment>[] }): Promise<any> { // Changed return type to Promise<any>
+export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Partial<CustomAttachment>[] }) {
   if (!process.env.POSTMARK_API_TOKEN) {
     console.error("POSTMARK_API_TOKEN is not set. Email will not be sent.");
     throw new Error("PostMark API token is not configured.");
   }
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map((rawAtt) => {
-    // Ensure all required properties are non-nullable strings by using ?? ''
-    // Removed redundant 'as string' casts
+    // Explicitly cast the entire object literal to CustomAttachment
     const att: CustomAttachment = {
       Name: rawAtt.Name ?? '',
       Content: rawAtt.Content ?? '',
       ContentType: rawAtt.ContentType ?? '',
       ContentID: rawAtt.ContentID,
       ContentEncoding: rawAtt.ContentEncoding ?? 'None',
-    };
+    } as CustomAttachment; // Explicit cast here
 
     let encodedContent = att.Content;
-    let encodingType = att.ContentEncoding; // Allow TypeScript to infer the type here
+    let encodingType = att.ContentEncoding;
 
     // If it's HTML, force base64 encoding for reliability
     if (att.ContentType === 'text/html' && encodingType === 'None') {
@@ -46,14 +45,14 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
-    const transformedAttachment: PostmarkAttachment = { // Cast to our local PostmarkAttachment type
+    const transformedAttachment: PostmarkAttachment = {
       Name: att.Name,
       Content: encodedContent,
       ContentType: att.ContentType,
       ContentID: att.ContentID === undefined ? null : att.ContentID,
       ContentEncoding: encodingType,
     };
-    return transformedAttachment as Models.Attachment; // Cast the array to Postmark's expected Models.Attachment[]
+    return transformedAttachment as Models.Attachment;
   });
 
   return postmarkClient.sendEmail({
