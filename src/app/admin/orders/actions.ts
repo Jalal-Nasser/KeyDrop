@@ -30,9 +30,10 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
         products (name),
         orders ( user_id, total, profiles (first_name) )
       `)
-      .single() as { data: UpdatedOrderItemResult | null, error: any };
+      .maybeSingle() as { data: UpdatedOrderItemResult | null, error: any };
 
-    if (itemUpdateError || !updatedItem) throw new Error(`Failed to update order item: ${itemUpdateError?.message}`)
+    if (itemUpdateError) throw new Error(`Failed to update order item: ${itemUpdateError?.message}`)
+    if (!updatedItem) throw new Error('Order item not found or could not be updated.');
 
     const { order_id, products, orders } = updatedItem;
     if (!products || !orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
