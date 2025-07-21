@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 
@@ -9,6 +10,10 @@ const corsHeaders = {
 // Helper functions to create different embeds
 function createNewOrderEmbed(orderId: string, cartTotal: number, userEmail: string, cartItems: any[]) {
   const itemDetails = cartItems.map((item: any) => `- ${item.name} (x${item.quantity})`).join('\n')
+  
+  // Get the image from the first product, if available
+  const firstProductImage = cartItems.length > 0 && cartItems[0].image ? cartItems[0].image : null;
+
   return {
     title: "New Order Received! 🚀",
     description: `A new order has been placed and is pending fulfillment.`,
@@ -19,6 +24,7 @@ function createNewOrderEmbed(orderId: string, cartTotal: number, userEmail: stri
       { name: "Customer Email", value: userEmail, inline: false },
       { name: "Items", value: itemDetails || "No items listed.", inline: false }
     ],
+    thumbnail: firstProductImage ? { url: firstProductImage } : undefined, // Add thumbnail if image exists
     timestamp: new Date().toISOString(),
     footer: { text: "Dropskey Store" }
   };

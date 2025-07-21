@@ -67,7 +67,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
         orderId: orderId,
         cartTotal: cartTotal,
         userEmail: user.email,
-        cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity })) // Only send necessary info
+        cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity, image: item.image })) // Include product image
       }
     })
 
