@@ -141,7 +141,7 @@ export type Database = {
           quantity: number
           price_at_purchase: number
           product_key: string | null // Added
-          products: Database['public']['Tables']['products']['Row'] | null; // Corrected: now a single product object
+          products: Database['public']['Tables']['products']['Row'][] | null; // Corrected: now an array of product objects
         }
         Insert: {
           id?: string
