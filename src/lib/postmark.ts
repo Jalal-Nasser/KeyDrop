@@ -8,7 +8,7 @@ interface Attachment {
   Content: string;
   ContentType: string;
   ContentID?: string | null;
-  ContentEncoding?: 'base64' | 'None'; // Added this property to fix TS errors
+  ContentEncoding?: 'base64' | 'None'; // This property is crucial
 }
 
 export async function sendMail({ to, subject, html, attachments }: { to: string, subject: string, html: string, attachments?: Attachment[] }) {
@@ -19,7 +19,9 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
 
   const postmarkAttachments: Models.Attachment[] | undefined = attachments?.map(att => {
     let encodedContent = att.Content;
-    let encodingType: Models.Attachment["ContentEncoding"] = att.ContentEncoding || "None";
+    // Explicitly cast to Models.Attachment["ContentEncoding"] | undefined to satisfy the type system
+    // and use nullish coalescing for safety.
+    let encodingType: Models.Attachment["ContentEncoding"] = (att.ContentEncoding as Models.Attachment["ContentEncoding"] | undefined) ?? "None";
 
     // If encoding is explicitly 'base64' or if it's HTML and we want to force base64
     if (encodingType === 'base64' || att.ContentType === 'text/html') {
@@ -28,6 +30,9 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       encodingType = 'base64';
     }
 
+    // The target type is Models.Attachment, which *does* have ContentEncoding.
+    // The error TS2353 is likely a red herring if TS2339 is the primary issue.
+    // Ensuring `encodingType` is correctly typed should resolve both.
     const transformedAttachment: Models.Attachment = {
       Name: att.Name,
       Content: encodedContent,
@@ -39,11 +44,11 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
   });
 
   return postmarkClient.sendEmail({
-    From: 'admin@dropskey.com', // Using a verified sender email
+    From: 'admin@dropskey.com',
     To: to,
     Subject: subject,
     HtmlBody: html,
     Attachments: postmarkAttachments,
-    MessageStream: "outbound" // Use 'outbound' for transactional emails
+    MessageStream: "outbound"
   });
 }

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { format } from "date-fns";
 
 interface Product {
   name: string;
@@ -64,10 +65,12 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
   const orderRowsHtml = order.order_items.map(item => {
     const productName = item.products?.[0]?.name || 'Product';
     const lineTotal = (item.quantity * item.price_at_purchase).toFixed(2);
-    return `<tr>
+    return `
+    <tr>
       <td>${productName}</td>
       <td>$${lineTotal}</td>
-    </tr>`;
+    </tr>
+    `;
   }).join('');
 
   return (
@@ -162,7 +165,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
       </div>
     </div>
 
-    <div class="header-strip">Invoice - Paid</div>
+    <div class="header-strip">Invoice #${order.id.substring(0, 8)} - ${order.status.toUpperCase()}</div>
 
     <div class="section">
       <div class="invoice-info">
