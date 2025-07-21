@@ -59,159 +59,157 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
     `${profile.city || ''}, ${profile.state_province_region || ''} ${profile.postal_code || ''}`.trim(),
     profile.country,
     profile.vat_number ? `VAT Number: ${profile.vat_number}` : null,
-  ].filter(Boolean).map(line => `<div>${line}</div>`).join('');
-
-  // Compose table rows for order items
-  const orderRowsHtml = order.order_items.map(item => {
-    const productName = item.products?.[0]?.name || 'Product';
-    const lineTotal = (item.quantity * item.price_at_purchase).toFixed(2);
-    return `
-    <tr>
-      <td>${productName}</td>
-      <td>$${lineTotal}</td>
-    </tr>
-    `;
-  }).join('');
+  ].filter(Boolean);
 
   return (
-    <>
-      {`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Invoice - Dropskey LTD</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      color: #333;
-      background: #f8f8f8;
-    }
-    .invoice-box {
-      max-width: 900px;
-      margin: auto;
-      padding: 30px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .top-logo {
-      width: 200px;
-    }
-    .invoice-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-    }
-    .header-strip {
-      background-color: #3cdd8e;
-      padding: 20px;
-      text-align: center;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-    }
-    .section {
-      margin-top: 30px;
-    }
-    .section h3 {
-      margin-bottom: 10px;
-      color: #444;
-    }
-    .address, .invoice-info {
-      display: inline-block;
-      vertical-align: top;
-      width: 48%;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    table, th, td {
-      border: 1px solid #eaeaea;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-    }
-    th {
-      background: #f3f3f3;
-    }
-    .total {
-      font-weight: bold;
-      background: #f9f9f9;
-    }
-    .footer-total {
-      background: #3cdd8e;
-      color: white;
-      text-align: right;
-      padding: 15px;
-      font-size: 18px;
-    }
-  </style>
-</head>
-<body>
-  <div class="invoice-box">
-    <div class="invoice-header">
-      <img src="https://i.imgur.com/dcJe2iS.png" alt="Dropskey LTD" class="top-logo">
-      <div style="text-align: right;">
-        <strong>Dropskey LTD</strong><br>
-        4283 Express Lane<br>
-        Suite 193-395<br>
-        Sarasota, FL 34249<br>
-        VAT Number: 20115192
-      </div>
-    </div>
+    <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <title>Invoice - Dropskey LTD</title>
+        <style>
+          {`
+            body {
+              font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+              margin: 0;
+              padding: 0;
+              color: #333;
+              background: #f8f8f8;
+            }
+            .invoice-box {
+              max-width: 900px;
+              margin: auto;
+              padding: 30px;
+              background: #fff;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .top-logo {
+              width: 200px;
+            }
+            .invoice-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-bottom: 20px;
+            }
+            .header-strip {
+              background-color: #3cdd8e;
+              padding: 20px;
+              text-align: center;
+              color: white;
+              font-size: 24px;
+              font-weight: bold;
+            }
+            .section {
+              margin-top: 30px;
+            }
+            .section h3 {
+              margin-bottom: 10px;
+              color: #444;
+            }
+            .address, .invoice-info {
+              display: inline-block;
+              vertical-align: top;
+              width: 48%;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            table, th, td {
+              border: 1px solid #eaeaea;
+            }
+            th, td {
+              padding: 12px;
+              text-align: left;
+            }
+            th {
+              background: #f3f3f3;
+            }
+            .total {
+              font-weight: bold;
+              background: #f9f9f9;
+            }
+            .footer-total {
+              background: #3cdd8e;
+              color: white;
+              text-align: right;
+              padding: 15px;
+              font-size: 18px;
+            }
+          `}
+        </style>
+      </head>
+      <body>
+        <div className="invoice-box">
+          <div className="invoice-header">
+            <img src="https://i.imgur.com/dcJe2iS.png" alt="Dropskey LTD" className="top-logo" />
+            <div style={{ textAlign: 'right' }}>
+              <strong>Dropskey LTD</strong><br />
+              4283 Express Lane<br />
+              Suite 193-395<br />
+              Sarasota, FL 34249<br />
+              VAT Number: 20115192
+            </div>
+          </div>
 
-    <div class="header-strip">Invoice #${order.id.substring(0, 8)} - ${order.status.toUpperCase()}</div>
+          <div className="header-strip">Invoice #{order.id.substring(0, 8)} - {order.status.toUpperCase()}</div>
 
-    <div class="section">
-      <div class="invoice-info">
-        <h3>Invoice Date</h3>
-        <p><strong>Status: PAID</strong><br>
-        ${invoiceDate}
-        </p>
-      </div>
-      <div class="address">
-        <h3>Invoiced To</h3>
-        <p>${clientAddressLines}</p>
-      </div>
-    </div>
+          <div className="section">
+            <div className="invoice-info">
+              <h3>Invoice Date</h3>
+              <p><strong>Status: PAID</strong><br />
+              {invoiceDate}
+              </p>
+            </div>
+            <div className="address">
+              <h3>Invoiced To</h3>
+              {clientAddressLines.map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+            </div>
+          </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${orderRowsHtml}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td class="total">Sub Total</td>
-          <td class="total">$${order.total.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td class="total">Fees</td>
-          <td class="total">$${processingFee.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td class="total">Credit</td>
-          <td class="total">$${credit.toFixed(2)}</td>
-        </tr>
-      </tfoot>
-    </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {order.order_items.map((item, index) => {
+                const productName = item.products?.[0]?.name || 'Product';
+                const lineTotal = (item.quantity * item.price_at_purchase).toFixed(2);
+                return (
+                  <tr key={index}>
+                    <td>{productName}</td>
+                    <td>${lineTotal}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td className="total">Sub Total</td>
+                <td className="total">${order.total.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td className="total">Fees</td>
+                <td className="total">${processingFee.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td className="total">Credit</td>
+                <td className="total">${credit.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
 
-    <div class="footer-total">
-      Total: $${finalTotal.toFixed(2)}
-    </div>
-  </div>
-</body>
-</html>`}
-    </>
+          <div className="footer-total">
+            Total: ${finalTotal.toFixed(2)}
+          </div>
+        </div>
+      </body>
+    </html>
   );
 };
