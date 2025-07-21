@@ -6,6 +6,7 @@ import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
 import { sendOrderConfirmation } from "@/lib/email-actions"
+import { createClient } from '@supabase/supabase-js' // Import createClient
 
 interface PayPalCartButtonProps {
   cartTotal: number
@@ -81,7 +82,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
           .from("orders")
           .insert({
             user_id: session.user.id,
-            status: "pending", // Changed from "completed"
+            status: "pending",
             total: cartTotal,
             payment_gateway: "paypal",
             payment_id: details.id,
@@ -115,6 +116,27 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
             success: 'Confirmation email sent!',
             error: 'Failed to send confirmation email.',
           });
+
+          // Invoke Discord notification for PayPal orders
+          const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+          )
+          const { data: discordData, error: discordError } = await supabaseAdmin.functions.invoke('discord-order-notification', {
+            body: {
+              notificationType: 'new_order',
+              orderId: orderData.id,
+              cartTotal: cartTotal,
+              userEmail: session.user.email,
+              cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity, image: item.image }))
+            }
+          })
+
+          if (discordError) {
+            console.error("Error invoking Discord notification function for PayPal order:", discordError)
+          } else {
+            console.log("Discord notification function invoked for PayPal order:", discordData)
+          }
         }
       }
     } else {
