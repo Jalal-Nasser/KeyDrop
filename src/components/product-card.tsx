@@ -61,7 +61,7 @@ export function ProductCard({ product }: ProductCardProps) {
           SALE {product.sale_percent}%
         </div>
       )}
-      <Link href={`/product/${product.id}`} className="relative block h-64 w-full overflow-hidden flex items-center justify-center bg-white">
+      <Link href={`/product/${product.id}`} className="relative block h-64 w-full overflow-hidden flex items-center justify-center bg-card">
         <Image
           src={imagePath}
           alt={product.name}
@@ -77,10 +77,10 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </Link>
         </CardTitle>
-        <div className="text-gray-700 font-bold text-xl">
+        <div className="text-foreground font-bold text-xl">
           {product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined ? (
             <>
-              <span className="line-through text-gray-400 text-base mr-2">${originalPrice}</span>
+              <span className="line-through text-muted-foreground text-base mr-2">${originalPrice}</span>
               <span className="text-blue-600">${displayPrice}</span>
             </>
           ) : (

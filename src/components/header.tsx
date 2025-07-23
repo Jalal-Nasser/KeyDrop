@@ -50,7 +50,7 @@ export function Header({ className }: { className?: string }) {
   return (
     <header className={className}>
       {/* Top white section with logo and user actions */}
-      <div className="bg-white py-4 border-b border-gray-100">
+      <div className="bg-background py-4 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Logo */}
@@ -68,7 +68,7 @@ export function Header({ className }: { className?: string }) {
                 <div className="text-2xl font-bold" style={{ color: "#1e73be" }}> {/* Reverted to single blue color */}
                   Dropskey
                 </div>
-                <div className="text-xs text-gray-500 flex items-center">
+                <div className="text-xs text-muted-foreground flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
                   Verified Digital Key Store
                 </div>
@@ -77,7 +77,7 @@ export function Header({ className }: { className?: string }) {
 
             {/* Right side - Business info and user actions */}
             <div className="flex items-center gap-x-4"> {/* Changed space-x-8 to gap-x-4 */}
-              <div className="hidden lg:flex items-center space-x-6 text-sm text-gray-600">
+              <div className="hidden lg:flex items-center space-x-6 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <Globe className="w-4 h-4" />
                   <span>Mon - Fri 8:00 Am - 6:00 Pm Sat - Sat Closed</span>
@@ -88,8 +88,8 @@ export function Header({ className }: { className?: string }) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-x-2 text-sm text-gray-600"> {/* Changed space-x-3 to gap-x-2 */}
-                <Link href="/wishlist" className="hidden lg:flex items-center gap-x-1 hover:text-blue-600 relative">
+              <div className="flex items-center gap-x-2 text-sm text-muted-foreground"> {/* Changed space-x-3 to gap-x-2 */}
+                <Link href="/wishlist" className="hidden lg:flex items-center gap-x-1 hover:text-primary relative">
                   <Heart className="w-4 h-4" />
                   <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
                   {wishlistCount > 0 && (
@@ -98,20 +98,20 @@ export function Header({ className }: { className?: string }) {
                     </span>
                   )}
                 </Link>
-                <span className="text-gray-300 hidden sm:inline">|</span> {/* Hide separator on very small screens */}
+                <span className="text-border hidden sm:inline">|</span> {/* Hide separator on very small screens */}
                 {session ? (
-                  <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-blue-600">
+                  <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">Account</span> {/* Hide text on very small screens */}
                   </Link>
                 ) : (
-                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center gap-x-1 text-red-600 hover:text-blue-600">
+                  <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">Sign In</span> {/* Hide text on very small screens */}
                   </button>
                 )}
-                <span className="text-gray-300">|</span>
-                <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center gap-x-1 hover:text-blue-600 relative">
+                <span className="text-border">|</span>
+                <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center gap-x-1 hover:text-primary relative">
                   <ShoppingCart className="w-4 h-4" />
                   <div className="flex flex-col items-end leading-none"> {/* Stack cart text and total */}
                     <span>Cart</span>
@@ -179,7 +179,7 @@ export function Header({ className }: { className?: string }) {
       <StoreNotice />
 
       {/* White banner below the red Store Notice */}
-      <div style={{ height: 40, background: 'white' }} />
+      <div className="bg-background" style={{ height: 40 }} />
 
       {/* Mobile menu */}
       {isMenuOpen && (

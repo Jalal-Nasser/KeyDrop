@@ -47,8 +47,8 @@ export function ProductQuickView({ product }: ProductQuickViewProps) {
   const imagePath = getImagePath(product.image);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-      <div className="relative h-64 w-full bg-white rounded-lg overflow-hidden flex items-center justify-center border">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-card">
+      <div className="relative h-64 w-full bg-card rounded-lg overflow-hidden flex items-center justify-center border">
         <Image
           src={imagePath}
           alt={product.name}
@@ -58,11 +58,11 @@ export function ProductQuickView({ product }: ProductQuickViewProps) {
         />
       </div>
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
-        <div className="text-gray-700 font-bold text-2xl">
+        <h2 className="text-2xl font-bold text-foreground">{product.name}</h2>
+        <div className="text-foreground font-bold text-2xl">
           {product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined ? (
             <>
-              <span className="line-through text-gray-400 text-lg mr-2">${originalPrice}</span>
+              <span className="line-through text-muted-foreground text-lg mr-2">${originalPrice}</span>
               <span className="text-blue-600">${displayPrice}</span>
             </>
           ) : (

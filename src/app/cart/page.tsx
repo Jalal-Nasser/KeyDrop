@@ -54,7 +54,7 @@ export default function CartPage() {
 
   if (cartCount === 0) {
     return (
-      <div className="container mx-auto text-center py-20">
+      <div className="container mx-auto text-center py-20 bg-background">
         <h1 className="text-2xl font-bold mb-4">Your Cart is Empty</h1>
         <p className="text-muted-foreground mb-8">Looks like you haven't added anything to your cart yet.</p>
         <Button asChild>
@@ -68,12 +68,12 @@ export default function CartPage() {
   const finalCartTotal = cartTotal + processingFee
 
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-8">
         <Stepper step={1} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           <div className="lg:col-span-2">
-            <div className="border rounded-lg p-6">
+            <div className="border rounded-lg p-6 bg-card">
               <div className="hidden md:grid md:grid-cols-5 gap-4 font-semibold text-muted-foreground uppercase text-sm mb-4">
                 <div className="col-span-2">Product</div>
                 <div>Price</div>
@@ -85,7 +85,7 @@ export default function CartPage() {
                 {cartItems.map(item => (
                   <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                     <div className="col-span-2 flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-md overflow-hidden border bg-white flex-shrink-0">
+                      <div className="relative h-20 w-20 rounded-md overflow-hidden border bg-card flex-shrink-0">
                         <Image src={getImagePath(item.image)} alt={item.name} fill sizes="80px" className="object-contain p-1" />
                       </div>
                       <div>
@@ -143,7 +143,7 @@ export default function CartPage() {
                 </Button>
               </CardContent>
             </Card>
-            <div className="border rounded-lg p-6 text-center">
+            <div className="border rounded-lg p-6 text-center bg-card">
               <p className="font-semibold text-sm uppercase text-muted-foreground">Guaranteed Safe Checkout</p>
               <div className="flex justify-center items-center gap-4 mt-4 text-muted-foreground">
                 <ShieldCheck />

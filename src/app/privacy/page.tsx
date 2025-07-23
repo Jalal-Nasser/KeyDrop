@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-muted/40 min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+    <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-20 md:py-28 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div>
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Content Section */}
-      <section className="container mx-auto px-4 py-16 md:py-20">
+      <section className="container mx-auto px-4 py-16 md:py-20 bg-background">
         <div className="max-w-4xl mx-auto space-y-10">
           <Card className="shadow-lg">
             <CardHeader>
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
                 <Lock className="h-6 w-6 text-blue-600" /> Introduction
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 At Dropskey, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website dropskey.com, including any other media form, media channel, mobile website, or mobile application related or connected thereto (collectively, the "Site"). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.
               </p>
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
                 <Info className="h-6 w-6 text-blue-600" /> Information We Collect
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p className="font-semibold">Personal Data:</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
                 <li>Name, email address, billing address, and payment information when you make a purchase.</li>
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
                 <Share2 className="h-6 w-6 text-blue-600" /> How We Use Your Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:
               </p>
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
                 <ShieldCheck className="h-6 w-6 text-blue-600" /> Data Security
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
               </p>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
                 <Mail className="h-6 w-6 text-blue-600" /> Contact Us
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 If you have questions or comments about this Privacy Policy, please contact us at support@dropskey.com.
               </p>

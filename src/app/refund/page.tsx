@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RefundPage() {
   return (
-    <div className="bg-muted/40 min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+    <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-20 md:py-28 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div>
@@ -18,7 +18,7 @@ export default function RefundPage() {
       </section>
 
       {/* Content Section */}
-      <section className="container mx-auto px-4 py-16 md:py-20">
+      <section className="container mx-auto px-4 py-16 md:py-20 bg-background">
         <div className="max-w-4xl mx-auto space-y-10">
           <Card className="shadow-lg">
             <CardHeader>
@@ -26,7 +26,7 @@ export default function RefundPage() {
                 <RefreshCcw className="h-6 w-6 text-blue-600" /> Overview
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 Thank you for shopping at Dropskey. We understand that sometimes a digital product may not meet your expectations or might encounter issues. This policy outlines the conditions under which refunds and returns are processed for digital goods purchased from our website.
               </p>
@@ -42,7 +42,7 @@ export default function RefundPage() {
                 <DollarSign className="h-6 w-6 text-blue-600" /> Eligibility for Refund
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>A refund may be considered under the following circumstances:</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
                 <li>
@@ -64,7 +64,7 @@ export default function RefundPage() {
                 <HelpCircle className="h-6 w-6 text-blue-600" /> Non-Refundable Situations
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>Refunds will generally NOT be issued for:</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
                 <li>Change of mind after the key has been delivered.</li>
@@ -83,7 +83,7 @@ export default function RefundPage() {
                 <Mail className="h-6 w-6 text-blue-600" /> How to Request a Refund
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 To request a refund, please contact our support team at support@dropskey.com within the eligible timeframe. You must provide:
               </p>
@@ -105,7 +105,7 @@ export default function RefundPage() {
                 <DollarSign className="h-6 w-6 text-blue-600" /> Processing Refunds
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 If your refund request is approved, the refund will be processed, and a credit will automatically be applied to your original method of payment, within a certain amount of days. Please note that it may take some time for your bank or credit card company to post the refund.
               </p>
@@ -118,7 +118,7 @@ export default function RefundPage() {
                 <Mail className="h-6 w-6 text-blue-600" /> Contact Us
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-700">
+            <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 If you have any questions about our Refund and Returns Policy, please contact us at support@dropskey.com.
               </p>

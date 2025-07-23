@@ -62,19 +62,22 @@ const Stepper = ({ step }: { step: number }) => {
       <div className="flex items-center justify-between w-full max-w-md">
         {steps.map((name, index) => (
           <React.Fragment key={name}>
-            <div className="flex flex-col items-center text-center">
+            <div
+              className={`flex flex-col items-center text-center transition-all duration-300
+                ${index + 1 === step ? "text-primary" : "text-muted-foreground"}`}
+            >
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300
+                className={`flex items-center justify-center w-8 h-8 rounded-full text-lg font-bold transition-all duration-300
                   ${index + 1 === step
-                    ? "bg-blue-600 text-white shadow-md scale-110"
-                    : "bg-gray-200 text-gray-600"
+                    ? "bg-primary text-primary-foreground shadow-md scale-110"
+                    : "bg-muted text-muted-foreground"
                   }`}
               >{index + 1}</div>
               <p className={`mt-2 text-sm transition-colors duration-300
-                ${index + 1 === step ? "font-semibold text-blue-600" : "text-muted-foreground"}`}
+                ${index + 1 === step ? "font-semibold text-primary" : "text-muted-foreground"}`}
               >{name}</p>
             </div>
-            {index < steps.length - 1 && <div className="flex-1 h-px bg-gray-300 mx-2" />}
+            {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
           </React.Fragment>
         ))}
       </div>
@@ -159,13 +162,13 @@ export default function CheckoutPage() {
   const finalCartTotal = cartTotal + processingFee
   
   if (cartCount === 0) {
-    return <div className="container mx-auto text-center py-20"><p>Your cart is empty.</p></div>
+    return <div className="container mx-auto text-center py-20 bg-background"><p>Your cart is empty.</p></div>
   }
 
   if (session) {
     if (isLoadingProfile) {
       return (
-        <div className="container mx-auto flex justify-center items-center py-20">
+        <div className="container mx-auto flex justify-center items-center py-20 bg-background">
           <Loader2 className="h-8 w-8 animate-spin" />
           <p className="ml-4">Loading your details...</p>
         </div>
@@ -178,7 +181,7 @@ export default function CheckoutPage() {
         .map(f => f.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
 
       return (
-        <div className="container mx-auto py-20">
+        <div className="container mx-auto py-20 bg-background">
           <Card className="max-w-lg mx-auto shadow-lg rounded-lg">
             <CardHeader>
               <CardTitle>Complete Your Profile to Continue</CardTitle>
@@ -200,7 +203,7 @@ export default function CheckoutPage() {
     }
 
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+      <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
         <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
           <div className="absolute inset-0 bg-black/20 z-0"></div>
           <div className="container mx-auto px-4 relative z-10">
@@ -224,7 +227,7 @@ export default function CheckoutPage() {
                     {cartItems.map(item => (
                       <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                         <div className="flex items-center gap-4">
-                          <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white flex-shrink-0">
+                          <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-card flex-shrink-0">
                             <Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" />
                           </div>
                           <div>
@@ -359,7 +362,7 @@ export default function CheckoutPage() {
 
   // Guest user view remains the same
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-white min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+    <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 md:py-20 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -435,7 +438,7 @@ export default function CheckoutPage() {
                   {cartItems.map(item => (
                     <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                       <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-white"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-card"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
                       <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>

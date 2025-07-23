@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function AboutPage() {
   return (
-    <div className="bg-muted/40 min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
+    <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-700 to-blue-900 text-white py-20 md:py-28 text-center overflow-hidden">
         <div className="absolute inset-0 bg-black/20 z-0"></div> {/* Subtle overlay */}
@@ -20,10 +20,10 @@ export default function AboutPage() {
       </section>
 
       {/* Our Story Section */}
-      <section className="container mx-auto px-4 py-16 md:py-20">
+      <section className="container mx-auto px-4 py-16 md:py-20 bg-background">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl font-bold text-foreground mb-4">Our Story</h2>
+          <p className="text-lg text-muted-foreground">
             Born from a passion for technology and a commitment to accessibility, Dropskey was founded to simplify the acquisition of essential digital keys and software licenses. We understand the challenges businesses and individuals face in navigating complex software markets, and we're here to offer a clear, reliable path.
           </p>
         </div>
@@ -35,7 +35,7 @@ export default function AboutPage() {
               <CardTitle>Our Vision</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 To be the leading global provider of digital keys, recognized for our unparalleled selection, instant delivery, and unwavering commitment to customer satisfaction. We envision a world where digital tools are easily accessible to everyone.
               </p>
             </CardContent>
@@ -46,7 +46,7 @@ export default function AboutPage() {
               <CardTitle>Our Mission</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 Our mission is to empower individuals and businesses by providing a secure, efficient, and user-friendly platform for purchasing authentic digital software licenses and keys, ensuring they have the tools they need to thrive.
               </p>
             </CardContent>
@@ -55,11 +55,11 @@ export default function AboutPage() {
       </section>
 
       {/* Our Values Section */}
-      <section className="bg-white py-16 md:py-20">
+      <section className="bg-card py-16 md:py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Core Values</h2>
-            <p className="text-lg text-gray-600">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Our Core Values</h2>
+            <p className="text-lg text-muted-foreground">
               These principles guide every decision we make and every interaction we have.
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function AboutPage() {
                 <CardTitle>Trust & Transparency</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700">
+                <p className="text-muted-foreground">
                   We build lasting relationships through honesty, clear communication, and reliable service.
                 </p>
               </CardContent>
@@ -81,7 +81,7 @@ export default function AboutPage() {
                 <CardTitle>Quality & Excellence</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700">
+                <p className="text-muted-foreground">
                   We are committed to offering only the highest quality products and services.
                 </p>
               </CardContent>
@@ -92,7 +92,7 @@ export default function AboutPage() {
                 <CardTitle>Customer Focus</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700">
+                <p className="text-muted-foreground">
                   Your needs are at the heart of everything we do. We strive to exceed expectations.
                 </p>
               </CardContent>
@@ -102,10 +102,10 @@ export default function AboutPage() {
       </section>
 
       {/* Why Choose Us - Reiteration of key benefits */}
-      <section className="container mx-auto px-4 py-16 md:py-20">
+      <section className="container mx-auto px-4 py-16 md:py-20 bg-background">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Dropskey?</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl font-bold text-foreground mb-4">Why Dropskey?</h2>
+          <p className="text-lg text-muted-foreground">
             Experience the difference with a partner dedicated to your digital success.
           </p>
         </div>
@@ -116,7 +116,7 @@ export default function AboutPage() {
               <CardTitle>Guaranteed Authenticity</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 All our digital keys and software licenses are 100% genuine and verified.
               </p>
             </CardContent>
@@ -127,7 +127,7 @@ export default function AboutPage() {
               <CardTitle>Instant Delivery</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 Receive your digital products immediately after purchase, no waiting.
               </p>
             </CardContent>
@@ -138,7 +138,7 @@ export default function AboutPage() {
               <CardTitle>Dedicated Support</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
+              <p className="text-muted-foreground">
                 Our expert team is available to assist you with any questions or issues.
               </p>
             </CardContent>
