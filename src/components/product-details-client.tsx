@@ -38,7 +38,7 @@
 
       return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="relative h-96 w-full bg-white rounded-lg overflow-hidden flex items-center justify-center border">
+          <div className="relative h-96 w-full bg-background rounded-lg overflow-hidden flex items-center justify-center border">
             <Image
               src={imagePath}
               alt={product.name}

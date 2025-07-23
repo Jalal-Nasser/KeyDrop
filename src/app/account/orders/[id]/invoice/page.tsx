@@ -62,12 +62,12 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const profile = order.profiles?.[0];
 
   return (
-    <div className="container mx-auto p-4 py-8 print:p-0">
+    <div className="container mx-auto p-4 py-8 print:p-0 bg-background">
       <Suspense fallback={null}>
         <AutoPrinter />
       </Suspense>
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none print:border-none">
-        <div className="p-8 border-b border-gray-200">
+      <div className="max-w-3xl mx-auto bg-card shadow-lg rounded-lg overflow-hidden print:shadow-none print:border-none">
+        <div className="p-8 border-b border-border">
           <InvoiceActions />
           <div className="flex justify-between items-center">
             <div>
@@ -77,21 +77,21 @@ export default async function InvoicePage({ params }: { params: { id: string } }
                 </div>
                 <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>
               </div>
-              <p className="text-sm text-gray-600">Verified Digital Key Store</p>
+              <p className="text-sm text-muted-foreground">Verified Digital Key Store</p>
             </div>
             <div className="text-right">
-              <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
-              <p className="text-sm text-gray-600">Invoice ID: {order.id.substring(0, 8)}</p>
-              <p className="text-sm text-gray-600">Date: {format(new Date(order.created_at), 'PPP')}</p>
+              <h2 className="text-2xl font-bold text-foreground">INVOICE</h2>
+              <p className="text-sm text-muted-foreground">Invoice ID: {order.id.substring(0, 8)}</p>
+              <p className="text-sm text-muted-foreground">Date: {format(new Date(order.created_at), 'PPP')}</p>
             </div>
           </div>
         </div>
 
         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-800">Billed To:</h3>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">Billed To:</h3>
             {profile ? (
-              <address className="not-italic text-gray-700">
+              <address className="not-italic text-muted-foreground">
                 <p className="font-medium">{profile.first_name} {profile.last_name}</p>
                 {profile.company_name && <p>{profile.company_name}</p>}
                 <p>{profile.address_line_1}</p>
@@ -101,55 +101,55 @@ export default async function InvoicePage({ params }: { params: { id: string } }
                 {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
               </address>
             ) : (
-              <p className="text-gray-700">Customer details not available.</p>
+              <p className="text-muted-foreground">Customer details not available.</p>
             )}
           </div>
           <div className="text-right md:text-left">
-            <h3 className="text-lg font-semibold mb-2 text-gray-800">Payment Details:</h3>
-            <p className="text-gray-700"><strong>Method:</strong> {order.payment_gateway || 'N/A'}</p>
-            {order.payment_id && <p className="text-gray-700"><strong>Transaction ID:</strong> {order.payment_id}</p>}
-            <p className="text-gray-700"><strong>Status:</strong> <span className="font-medium capitalize">{order.status}</span></p>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">Payment Details:</h3>
+            <p className="text-muted-foreground"><strong>Method:</strong> {order.payment_gateway || 'N/A'}</p>
+            {order.payment_id && <p className="text-muted-foreground"><strong>Transaction ID:</strong> {order.payment_id}</p>}
+            <p className="text-muted-foreground"><strong>Status:</strong> <span className="font-medium capitalize">{order.status}</span></p>
           </div>
         </div>
 
         <div className="p-8">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-300">
-                <th className="py-2 text-gray-800">Item</th>
-                <th className="py-2 text-right text-gray-800">Qty</th>
-                <th className="py-2 text-right text-gray-800">Unit Price</th>
-                <th className="py-2 text-right text-gray-800">Amount</th>
+              <tr className="border-b border-border">
+                <th className="py-2 text-foreground">Item</th>
+                <th className="py-2 text-right text-foreground">Qty</th>
+                <th className="py-2 text-right text-foreground">Unit Price</th>
+                <th className="py-2 text-right text-foreground">Amount</th>
               </tr>
             </thead>
             <tbody>
               {order.order_items.map((item) => (
-                <tr key={item.id} className="border-b border-gray-100">
-                  <td className="py-3 text-gray-700">{item.products?.[0]?.name || `Product ${item.product_id}`}</td>
-                  <td className="py-3 text-right text-gray-700">{item.quantity}</td>
-                  <td className="py-3 text-right text-gray-700">${item.price_at_purchase.toFixed(2)}</td>
-                  <td className="py-3 text-right text-gray-700">${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
+                <tr key={item.id} className="border-b border-border">
+                  <td className="py-3 text-muted-foreground">{item.products?.[0]?.name || `Product ${item.product_id}`}</td>
+                  <td className="py-3 text-right text-muted-foreground">{item.quantity}</td>
+                  <td className="py-3 text-right text-muted-foreground">${item.price_at_purchase.toFixed(2)}</td>
+                  <td className="py-3 text-right text-muted-foreground">${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t border-gray-300">
-                <td colSpan={3} className="py-3 text-right font-semibold text-gray-800">Subtotal:</td>
-                <td className="py-3 text-right font-semibold text-gray-800">${order.total.toFixed(2)}</td>
+              <tr className="border-t border-border">
+                <td colSpan={3} className="py-3 text-right font-semibold text-foreground">Subtotal:</td>
+                <td className="py-3 text-right font-semibold text-foreground">${order.total.toFixed(2)}</td>
               </tr>
               <tr>
-                <td colSpan={3} className="py-3 text-right font-semibold text-gray-800">Processing Fee (15%):</td>
-                <td className="py-3 text-right font-semibold text-gray-800">${processingFee.toFixed(2)}</td>
+                <td colSpan={3} className="py-3 text-right font-semibold text-foreground">Processing Fee (15%):</td>
+                <td className="py-3 text-right font-semibold text-foreground">${processingFee.toFixed(2)}</td>
               </tr>
-              <tr className="bg-gray-50">
-                <td colSpan={3} className="py-4 text-right text-xl font-bold text-gray-900">TOTAL:</td>
-                <td className="py-4 text-right text-xl font-bold text-gray-900">${finalTotal.toFixed(2)}</td>
+              <tr className="bg-muted">
+                <td colSpan={3} className="py-4 text-right text-xl font-bold text-foreground">TOTAL:</td>
+                <td className="py-4 text-right text-xl font-bold text-foreground">${finalTotal.toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
         </div>
 
-        <div className="p-8 bg-gray-50 text-center text-gray-600 text-sm">
+        <div className="p-8 bg-muted text-center text-muted-foreground text-sm">
           <p>Thank you for your business!</p>
           <p>If you have any questions, please contact us at support@dropskey.com</p>
           <p className="mt-4">Dropskey | +1 (310) 777 8808 | +1 (310) 888 7708</p>

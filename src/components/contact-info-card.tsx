@@ -5,7 +5,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react"
 
 export function ContactInfoCard() {
   return (
-    <Card className="h-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+    <Card className="h-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-card">
       <CardHeader>
         <CardTitle>Our Contact Details</CardTitle>
       </CardHeader>

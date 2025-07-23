@@ -24,10 +24,10 @@ export function HeroSlider() {
 	return (
 		<section className="relative py-0 overflow-hidden w-full">
 			{/* Main slider container */}
-			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-white">
+			<div className="relative w-full h-[250px] sm:h-[400px] md:h-[500px] lg:h-[667px] overflow-hidden bg-background">
 				{/* Image */}
 				<Image
-					src={slides[currentSlide].image || "/placeholder.svg"}
+					src={slides[currentSlide].image || "/placeholder.png"}
 					alt={slides[currentSlide].caption}
 					fill
 					sizes="100vw"
