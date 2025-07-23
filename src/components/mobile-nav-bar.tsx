@@ -19,8 +19,12 @@ export function MobileNavBar({ className }: { className?: string }) {
     { href: "/shop", label: "Shop", icon: ShoppingBag },
     { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount }, // Use actual wishlist count
     { href: "/account/orders", label: "Track Order", icon: PackageCheck },
-    { href: "/account", label: "My account", icon: User },
   ]
+
+  // Add "My account" only if session exists
+  if (session) {
+    navItems.push({ href: "/account", label: "My account", icon: User });
+  }
 
   return (
     <div className={cn("fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden", className)}>
