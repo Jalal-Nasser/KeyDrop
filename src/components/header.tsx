@@ -25,14 +25,16 @@ export function Header({ className }: { className?: string }) {
   const { cartCount, cartTotal } = useCart()
   const { wishlistCount } = useWishlist() // Use wishlist hook
 
-  const navLinks = [
+  const baseNavLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About US" },
     { href: "/shop", label: "Shop" },
     { href: "/kaspersky", label: "Kaspersky Endpoint" },
     { href: "/contact", label: "Contact Us" },
-    { href: "/account", label: "Account" },
   ]
+
+  // Conditionally add "Account" link
+  const navLinks = session ? [...baseNavLinks, { href: "/account", label: "Account" }] : baseNavLinks;
 
   const handleMouseEnter = (e: MouseEvent<HTMLAnchorElement>) => {
     setHovered(true)
