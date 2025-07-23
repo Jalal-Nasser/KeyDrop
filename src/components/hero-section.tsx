@@ -1,3 +1,8 @@
+"use client"
+
+import Link from "next/link" // Import Link
+import { Button } from "@/components/ui/button" // Import Button
+
 export function HeroSection() {
   return (
     <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
@@ -11,9 +16,9 @@ export function HeroSection() {
               Discover premium software, digital tools, and technology solutions to power your business forward.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                Shop Now
-              </button>
+              <Button asChild className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <Link href="/shop">Shop Now</Link>
+              </Button>
               <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
                 Learn More
               </button>

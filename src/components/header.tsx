@@ -12,6 +12,7 @@ import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
 import { cn } from "@/lib/utils" // Import cn for conditional classes
 import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
+import { ModeToggle } from "@/components/mode-toggle" // Import ModeToggle
 
 export function Header({ className }: { className?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -122,6 +123,7 @@ export function Header({ className }: { className?: string }) {
                     </span>
                   )}
                 </button>
+                <ModeToggle /> {/* Add the ModeToggle component here */}
               </div>
             </div>
           </div>
