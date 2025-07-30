@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import parse from 'html-react-parser';
+import parse from "html-react-parser";
 
 interface StoreNoticeClientProps {
   content: string;
@@ -11,9 +11,7 @@ interface StoreNoticeClientProps {
 const StoreNoticeClientInner: React.FC<StoreNoticeClientProps> = ({ content }) => {
   const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) {
-    return null;
-  }
+  if (!isVisible) return null;
 
   return (
     <div className="relative bg-green-600 py-2 text-center text-sm text-white">
