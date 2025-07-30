@@ -219,7 +219,7 @@ export type Database = {
   }
 }
 
-// If you have extensions to Database, use module augmentation in separate .d.ts files like this:
+// To extend Database in other files, use module augmentation like this:
 
 // declare module "@/types/supabase" {
 //   interface Database {
