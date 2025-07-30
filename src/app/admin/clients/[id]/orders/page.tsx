@@ -30,7 +30,7 @@ type ClientOrder = {
         quantity: number;
         products: {
             name: string;
-        } | null;
+        }[] | null;
     }[];
 }
 
@@ -132,7 +132,7 @@ export default async function ClientOrdersPage({ params }: { params: { id: strin
                   <TableCell>
                     {order.order_items.map((item, index) => (
                       <span key={index}>
-                        {item.quantity} x {item.products?.name || 'Unknown Product'}
+                        {item.quantity} x {item.products?.[0]?.name || 'Unknown Product'}
                         {index < (order.order_items.length - 1) ? ', ' : ''}
                       </span>
                     ))}

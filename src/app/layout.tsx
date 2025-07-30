@@ -99,7 +99,7 @@ export default async function RootLayout({
               <CartProvider>
                 <WishlistProvider>
                   <Header className="print:hidden" />
-                  <main className="flex-grow pb-[60px]">{children}</main>
+                  <main className="flex-grow pb-[60px] pt-10">{children}</main>
                   <Footer />
                   <MobileNavBar className="print:hidden" />
                 </WishlistProvider>

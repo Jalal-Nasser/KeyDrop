@@ -178,9 +178,6 @@ export function Header({ className }: { className?: string }) {
 
       <StoreNotice />
 
-      {/* White banner below the red Store Notice */}
-      <div className="bg-background" style={{ height: 40 }} />
-
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="lg:hidden" style={{ backgroundColor: "#1e73be" }}>
