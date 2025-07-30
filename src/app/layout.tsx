@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+import parse from 'html-react-parser'; // Import the parser
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -45,10 +46,8 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Custom Header Scripts from DB */}
-        {customHeaderScripts && (
-          <div dangerouslySetInnerHTML={{ __html: customHeaderScripts }} />
-        )}
+        {/* Custom Header Scripts from DB are parsed and inserted here */}
+        {customHeaderScripts && parse(customHeaderScripts)}
       </head>
       {/* Google Tag Manager - Part 1 (Body) */}
       {gtmId && (
