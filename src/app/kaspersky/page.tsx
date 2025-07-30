@@ -1,9 +1,42 @@
-import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award } from "lucide-react";
+import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function KasperskyPage() {
+  const kasperskyPlans = [
+    {
+      name: "Kaspersky Endpoint Security Cloud",
+      description: "Essential protection for your business, managed from the cloud.",
+      features: [
+        "Antivirus & Anti-ransomware",
+        "Firewall",
+        "Cloud Console Management",
+      ],
+      link: "/shop?search=kaspersky+cloud", // Example link, adjust as needed
+    },
+    {
+      name: "Kaspersky Endpoint Security Cloud Plus",
+      description: "Advanced protection with more control and threat response.",
+      features: [
+        "All Cloud features",
+        "Endpoint Detection and Response (EDR)",
+        "Web, Device, and Application Control",
+      ],
+      link: "/shop?search=kaspersky+cloud+plus", // Example link, adjust as needed
+    },
+    {
+      name: "Kaspersky Endpoint Security Cloud Pro",
+      description: "Comprehensive security for growing businesses and complex environments.",
+      features: [
+        "All Cloud Plus features",
+        "Advanced Threat Prevention",
+        "Centralized Management",
+      ],
+      link: "/shop?search=kaspersky+cloud+pro", // Example link, adjust as needed
+    },
+  ];
+
   return (
     <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       {/* Hero Section */}
@@ -179,16 +212,35 @@ export default function KasperskyPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Kaspersky Plans Section */}
       <section className="bg-blue-600 text-white py-16 text-center">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-4">Ready to Secure Your Business?</h2>
-          <p className="text-lg text-blue-100 mb-8">
-            Explore our Kaspersky Endpoint Security Cloud offerings and find the perfect plan for your needs.
-          </p>
-          <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-            <Link href="/shop">View Kaspersky Products</Link>
-          </Button>
+          <h2 className="text-3xl font-bold mb-8">Explore Our Kaspersky Plans</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {kasperskyPlans.map((plan, index) => (
+              <Card key={index} className="bg-white text-foreground shadow-lg rounded-lg flex flex-col">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-2xl font-bold text-blue-700">{plan.name}</CardTitle>
+                  <p className="text-muted-foreground text-sm">{plan.description}</p>
+                </CardHeader>
+                <CardContent className="flex-grow pt-0">
+                  <ul className="space-y-2 text-left text-gray-700">
+                    {plan.features.map((feature, fIndex) => (
+                      <li key={fIndex} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <div className="p-6 pt-0">
+                  <Button asChild size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    <Link href={plan.link}>View Products</Link>
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
     </div>
