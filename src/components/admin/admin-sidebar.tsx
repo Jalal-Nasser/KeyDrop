@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package, Tag, X, ClipboardList } from "lucide-react" // Import Tag icon
+import { Home, Package, Tag, X, ClipboardList, Settings } from "lucide-react" // Added Settings icon
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -18,15 +18,16 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: "/admin", label: "Dashboard", icon: Home },
     { href: "/admin/orders", label: "Orders", icon: ClipboardList },
     { href: "/admin/products", label: "Products", icon: Package },
-    { href: "/admin/coupons", label: "Coupons", icon: Tag }, // New nav item
+    { href: "/admin/coupons", label: "Coupons", icon: Tag },
+    { href: "/admin/services", label: "Services", icon: Settings }, // New nav item
   ]
 
   return (
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r flex flex-col transition-transform duration-300 ease-in-out",
-        "lg:relative lg:translate-x-0", // Always visible on large screens
-        isOpen ? "translate-x-0" : "-translate-x-full" // Slide in/out on small screens
+        "lg:relative lg:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
       )}
     >
       <div className="p-4 flex items-center justify-between">
@@ -35,7 +36,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="lg:hidden" // Only show close button on small screens
+          className="lg:hidden"
         >
           <X className="h-5 w-5" />
         </Button>
@@ -49,7 +50,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
               pathname === item.href && "bg-muted text-primary"
             )}
-            onClick={onClose} // Close sidebar on navigation click
+            onClick={onClose}
           >
             <item.icon className="h-4 w-4" />
             {item.label}
