@@ -156,6 +156,7 @@ export default function KasperskyPage() {
               </CardContent>
             </Card>
           </div>
+        </div> {/* Added missing closing div here */}
       </section>
 
       {/* Why Choose Dropskey Section */}
