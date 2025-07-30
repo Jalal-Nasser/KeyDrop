@@ -34,7 +34,7 @@ export function MobileNavBar({ className }: { className?: string }) {
   ]
 
   const AccountNavItem = () => {
-    if (!isClient || isLoadingSession) {
+    if (isLoadingSession) {
       return <SkeletonLoader className="w-14 h-14" />;
     }
     if (session) {
@@ -75,7 +75,7 @@ export function MobileNavBar({ className }: { className?: string }) {
             )}
           </Link>
         ))}
-        <AccountNavItem />
+        {isClient ? <AccountNavItem /> : <SkeletonLoader className="w-14 h-14" />}
       </nav>
     </div>
   )

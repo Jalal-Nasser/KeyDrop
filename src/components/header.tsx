@@ -24,7 +24,7 @@ export function Header({ className }: { className?: string }) {
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
   const navRef = useRef<HTMLElement>(null)
-  const { session, isLoading: isLoadingSession } = useSession() // Use isLoading
+  const { session, isLoading: isLoadingSession } = useSession()
   const { cartCount, cartTotal } = useCart()
   const { wishlistCount, isLoadingWishlist } = useWishlist()
   const [isClient, setIsClient] = useState(false)
@@ -52,7 +52,7 @@ export function Header({ className }: { className?: string }) {
   }
 
   const AuthButton = () => {
-    if (!isClient || isLoadingSession) {
+    if (isLoadingSession) {
       return <SkeletonLoader className="w-20 h-6" />;
     }
     if (session) {
@@ -72,7 +72,7 @@ export function Header({ className }: { className?: string }) {
   };
 
   const AccountNavLink = () => {
-    if (!isClient || isLoadingSession) {
+    if (isLoadingSession) {
       return <SkeletonLoader className="w-24 h-8 my-auto mx-6" />;
     }
     if (session) {
@@ -91,7 +91,7 @@ export function Header({ className }: { className?: string }) {
   };
   
   const AccountMobileNavLink = () => {
-    if (!isClient || isLoadingSession) {
+    if (isLoadingSession) {
       return <SkeletonLoader className="w-full h-10 rounded" />;
     }
     if (session) {
@@ -144,7 +144,7 @@ export function Header({ className }: { className?: string }) {
                   )}
                 </Link>
                 <span className="text-border hidden sm:inline">|</span>
-                <AuthButton />
+                {isClient ? <AuthButton /> : <SkeletonLoader className="w-20 h-6" />}
                 <span className="text-border">|</span>
                 <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center gap-x-1 hover:text-primary relative">
                   <ShoppingCart className="w-4 h-4" />
@@ -193,7 +193,7 @@ export function Header({ className }: { className?: string }) {
                     {link.label}
                   </Link>
                 ))}
-                <AccountNavLink />
+                {isClient ? <AccountNavLink /> : <SkeletonLoader className="w-24 h-8 my-auto mx-6" />}
               </div>
             </nav>
 
@@ -217,7 +217,7 @@ export function Header({ className }: { className?: string }) {
                 {link.label}
               </Link>
             ))}
-            <AccountMobileNavLink />
+            {isClient ? <AccountMobileNavLink /> : <SkeletonLoader className="w-full h-10 rounded" />}
           </div>
         </div>
       )}
