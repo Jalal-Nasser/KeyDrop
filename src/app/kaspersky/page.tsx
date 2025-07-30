@@ -214,8 +214,10 @@ export default function KasperskyPage() {
                   <TableHead className="w-[200px] text-left font-bold text-lg text-foreground">Feature</TableHead>
                   {kasperskyPlansData.map((plan) => (
                     <TableHead key={plan.id} className="text-center font-bold text-lg text-foreground">
-                      {plan.name}
-                      <p className="text-sm font-normal text-muted-foreground mt-1">{plan.description}</p>
+                      <div> {/* Added explicit div here */}
+                        {plan.name}
+                        <p className="text-sm font-normal text-muted-foreground mt-1">{plan.description}</p>
+                      </div>
                     </TableHead>
                   ))}
                 </TableRow>
