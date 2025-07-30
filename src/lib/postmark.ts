@@ -19,7 +19,7 @@ export async function sendMail({ to, subject, html, attachments }: { to: string,
       Name: rawAtt.Name ?? '',
       Content: rawAtt.Content ?? '',
       ContentType: rawAtt.ContentType ?? '',
-      ContentID: rawAtt.ContentID,
+      ContentID: rawAtt.ContentID ?? null,
     };
 
     let encodedContent = att.Content;
