@@ -16,14 +16,15 @@ export function OrderStatusUpdater({ orderId, currentStatus }: OrderStatusUpdate
   const [status, setStatus] = useState(currentStatus)
 
   const handleStatusChange = (newStatus: string) => {
-    startTransition(async () => {
-      const result = await updateOrderStatus(orderId, newStatus)
-      if (result.success) {
-        toast.success(result.message)
-        setStatus(newStatus)
-      } else {
-        toast.error(result.message)
-      }
+    startTransition(() => {
+      updateOrderStatus(orderId, newStatus).then((result) => {
+        if (result.success) {
+          toast.success(result.message)
+          setStatus(newStatus)
+        } else {
+          toast.error(result.message)
+        }
+      })
     })
   }
 

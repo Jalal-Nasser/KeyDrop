@@ -27,7 +27,7 @@ export default async function ClientOrdersPage({ params }: { params: { id: strin
 
   // 1. Admin Check
   if (!session) {
-    redirect("/login")
+    return redirect("/login")
   }
   const { data: adminProfile } = await supabase
     .from('profiles')

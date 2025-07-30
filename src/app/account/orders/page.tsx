@@ -34,7 +34,7 @@ export default async function AccountOrdersPage() {
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
-    redirect("/login")
+    return redirect("/login")
   }
 
   const { data, error } = await supabase

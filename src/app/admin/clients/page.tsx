@@ -23,7 +23,7 @@ export default async function AdminClientsPage() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
   if (sessionError || !session) {
-    redirect("/login")
+    return redirect("/login")
   }
 
   const { data: profile, error: profileError } = await supabase

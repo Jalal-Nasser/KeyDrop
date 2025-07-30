@@ -13,12 +13,12 @@ export default async function AdminLayout({
 
   // 1. Check session and redirect if not authenticated
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session?.user) {
+  if (sessionError || !session || !session.user) {
     console.log("AdminLayout: No active session or session error, redirecting to /account");
-    redirect("/account"); // This throws an error internally, stopping execution
+    return redirect("/account");
   }
 
-  const user = session.user; // User is guaranteed to exist here if we reach this point
+  const user = session.user;
 
   // 2. Check admin status and deny access if not admin
   try {

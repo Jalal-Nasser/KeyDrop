@@ -54,7 +54,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
 
   if (error || !order) {
     console.error("Error fetching order details:", error)
-    notFound()
+    return notFound()
   }
 
   const processingFee = order.total * 0.15;
