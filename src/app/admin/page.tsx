@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     .from("orders")
     .select("total", { count: "exact" })
 
-  const totalRevenue = orderStats?.reduce((sum, order) => sum + parseFloat(order.total), 0) || 0
+  const totalRevenue = orderStats?.reduce((sum: number, order: { total: number }) => sum + order.total, 0) || 0
   const orderCount = orderStats?.length || 0
 
   // Fetch recent orders

@@ -18,6 +18,13 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
+type Client = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  company_name: string | null;
+}
+
 export default async function AdminClientsPage() {
   const supabase = createSupabaseServerClient()
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -86,7 +93,7 @@ export default async function AdminClientsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clients?.map((client) => (
+            {clients?.map((client: Client) => (
               <TableRow key={client.id}>
                 <TableCell>{(client.first_name || '') + ' ' + (client.last_name || '')}</TableCell>
                 <TableCell>{client.company_name || 'N/A'}</TableCell>

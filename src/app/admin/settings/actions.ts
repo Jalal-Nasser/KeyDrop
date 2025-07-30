@@ -23,7 +23,7 @@ export async function updateSiteSettings(settings: Setting[]) {
   );
 
   const results = await Promise.all(updates);
-  const errorResult = results.find(res => res.error);
+  const errorResult = results.find((res: { error: any }) => res.error);
 
   if (errorResult?.error) {
     console.error("Error updating site settings:", errorResult.error);

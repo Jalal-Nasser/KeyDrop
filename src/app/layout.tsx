@@ -34,7 +34,7 @@ export default async function RootLayout({
   const supabase = createSupabaseServerClient()
   const { data: settingsData } = await supabase.from("site_settings").select("key, value")
   
-  const settings = (settingsData || []).reduce((acc, setting) => {
+  const settings = (settingsData || []).reduce((acc: Record<string, string | null>, setting: { key: string, value: string | null }) => {
     acc[setting.key] = setting.value
     return acc
   }, {} as Record<string, string | null>)

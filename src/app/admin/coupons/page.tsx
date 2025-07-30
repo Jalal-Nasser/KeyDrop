@@ -13,6 +13,20 @@ import { Badge } from "@/components/ui/badge"
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
+type CouponWithProfile = {
+  id: string;
+  code: string;
+  discount_percent: number;
+  assigned_user_id: string | null;
+  is_applied: boolean;
+  created_at: string;
+  profiles: {
+      first_name: string | null;
+      last_name: string | null;
+  }[] | null;
+};
+
+
 export default async function AdminCouponsPage() {
   const supabase = createSupabaseServerClient()
   const { data: coupons, error } = await supabase
@@ -51,7 +65,7 @@ export default async function AdminCouponsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {coupons?.map((coupon) => (
+            {(coupons as CouponWithProfile[])?.map((coupon) => (
               <TableRow key={coupon.id}>
                 <TableCell className="font-medium">{coupon.code}</TableCell>
                 <TableCell>{coupon.discount_percent}%</TableCell>

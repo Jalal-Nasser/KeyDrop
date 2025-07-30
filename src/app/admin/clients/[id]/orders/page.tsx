@@ -21,6 +21,19 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
+type ClientOrder = {
+    id: string;
+    created_at: string;
+    status: string;
+    total: number;
+    order_items: {
+        quantity: number;
+        products: {
+            name: string;
+        } | null;
+    }[];
+}
+
 export default async function ClientOrdersPage({ params }: { params: { id: string } }) {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
@@ -112,12 +125,12 @@ export default async function ClientOrdersPage({ params }: { params: { id: strin
           </TableHeader>
           <TableBody>
             {orders.length > 0 ? (
-              orders.map((order) => (
+              (orders as ClientOrder[]).map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">#{order.id.substring(0, 8)}</TableCell>
                   <TableCell>{format(new Date(order.created_at), "PPP")}</TableCell>
                   <TableCell>
-                    {order.order_items.map((item: any, index: number) => (
+                    {order.order_items.map((item, index) => (
                       <span key={index}>
                         {item.quantity} x {item.products?.name || 'Unknown Product'}
                         {index < (order.order_items.length - 1) ? ', ' : ''}
