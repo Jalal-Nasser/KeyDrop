@@ -37,14 +37,22 @@ export default async function AdminClientsPage() {
     redirect("/account")
   }
 
+  // Select only safe columns to avoid permission issues
   const { data: clients, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, first_name, last_name, email, company_name, created_at')
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error("Error fetching clients:", error)
-    return <div>Error loading clients.</div>
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Error Loading Clients</CardTitle>
+          <CardDescription>There was an error loading the clients list. Please try again later.</CardDescription>
+        </CardHeader>
+      </Card>
+    )
   }
 
   return (
