@@ -218,19 +218,3 @@ export type Database = {
     CompositeTypes: {}
   }
 }
-
-// To extend Database in other files, use module augmentation like this:
-
-// declare module "@/types/supabase" {
-//   interface Database {
-//     public: {
-//       Tables: {
-//         services: {
-//           Row: { ... }
-//           Insert: { ... }
-//           Update: { ... }
-//         }
-//       }
-//     }
-//   }
-// }
