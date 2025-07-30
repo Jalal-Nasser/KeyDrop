@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Script from "next/script" // Import Script from next/script
+import Script from "next/script"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -12,6 +12,7 @@ import { PayPalProvider } from "@/context/paypal-provider"
 import { CartProvider } from "@/context/cart-context"
 import { MobileNavBar } from "@/components/mobile-nav-bar"
 import { WishlistProvider } from "@/context/wishlist-context"
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,17 +25,32 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const supabase = createSupabaseServerClient()
+  const { data: settingsData } = await supabase.from("site_settings").select("key, value")
+  
+  const settings = (settingsData || []).reduce((acc, setting) => {
+    acc[setting.key] = setting.value
+    return acc
+  }, {} as Record<string, string | null>)
+
+  const gaMeasurementId = settings.google_analytics_id || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gtmId = settings.gtm_id || process.env.NEXT_PUBLIC_GTM_ID;
+  const customHeaderScripts = settings.custom_header_scripts;
 
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* Google Tag Manager - Part 1 (Head) */}
+      <head>
+        {/* Custom Header Scripts from DB */}
+        {customHeaderScripts && (
+          <div dangerouslySetInnerHTML={{ __html: customHeaderScripts }} />
+        )}
+      </head>
+      {/* Google Tag Manager - Part 1 (Body) */}
       {gtmId && (
         <Script id="google-tag-manager-head" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
