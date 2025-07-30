@@ -10,25 +10,44 @@ const BASE_PRICE = 1495;
 const PRICE_PER_EXTRA_USER = 230;
 const DISCOUNT_RATE = 0.10;
 
-// Inline SVG component for Kaspersky logo
+// Updated KasperskyLogo component with hexagon and 'k' letter, green gradient fill
 function KasperskyLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}
       width="96"
-      height="32"
-      viewBox="0 0 96 32"
+      height="96"
+      viewBox="0 0 96 96"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="Kaspersky Logo"
     >
-      {/* Replace the path below with your actual SVG path */}
+      <defs>
+        <linearGradient id="greenGradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#00FF9F" />
+          <stop offset="100%" stopColor="#00BFA6" />
+        </linearGradient>
+      </defs>
+      {/* Outer hexagon */}
       <path
-        d="M2 2 L30 2 L30 30 L2 30 Z M35 2 L63 2 L63 30 L35 30 Z M68 2 L96 2 L96 30 L68 30 Z"
-        fill="#1E73BE"
+        d="M48 2 L88 26 L88 70 L48 94 L8 70 L8 26 Z"
+        fill="url(#greenGradient)"
+        stroke="#00BFA6"
+        strokeWidth="2"
       />
-      {/* This is a placeholder path forming three rectangles. Replace with your actual logo SVG path */}
+      {/* Inner hexagon */}
+      <path
+        d="M48 18 L76 34 L76 62 L48 78 L20 62 L20 34 Z"
+        fill="url(#greenGradient)"
+        stroke="#008F8A"
+        strokeWidth="2"
+      />
+      {/* Letter K */}
+      <path
+        d="M38 32 L38 64 L44 64 L44 48 L54 64 L60 64 L50 48 L60 32 L54 32 L44 44 L44 32 Z"
+        fill="#000000"
+      />
     </svg>
   );
 }
