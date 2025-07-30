@@ -21,17 +21,31 @@ import Link from "next/link"
 
 export default async function AdminClientsPage() {
   const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-  if (!session) {
+  if (sessionError || !session) {
     redirect("/login")
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
     .single()
+
+  if (profileError) {
+    console.error("Error fetching admin profile:", profileError)
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Error Loading Clients</CardTitle>
+          <CardDescription>
+            There was an error verifying admin status. Please try again later.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
 
   if (!profile?.is_admin) {
     redirect("/account")
