@@ -12,7 +12,7 @@ export function MobileNavBar({ className }: { className?: string }) {
   const pathname = usePathname()
   const { cartCount } = useCart() // Assuming cartCount can be used as a placeholder for wishlist count for now
   const { session } = useSession()
-  const { wishlistCount } = useWishlist() // Use wishlist hook
+  const { wishlistCount, isLoadingWishlist } = useWishlist() // Use wishlist hook
 
   const navItems = [
     { href: "/", label: "Home", icon: Home },
@@ -40,7 +40,7 @@ export function MobileNavBar({ className }: { className?: string }) {
           >
             <item.icon className="w-5 h-5 mb-1" />
             {item.label}
-            {item.label === "Wishlist" && item.count !== undefined && item.count > 0 && (
+            {item.label === "Wishlist" && !isLoadingWishlist && item.count !== undefined && item.count > 0 && (
               <span className="absolute -top-1 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
                 {item.count}
               </span>

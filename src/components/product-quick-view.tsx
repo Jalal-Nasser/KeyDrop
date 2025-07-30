@@ -69,7 +69,7 @@ export function ProductQuickView({ product }: ProductQuickViewProps) {
             `$${displayPrice}`
           )}
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: product.description || "No description available." }} />
+        <div className="text-sm text-muted-foreground line-clamp-3 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} />
 
         <Separator />
 

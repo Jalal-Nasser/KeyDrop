@@ -23,7 +23,7 @@ export function Header({ className }: { className?: string }) {
   const navRef = useRef<HTMLElement>(null)
   const { session } = useSession()
   const { cartCount, cartTotal } = useCart()
-  const { wishlistCount } = useWishlist() // Use wishlist hook
+  const { wishlistCount, isLoadingWishlist } = useWishlist() // Use wishlist hook
 
   const baseNavLinks = [
     { href: "/", label: "Home" },
@@ -91,7 +91,7 @@ export function Header({ className }: { className?: string }) {
                 <Link href="/wishlist" className="hidden lg:flex items-center gap-x-1 hover:text-primary relative">
                   <Heart className="w-4 h-4" />
                   <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
-                  {wishlistCount > 0 && (
+                  {!isLoadingWishlist && wishlistCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {wishlistCount}
                     </span>
