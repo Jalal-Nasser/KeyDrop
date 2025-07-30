@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import parse from 'html-react-parser';
 
@@ -8,7 +8,7 @@ interface StoreNoticeClientProps {
   content: string;
 }
 
-export function StoreNoticeClient({ content }: StoreNoticeClientProps) {
+const StoreNoticeClientInner: React.FC<StoreNoticeClientProps> = ({ content }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   if (!isVisible) {
@@ -32,4 +32,6 @@ export function StoreNoticeClient({ content }: StoreNoticeClientProps) {
       </button>
     </div>
   );
-}
+};
+
+export default StoreNoticeClientInner;
