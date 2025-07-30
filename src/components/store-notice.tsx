@@ -15,7 +15,7 @@ export function StoreNotice() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center flex-wrap"> {/* Added flex-wrap */}
           <span className="mr-2">📋</span>
-          <span className="text-wrap">Start order without waiting approval</span> {/* Added text-wrap */}
+          <p>Start order without waiting approval</p> {/* Changed span to p for semantic correctness */}
         </div>
       </div>
       <button
