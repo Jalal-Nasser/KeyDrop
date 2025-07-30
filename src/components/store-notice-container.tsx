@@ -1,7 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
-import dynamic from "next/dynamic";
-
-const StoreNoticeClient = dynamic(() => import("./store-notice-client"), { ssr: false });
+import StoreNoticeClient from "./store-notice-client";
 
 export async function StoreNoticeContainer() {
   const supabase = createSupabaseServerClient();

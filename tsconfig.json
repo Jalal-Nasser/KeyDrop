@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -22,25 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "db/**/*.ts",
-    "drizzle.config.ts",
-    "tailwind.config.ts",
-    "postcss.config.mjs",
-    "next.config.mjs",
-    "server.js",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "supabase/functions" // This line is crucial for ignoring Deno-specific files
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
