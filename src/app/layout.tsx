@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import parse from 'html-react-parser'; // Import the parser
+import parse from 'html-react-parser';
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -47,8 +47,8 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Custom Header Scripts from DB are parsed and inserted here */}
-        {customHeaderScripts && parse(customHeaderScripts)}
+        {/* Trim scripts to prevent parsing whitespace-only strings, which causes hydration errors */}
+        {customHeaderScripts && customHeaderScripts.trim() && parse(customHeaderScripts.trim())}
       </head>
       {/* Google Tag Manager - Part 1 (Body) */}
       {gtmId && (
@@ -104,11 +104,11 @@ export default async function RootLayout({
                   <main className="flex-grow pb-[60px] pt-10">{children}</main>
                   <Footer />
                   <MobileNavBar className="print:hidden" />
+                  <Toaster richColors />
                 </WishlistProvider>
               </CartProvider>
             </SessionProvider>
           </PayPalProvider>
-          <Toaster richColors />
         </ThemeProvider>
       </body>
     </html>

@@ -1,5 +1,3 @@
-// Rename this file to supabase.d.ts to avoid conflicts with supabase.ts
-
 export type Database = {
   public: {
     Tables: {
@@ -218,20 +216,5 @@ export type Database = {
     }
     Enums: {}
     CompositeTypes: {}
-  }
-}
-
-declare module "@/types/supabase" {
-  interface Database {
-    // Add extensions here if needed, e.g.:
-    // public: {
-    //   Tables: {
-    //     services: {
-    //       Row: { ... }
-    //       Insert: { ... }
-    //       Update: { ... }
-    //     }
-    //   }
-    // }
   }
 }
