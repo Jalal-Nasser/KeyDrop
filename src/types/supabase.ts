@@ -218,7 +218,3 @@ export type Database = {
     CompositeTypes: {}
   }
 }
-
-declare global {
-  // Prevent duplicate identifier errors by declaring an empty global scope
-}
