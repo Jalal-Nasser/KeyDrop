@@ -1,10 +1,11 @@
 "use client"
 
 import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
+import { PayPalButton } from "@/components/paypal-button";
 
 const BASE_PRICE = 1495;
 const PRICE_PER_EXTRA_USER = 230;
@@ -132,6 +133,19 @@ export default function KasperskyPage() {
   const foundationsPrice = calculatePrice(foundationsUsers, foundationsYears);
   const optimumPrice = calculatePrice(optimumUsers, optimumYears);
 
+  // Minimal product objects for PayPalButton
+  const foundationsProduct = {
+    id: 1000001,
+    name: "Kaspersky Next EDR Foundations",
+    price: foundationsPrice.finalPrice,
+  };
+
+  const optimumProduct = {
+    id: 1000002,
+    name: "Kaspersky Next EDR Optimum",
+    price: optimumPrice.finalPrice,
+  };
+
   return (
     <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
       {/* ... other sections unchanged ... */}
@@ -175,157 +189,153 @@ export default function KasperskyPage() {
           {/* Pricing Plans Section */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Foundations Plan */}
-            <div className="border rounded-lg p-6 bg-green-50 relative">
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-4">
-                  <KasperskyLogo className="mx-auto h-12 w-auto" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Kaspersky Next EDR Foundations</h3>
-                <p className="mb-6 text-gray-700 max-w-xs">
-                  Provides core protection and controls for all your endpoints.
-                </p>
-
-                <div className="flex justify-center gap-4 mb-4">
-                  <label className="flex flex-col items-center">
-                    <span className="mb-1 font-semibold text-gray-900">Users</span>
-                    <select
-                      className="border rounded px-3 py-1"
-                      value={foundationsUsers}
-                      onChange={(e) => setFoundationsUsers(parseInt(e.target.value))}
-                    >
-                      {[5,6,7,8,9,10,15,20,25,30].map((num) => (
-                        <option key={num} value={num}>{num}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="flex flex-col items-center">
-                    <span className="mb-1 font-semibold text-gray-900">Years</span>
-                    <div className="flex space-x-2">
-                      {[1,2,3].map((year) => (
-                        <button
-                          key={year}
-                          type="button"
-                          onClick={() => setFoundationsYears(year)}
-                          className={`rounded-full border px-3 py-1 font-semibold ${foundationsYears === year ? 'bg-yellow-400 text-black' : 'bg-white text-gray-700'}`}
-                        >
-                          {year}
-                        </button>
-                      ))}
-                    </div>
-                  </label>
-                </div>
-
-                <div className="mb-4">
-                  <div className="inline-block bg-yellow-400 text-black font-bold px-4 py-1 rounded mb-2">Save 10%</div>
-                  <div className="text-sm line-through text-gray-500 mb-1">
-                    ${foundationsPrice.priceBeforeDiscount.toFixed(2)}
-                  </div>
-                  <div className="text-3xl font-extrabold text-gray-900">
-                    ${foundationsPrice.finalPrice.toFixed(2)}
-                  </div>
-                </div>
-
-                <label className="flex items-center space-x-2 mb-6 text-gray-900">
-                  <input
-                    type="checkbox"
-                    checked={foundationsAutoRenew}
-                    onChange={() => setFoundationsAutoRenew(!foundationsAutoRenew)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm">Auto-Renewal</span>
-                  <button
-                    type="button"
-                    aria-label="Auto-Renewal info"
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                    onClick={() => alert("Auto-renewal means your subscription will automatically renew at the end of the term.")}
-                  >
-                    ?
-                  </button>
-                </label>
-
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded">
-                  Buy Now
-                </Button>
+            <Card className="bg-green-50 border rounded-lg p-6 relative flex flex-col items-center text-center">
+              <div className="mb-4">
+                <KasperskyLogo className="mx-auto h-12 w-auto" />
               </div>
-            </div>
+              <h3 className="text-xl font-bold mb-2">Kaspersky Next EDR Foundations</h3>
+              <p className="mb-6 text-gray-700 max-w-xs">
+                Provides core protection and controls for all your endpoints.
+              </p>
+
+              <div className="flex justify-center gap-4 mb-4">
+                <label className="flex flex-col items-center">
+                  <span className="mb-1 font-semibold text-gray-900">Users</span>
+                  <select
+                    className="border rounded px-3 py-1"
+                    value={foundationsUsers}
+                    onChange={(e) => setFoundationsUsers(parseInt(e.target.value))}
+                  >
+                    {[5,6,7,8,9,10,15,20,25,30].map((num) => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col items-center">
+                  <span className="mb-1 font-semibold text-gray-900">Years</span>
+                  <div className="flex space-x-2">
+                    {[1,2,3].map((year) => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => setFoundationsYears(year)}
+                        className={`rounded-full border px-3 py-1 font-semibold ${foundationsYears === year ? 'bg-yellow-400 text-black' : 'bg-white text-gray-700'}`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                </label>
+              </div>
+
+              <div className="mb-4">
+                <div className="inline-block bg-yellow-400 text-black font-bold px-4 py-1 rounded mb-2">Save 10%</div>
+                <div className="text-sm line-through text-gray-500 mb-1">
+                  ${foundationsPrice.priceBeforeDiscount.toFixed(2)}
+                </div>
+                <div className="text-3xl font-extrabold text-gray-900">
+                  ${foundationsPrice.finalPrice.toFixed(2)}
+                </div>
+              </div>
+
+              <label className="flex items-center space-x-2 mb-6 text-gray-900">
+                <input
+                  type="checkbox"
+                  checked={foundationsAutoRenew}
+                  onChange={() => setFoundationsAutoRenew(!foundationsAutoRenew)}
+                  className="w-5 h-5"
+                />
+                <span className="text-sm">Auto-Renewal</span>
+                <button
+                  type="button"
+                  aria-label="Auto-Renewal info"
+                  className="ml-1 text-gray-500 hover:text-gray-700"
+                  onClick={() => alert("Auto-renewal means your subscription will automatically renew at the end of the term.")}
+                >
+                  ?
+                </button>
+              </label>
+
+              <CardFooter className="w-full">
+                <PayPalButton product={foundationsProduct} quantity={1} />
+              </CardFooter>
+            </Card>
 
             {/* Optimum Plan */}
-            <div className="border rounded-lg p-6 bg-blue-50 relative">
+            <Card className="bg-blue-50 border rounded-lg p-6 relative flex flex-col items-center text-center">
               <div className="absolute top-0 right-0 bg-yellow-400 text-black font-bold px-3 py-1 rounded-bl-lg">
                 Recommended
               </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-4">
-                  <KasperskyOptimumLogo className="mx-auto h-12 w-auto" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">Kaspersky Next EDR Optimum</h3>
-                <p className="mb-6 text-gray-700 max-w-xs">
-                  Intermediate security offering simplicity and automation.
-                </p>
-
-                <div className="flex justify-center gap-4 mb-4">
-                  <label className="flex flex-col items-center">
-                    <span className="mb-1 font-semibold text-gray-900">Users</span>
-                    <select
-                      className="border rounded px-3 py-1"
-                      value={optimumUsers}
-                      onChange={(e) => setOptimumUsers(parseInt(e.target.value))}
-                    >
-                      {[5,6,7,8,9,10,15,20,25,30].map((num) => (
-                        <option key={num} value={num}>{num}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="flex flex-col items-center">
-                    <span className="mb-1 font-semibold text-gray-900">Years</span>
-                    <div className="flex space-x-2">
-                      {[1,2].map((year) => (
-                        <button
-                          key={year}
-                          type="button"
-                          onClick={() => setOptimumYears(year)}
-                          className={`rounded-full border px-3 py-1 font-semibold ${optimumYears === year ? 'bg-yellow-400 text-black' : 'bg-white text-gray-700'}`}
-                        >
-                          {year}
-                        </button>
-                      ))}
-                    </div>
-                  </label>
-                </div>
-
-                <div className="mb-4">
-                  <div className="inline-block bg-yellow-400 text-black font-bold px-4 py-1 rounded mb-2">Save 10%</div>
-                  <div className="text-sm line-through text-gray-500 mb-1">
-                    ${optimumPrice.priceBeforeDiscount.toFixed(2)}
-                  </div>
-                  <div className="text-3xl font-extrabold text-gray-900">
-                    ${optimumPrice.finalPrice.toFixed(2)}
-                  </div>
-                </div>
-
-                <label className="flex items-center space-x-2 mb-6 text-gray-900">
-                  <input
-                    type="checkbox"
-                    checked={optimumAutoRenew}
-                    onChange={() => setOptimumAutoRenew(!optimumAutoRenew)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm">Auto-Renewal</span>
-                  <button
-                    type="button"
-                    aria-label="Auto-Renewal info"
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                    onClick={() => alert("Auto-renewal means your subscription will automatically renew at the end of the term.")}
-                  >
-                    ?
-                  </button>
-                </label>
-
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded">
-                  Buy Now
-                </Button>
+              <div className="mb-4">
+                <KasperskyOptimumLogo className="mx-auto h-12 w-auto" />
               </div>
-            </div>
+              <h3 className="text-xl font-bold mb-2 text-gray-900">Kaspersky Next EDR Optimum</h3>
+              <p className="mb-6 text-gray-700 max-w-xs">
+                Intermediate security offering simplicity and automation.
+              </p>
+
+              <div className="flex justify-center gap-4 mb-4">
+                <label className="flex flex-col items-center">
+                  <span className="mb-1 font-semibold text-gray-900">Users</span>
+                  <select
+                    className="border rounded px-3 py-1"
+                    value={optimumUsers}
+                    onChange={(e) => setOptimumUsers(parseInt(e.target.value))}
+                  >
+                    {[5,6,7,8,9,10,15,20,25,30].map((num) => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col items-center">
+                  <span className="mb-1 font-semibold text-gray-900">Years</span>
+                  <div className="flex space-x-2">
+                    {[1,2].map((year) => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => setOptimumYears(year)}
+                        className={`rounded-full border px-3 py-1 font-semibold ${optimumYears === year ? 'bg-yellow-400 text-black' : 'bg-white text-gray-700'}`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                </label>
+              </div>
+
+              <div className="mb-4">
+                <div className="inline-block bg-yellow-400 text-black font-bold px-4 py-1 rounded mb-2">Save 10%</div>
+                <div className="text-sm line-through text-gray-500 mb-1">
+                  ${optimumPrice.priceBeforeDiscount.toFixed(2)}
+                </div>
+                <div className="text-3xl font-extrabold text-gray-900">
+                  ${optimumPrice.finalPrice.toFixed(2)}
+                </div>
+              </div>
+
+              <label className="flex items-center space-x-2 mb-6 text-gray-900">
+                <input
+                  type="checkbox"
+                  checked={optimumAutoRenew}
+                  onChange={() => setOptimumAutoRenew(!optimumAutoRenew)}
+                  className="w-5 h-5"
+                />
+                <span className="text-sm">Auto-Renewal</span>
+                <button
+                  type="button"
+                  aria-label="Auto-Renewal info"
+                  className="ml-1 text-gray-500 hover:text-gray-700"
+                  onClick={() => alert("Auto-renewal means your subscription will automatically renew at the end of the term.")}
+                >
+                  ?
+                </button>
+              </label>
+
+              <CardFooter className="w-full">
+                <PayPalButton product={optimumProduct} quantity={1} />
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </section>
