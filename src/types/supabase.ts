@@ -218,3 +218,8 @@ export type Database = {
     CompositeTypes: {}
   }
 }
+
+declare global {
+  // This empty declaration prevents duplicate identifier errors in some setups
+  // You can add module augmentation here if needed
+}
