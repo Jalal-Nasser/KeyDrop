@@ -1,40 +1,32 @@
-import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award, Check } from "lucide-react";
+import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function KasperskyPage() {
-  const kasperskyPlans = [
-    {
-      name: "Kaspersky Endpoint Security Cloud",
-      description: "Essential protection for your business, managed from the cloud.",
-      features: [
-        "Antivirus & Anti-ransomware",
-        "Firewall",
-        "Cloud Console Management",
-      ],
-      link: "/shop?search=kaspersky+cloud", // Example link, adjust as needed
-    },
-    {
-      name: "Kaspersky Endpoint Security Cloud Plus",
-      description: "Advanced protection with more control and threat response.",
-      features: [
-        "All Cloud features",
-        "Endpoint Detection and Response (EDR)",
-        "Web, Device, and Application Control",
-      ],
-      link: "/shop?search=kaspersky+cloud+plus", // Example link, adjust as needed
-    },
-    {
-      name: "Kaspersky Endpoint Security Cloud Pro",
-      description: "Comprehensive security for growing businesses and complex environments.",
-      features: [
-        "All Cloud Plus features",
-        "Advanced Threat Prevention",
-        "Centralized Management",
-      ],
-      link: "/shop?search=kaspersky+cloud+pro", // Example link, adjust as needed
-    },
+  const kasperskyPlansData = [
+    { id: 'foundations', name: 'Foundations', description: 'Essential EDR for SMBs', link: '/shop?search=kaspersky+next+edr+foundations' },
+    { id: 'optimum', name: 'Optimum', description: 'Advanced EDR with more control', link: '/shop?search=kaspersky+next+edr+optimum' },
+    { id: 'expert', name: 'Expert', description: 'Comprehensive EDR for complex environments', link: '/shop?search=kaspersky+next+edr+expert' },
+  ];
+
+  const featuresList = [
+    { name: "Endpoint Protection", foundations: true, optimum: true, expert: true },
+    { name: "Basic EDR", foundations: true, optimum: true, expert: true },
+    { name: "Cloud Management", foundations: true, optimum: true, expert: true },
+    { name: "Advanced EDR", foundations: false, optimum: true, expert: true },
+    { name: "Threat Hunting", foundations: false, optimum: true, expert: true },
+    { name: "Application Control", foundations: false, optimum: true, expert: true },
+    { name: "XDR Capabilities", foundations: false, optimum: false, expert: true },
+    { name: "Managed Detection and Response (MDR)", foundations: false, optimum: false, expert: true },
   ];
 
   return (
@@ -44,7 +36,7 @@ export default function KasperskyPage() {
         <div className="absolute inset-0 bg-black/20 z-0"></div>
         <div className="container mx-auto px-4 relative z-10">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-md">
-            Kaspersky Endpoint Security Cloud
+            Kaspersky Next EDR Foundations
           </h1>
           <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto opacity-90">
             Powerful, cloud-managed cybersecurity for small and medium businesses.
@@ -134,36 +126,35 @@ export default function KasperskyPage() {
               <CardHeader>
                 <DollarSign className="h-10 w-10 text-purple-600 mx-auto mb-4" />
                 <CardTitle>Cost-Effective</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Affordable, scalable protection that grows with your business without breaking the bank.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <RefreshCcw className="h-10 w-10 text-orange-600 mx-auto mb-4" />
-                <CardTitle>Always Up-to-Date</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Automatic updates and real-time threat intelligence ensure continuous protection.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <Scale className="h-10 w-10 text-red-600 mx-auto mb-4" />
-                <CardTitle>Flexible Licensing</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Adapt your security to your evolving needs with flexible licensing options.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Affordable, scalable protection that grows with your business without breaking the bank.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <RefreshCcw className="h-10 w-10 text-orange-600 mx-auto mb-4" />
+              <CardTitle>Always Up-to-Date</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Automatic updates and real-time threat intelligence ensure continuous protection.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <Scale className="h-10 w-10 text-red-600 mx-auto mb-4" />
+              <CardTitle>Flexible Licensing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Adapt your security to your evolving needs with flexible licensing options.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -212,34 +203,50 @@ export default function KasperskyPage() {
         </div>
       </section>
 
-      {/* Kaspersky Plans Section */}
+      {/* Compare Our Plans Section */}
       <section className="bg-blue-600 text-white py-16 text-center">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">Explore Our Kaspersky Plans</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {kasperskyPlans.map((plan, index) => (
-              <Card key={index} className="bg-white text-foreground shadow-lg rounded-lg flex flex-col">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl font-bold text-blue-700">{plan.name}</CardTitle>
-                  <p className="text-muted-foreground text-sm">{plan.description}</p>
-                </CardHeader>
-                <CardContent className="flex-grow pt-0">
-                  <ul className="space-y-2 text-left text-gray-700">
-                    {plan.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <div className="p-6 pt-0">
-                  <Button asChild size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Link href={plan.link}>View Products</Link>
-                  </Button>
-                </div>
-              </Card>
-            ))}
+          <h2 className="text-3xl font-bold mb-8">Compare Our Kaspersky Next EDR Plans</h2>
+          <div className="overflow-x-auto">
+            <Table className="min-w-full bg-white text-foreground rounded-lg shadow-lg">
+              <TableHeader>
+                <TableRow className="bg-gray-100">
+                  <TableHead className="w-[200px] text-left font-bold text-lg text-foreground">Feature</TableHead>
+                  {kasperskyPlansData.map((plan) => (
+                    <TableHead key={plan.id} className="text-center font-bold text-lg text-foreground">
+                      {plan.name}
+                      <p className="text-sm font-normal text-muted-foreground mt-1">{plan.description}</p>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {featuresList.map((feature, index) => (
+                  <TableRow key={index} className="border-b border-gray-200">
+                    <TableCell className="font-medium text-left py-3">{feature.name}</TableCell>
+                    <TableCell className="text-center py-3">
+                      {feature.foundations ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {feature.optimum ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {feature.expert ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="bg-gray-50">
+                  <TableCell className="text-left font-bold text-lg py-4">Action</TableCell>
+                  {kasperskyPlansData.map((plan) => (
+                    <TableCell key={plan.id} className="text-center py-4">
+                      <Button asChild size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        <Link href={plan.link}>View Products</Link>
+                      </Button>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
       </section>
