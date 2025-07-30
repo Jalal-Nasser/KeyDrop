@@ -6,58 +6,58 @@ export type Database = {
           id: number
           name: string
           description: string | null
-          price: number // Changed from string to number
+          price: number
           image: string | null
           is_digital: boolean | null
           download_url: string | null
           sale_price: number | null
           is_on_sale: boolean | null
           sale_percent: number | null
-          sku: string | null // Added
-          tag: string | null // Added
-          category: string | null // Added
-          is_most_sold: boolean | null // Added
-          seo_title: string | null // Added
-          seo_description: string | null // Added
-          seo_keywords: string | null // Added
+          sku: string | null
+          tag: string | null
+          category: string | null
+          is_most_sold: boolean | null
+          seo_title: string | null
+          seo_description: string | null
+          seo_keywords: string | null
         }
         Insert: {
           id?: number
           name: string
           description?: string | null
-          price: number // Changed from string to number
+          price: number
           image?: string | null
           is_digital?: boolean | null
           download_url?: string | null
           sale_price?: number | null
           is_on_sale?: boolean | null
           sale_percent?: number | null
-          sku?: string | null // Added (will be auto-generated)
-          tag?: string | null // Added
-          category?: string | null // Added
-          is_most_sold?: boolean | null // Added
-          seo_title?: string | null // Added
-          seo_description?: string | null // Added
-          seo_keywords?: string | null // Added
+          sku?: string | null
+          tag?: string | null
+          category?: string | null
+          is_most_sold?: boolean | null
+          seo_title?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
         }
         Update: {
           id?: number
           name?: string
           description?: string | null
-          price?: number // Changed from string to number
+          price?: number
           image?: string | null
           is_digital?: boolean | null
           download_url?: string | null
           sale_price?: number | null
           is_on_sale?: boolean | null
           sale_percent?: number | null
-          sku?: string | null // Added (should not be updated manually)
-          tag?: string | null // Added
-          category?: string | null // Added
-          is_most_sold?: boolean | null // Added
-          seo_title?: string | null // Added
-          seo_description?: string | null // Added
-          seo_keywords?: string | null // Added
+          sku?: string | null
+          tag?: string | null
+          category?: string | null
+          is_most_sold?: boolean | null
+          seo_title?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
         }
       }
       profiles: {
@@ -140,8 +140,8 @@ export type Database = {
           product_id: number
           quantity: number
           price_at_purchase: number
-          product_key: string | null // Added
-          products: Database['public']['Tables']['products']['Row'][] | null; // Corrected: now an array of product objects
+          product_key: string | null
+          products: Database['public']['Tables']['products']['Row'][] | null
         }
         Insert: {
           id?: string
@@ -149,7 +149,7 @@ export type Database = {
           product_id: number
           quantity: number
           price_at_purchase: number
-          product_key?: string | null // Added
+          product_key?: string | null
         }
         Update: {
           id?: string
@@ -157,7 +157,7 @@ export type Database = {
           product_id?: number
           quantity?: number
           price_at_purchase?: number
-          product_key?: string | null // Added
+          product_key?: string | null
         }
       }
       wishlist_items: {
@@ -207,21 +207,14 @@ export type Database = {
         }
       }
     }
-    Views: {
-      // Add views if any
-    }
+    Views: {}
     Functions: {
-      generate_unique_sku: { // Added
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      // Add functions if any
+      generate_unique_sku: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
-    Enums: {
-      // Add enums if any
-    }
-    CompositeTypes: {
-      // Add composite types if any
-    }
+    Enums: {}
+    CompositeTypes: {}
   }
 }
