@@ -1,4 +1,3 @@
-'.">
 import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, Users, Award, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,37 +125,37 @@ export default function KasperskyPage() {
             <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
               <CardHeader>
                 <DollarSign className="h-10 w-10 text-purple-600 mx-auto mb-4" />
-                <CardTitle>Cost-Effective</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Affordable, scalable protection that grows with your business without breaking the bank.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <RefreshCcw className="h-10 w-10 text-orange-600 mx-auto mb-4" />
-              <CardTitle>Always Up-to-Date</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Automatic updates and real-time threat intelligence ensure continuous protection.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <Scale className="h-10 w-10 text-red-600 mx-auto mb-4" />
-              <CardTitle>Flexible Licensing</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Adapt your security to your evolving needs with flexible licensing options.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+              </CardHeader> {/* Added missing closing tag here */}
+              <CardTitle>Cost-Effective</CardTitle>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Affordable, scalable protection that grows with your business without breaking the bank.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <RefreshCcw className="h-10 w-10 text-orange-600 mx-auto mb-4" />
+                <CardTitle>Always Up-to-Date</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Automatic updates and real-time threat intelligence ensure continuous protection.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <Scale className="h-10 w-10 text-red-600 mx-auto mb-4" />
+                <CardTitle>Flexible Licensing</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Adapt your security to your evolving needs with flexible licensing options.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
       </section>
 
       {/* Why Choose Dropskey Section */}
@@ -215,7 +214,7 @@ export default function KasperskyPage() {
                   <TableHead className="w-[200px] text-left font-bold text-lg text-foreground">Feature</TableHead>
                   {kasperskyPlansData.map((plan) => (
                     <TableHead key={plan.id} className="text-center font-bold text-lg text-foreground">
-                      <div> {/* Added explicit div here */}
+                      <div>
                         {plan.name}
                         <p className="text-sm font-normal text-muted-foreground mt-1">{plan.description}</p>
                       </div>
