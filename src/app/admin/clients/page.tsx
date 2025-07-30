@@ -37,7 +37,7 @@ export default async function AdminClientsPage() {
     redirect("/account")
   }
 
-  // Removed email from select due to possible permission issues
+  // Select only safe columns to avoid permission issues
   const { data: clients, error } = await supabase
     .from('profiles')
     .select('id, first_name, last_name, company_name, created_at')
