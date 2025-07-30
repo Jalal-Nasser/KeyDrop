@@ -37,10 +37,10 @@ export default async function AdminClientsPage() {
     redirect("/account")
   }
 
-  // Select only safe columns to avoid permission issues
+  // Removed email from select due to possible permission issues
   const { data: clients, error } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, email, company_name, created_at')
+    .select('id, first_name, last_name, company_name, created_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -49,7 +49,9 @@ export default async function AdminClientsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Error Loading Clients</CardTitle>
-          <CardDescription>There was an error loading the clients list. Please try again later.</CardDescription>
+          <CardDescription>
+            There was an error loading the clients list. Please check your database permissions and RLS policies.
+          </CardDescription>
         </CardHeader>
       </Card>
     )
@@ -66,7 +68,6 @@ export default async function AdminClientsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Full Name</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Joined Date</TableHead>
               <TableHead>Actions</TableHead>
@@ -76,7 +77,6 @@ export default async function AdminClientsPage() {
             {clients?.map((client) => (
               <TableRow key={client.id}>
                 <TableCell>{(client.first_name || '') + ' ' + (client.last_name || '')}</TableCell>
-                <TableCell>{client.email || 'N/A'}</TableCell>
                 <TableCell>{client.company_name || 'N/A'}</TableCell>
                 <TableCell>{client.created_at ? format(new Date(client.created_at), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
