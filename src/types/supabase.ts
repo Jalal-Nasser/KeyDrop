@@ -220,6 +220,5 @@ export type Database = {
 }
 
 declare global {
-  // This empty declaration prevents duplicate identifier errors in some setups
-  // You can add module augmentation here if needed
+  // Prevent duplicate identifier errors by declaring an empty global scope
 }
