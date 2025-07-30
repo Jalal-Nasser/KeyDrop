@@ -10,7 +10,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, first_name, last_name")
-    .order("created_at", { ascending: false });
+    .order("id", { ascending: false }); // Changed from 'created_at' to 'id'
 
   if (error) {
     return NextResponse.json(

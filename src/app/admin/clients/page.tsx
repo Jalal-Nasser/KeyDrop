@@ -16,7 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
 import Link from "next/link"
 
 export default async function AdminClientsPage() {
@@ -51,11 +50,11 @@ export default async function AdminClientsPage() {
     redirect("/account")
   }
 
-  // Select only safe columns to avoid permission issues
+  // Select only existing columns and order by name
   const { data: clients, error } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, company_name, created_at')
-    .order('created_at', { ascending: false })
+    .select('id, first_name, last_name, company_name')
+    .order('first_name', { ascending: true })
 
   if (error) {
     console.error("Error fetching clients:", error)
@@ -83,7 +82,6 @@ export default async function AdminClientsPage() {
             <TableRow>
               <TableHead>Full Name</TableHead>
               <TableHead>Company</TableHead>
-              <TableHead>Joined Date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -92,7 +90,6 @@ export default async function AdminClientsPage() {
               <TableRow key={client.id}>
                 <TableCell>{(client.first_name || '') + ' ' + (client.last_name || '')}</TableCell>
                 <TableCell>{client.company_name || 'N/A'}</TableCell>
-                <TableCell>{client.created_at ? format(new Date(client.created_at), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/clients/${client.id}/orders`}>View Client Orders</Link>
