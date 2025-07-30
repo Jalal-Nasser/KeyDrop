@@ -125,8 +125,8 @@ export default function KasperskyPage() {
             <Card className="text-center shadow-md hover:shadow-lg transition-shadow duration-300">
               <CardHeader>
                 <DollarSign className="h-10 w-10 text-purple-600 mx-auto mb-4" />
-              </CardHeader> {/* Added missing closing tag here */}
-              <CardTitle>Cost-Effective</CardTitle>
+                <CardTitle>Cost-Effective</CardTitle>
+              </CardHeader> {/* Corrected: Added missing closing tag */}
               <CardContent>
                 <p className="text-muted-foreground">
                   Affordable, scalable protection that grows with your business without breaking the bank.
