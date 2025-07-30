@@ -10,7 +10,7 @@ const BASE_PRICE = 1495;
 const PRICE_PER_EXTRA_USER = 230;
 const DISCOUNT_RATE = 0.10;
 
-// Updated KasperskyLogo component with hexagon and 'k' letter, green gradient fill
+// Existing KasperskyLogo component (green hexagon with black 'k')
 function KasperskyLogo({ className }: { className?: string }) {
   return (
     <svg
@@ -47,6 +47,44 @@ function KasperskyLogo({ className }: { className?: string }) {
       <path
         d="M38 32 L38 64 L44 64 L44 48 L54 64 L60 64 L50 48 L60 32 L54 32 L44 44 L44 32 Z"
         fill="#000000"
+      />
+    </svg>
+  );
+}
+
+// New KasperskyOptimumLogo component (blue hexagon with blue 'k')
+function KasperskyOptimumLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="96"
+      height="96"
+      viewBox="0 0 96 96"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Kaspersky Optimum Logo"
+    >
+      <defs>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#2DB7FF" floodOpacity="0.6" />
+        </filter>
+      </defs>
+      {/* Blue hexagon with shadow */}
+      <path
+        d="M48 2 L88 26 L88 70 L48 94 L8 70 L8 26 Z"
+        fill="#2DB7FF"
+        filter="url(#shadow)"
+      />
+      {/* Black inner hexagon */}
+      <path
+        d="M48 18 L76 34 L76 62 L48 78 L20 62 L20 34 Z"
+        fill="#000000"
+      />
+      {/* Blue letter K */}
+      <path
+        d="M38 32 L38 64 L44 64 L44 48 L54 64 L60 64 L50 48 L60 32 L54 32 L44 44 L44 32 Z"
+        fill="#2DB7FF"
       />
     </svg>
   );
@@ -218,7 +256,7 @@ export default function KasperskyPage() {
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4">
-                  <KasperskyLogo className="mx-auto h-12 w-auto" />
+                  <KasperskyOptimumLogo className="mx-auto h-12 w-auto" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">Kaspersky Next EDR Optimum</h3>
                 <p className="mb-6 text-gray-700 max-w-xs">
