@@ -4,14 +4,6 @@ import { ShieldCheck, Cloud, Settings, Bug, Zap, DollarSign, RefreshCcw, Scale, 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useState } from "react";
 
 const BASE_PRICE = 1495;
@@ -237,44 +229,42 @@ export default function KasperskyPage() {
 
       {/* Compare Our Plans Section */}
       <section className="bg-blue-600 text-white py-16 text-center">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-3xl font-bold mb-8">Compare Our Kaspersky Next EDR Plans</h2>
           <div className="overflow-x-auto">
-            <Table className="min-w-full bg-white text-foreground rounded-lg shadow-lg">
-              <TableHeader>
-                <TableRow className="bg-gray-100">
-                  <TableHead className="w-[200px] text-left font-bold text-lg text-foreground">Feature</TableHead>
+            <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+              <thead className="bg-blue-700 text-white">
+                <tr>
+                  <th className="border border-gray-300 p-4 text-left font-semibold">Feature</th>
                   {kasperskyPlansData.map((plan) => (
-                    <TableHead key={plan.id} className="text-center font-bold text-lg text-foreground">
-                      <div>
-                        {plan.name}
-                        <p className="text-sm font-normal text-muted-foreground mt-1">{plan.description}</p>
-                      </div>
-                    </TableHead>
+                    <th key={plan.id} className="border border-gray-300 p-4 font-semibold text-center">
+                      <div className="text-lg">{plan.name}</div>
+                      <div className="text-sm font-normal mt-1">{plan.description}</div>
+                    </th>
                   ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                </tr>
+              </thead>
+              <tbody>
                 {featuresList.map((feature, index) => (
-                  <TableRow key={index} className="border-b border-gray-200">
-                    <TableCell className="font-medium text-left py-3">{feature.name}</TableCell>
-                    <TableCell className="text-center py-3">
-                      {feature.foundations ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
-                    </TableCell>
-                    <TableCell className="text-center py-3">
-                      {feature.optimum ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
-                    </TableCell>
-                    <TableCell className="text-center py-3">
-                      {feature.expert ? <Check className="h-5 w-5 text-green-600 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
-                    </TableCell>
-                  </TableRow>
+                  <tr key={index} className={index % 2 === 0 ? "bg-blue-50" : "bg-white"}>
+                    <td className="border border-gray-300 p-4 font-medium text-left">{feature.name}</td>
+                    <td className="border border-gray-300 p-4 text-center">
+                      {feature.foundations ? <Check className="mx-auto text-green-600" /> : <X className="mx-auto text-red-600" />}
+                    </td>
+                    <td className="border border-gray-300 p-4 text-center">
+                      {feature.optimum ? <Check className="mx-auto text-green-600" /> : <X className="mx-auto text-red-600" />}
+                    </td>
+                    <td className="border border-gray-300 p-4 text-center">
+                      {feature.expert ? <Check className="mx-auto text-green-600" /> : <X className="mx-auto text-red-600" />}
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
           {/* New Pricing Plans Section */}
-          <div className="mt-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Foundations Plan */}
             <div className="border rounded-lg p-6 bg-green-50 relative">
               <div className="flex flex-col items-center text-center">
