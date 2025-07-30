@@ -218,3 +218,19 @@ export type Database = {
     CompositeTypes: {}
   }
 }
+
+// If you have extensions to Database, use module augmentation in separate .d.ts files like this:
+
+// declare module "@/types/supabase" {
+//   interface Database {
+//     public: {
+//       Tables: {
+//         services: {
+//           Row: { ... }
+//           Insert: { ... }
+//           Update: { ... }
+//         }
+//       }
+//     }
+//   }
+// }
