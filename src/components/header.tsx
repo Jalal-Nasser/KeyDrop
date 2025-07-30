@@ -5,7 +5,6 @@ import { Search, Heart, User, ShoppingCart, Menu, X, Globe, Phone } from "lucide
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image" // Import Image component
-import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
 import { AuthDialog } from "@/components/auth-dialog" // Changed from AuthSheet
 import { useCart } from "@/context/cart-context"
@@ -175,8 +174,6 @@ export function Header({ className }: { className?: string }) {
           </div>
         </div>
       </div>
-
-      <StoreNotice />
 
       {/* Mobile menu */}
       {isMenuOpen && (

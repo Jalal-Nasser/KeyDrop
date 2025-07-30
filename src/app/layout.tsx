@@ -14,6 +14,7 @@ import { CartProvider } from "@/context/cart-context"
 import { MobileNavBar } from "@/components/mobile-nav-bar"
 import { WishlistProvider } from "@/context/wishlist-context"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { StoreNoticeContainer } from "@/components/store-notice-container";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -99,6 +100,7 @@ export default async function RootLayout({
               <CartProvider>
                 <WishlistProvider>
                   <Header className="print:hidden" />
+                  <StoreNoticeContainer />
                   <main className="flex-grow pb-[60px] pt-10">{children}</main>
                   <Footer />
                   <MobileNavBar className="print:hidden" />
