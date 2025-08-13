@@ -22,6 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import Link from "next/link"
 import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/account/actions"
+import { CountrySelect } from "@/components/country-select"
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -33,7 +34,7 @@ const profileSchema = z.object({
   city: z.string().trim().min(1, "City is required"),
   state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
   postal_code: z.string().trim().min(1, "Postal code is required"),
-  country: z.string().trim().min(1, "Country is required"),
+  country: z.string().trim().length(2, "Country is required"),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -181,7 +182,7 @@ export default function AccountPage() {
                   <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="country" render={({ field }) => (
-                  <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Country</FormLabel><FormControl><CountrySelect value={field.value || ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">

@@ -5,6 +5,7 @@ import Image from "next/image"
 import { InvoiceActions } from "@/components/invoice-actions"
 import { Suspense } from "react"
 import { AutoPrinter } from "@/components/auto-printer"
+import { getCountryName } from "@/lib/countries"
 
 interface Order {
   id: string;
@@ -97,7 +98,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
                 <p>{profile.address_line_1}</p>
                 {profile.address_line_2 && <p>{profile.address_line_2}</p>}
                 <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
-                <p>{profile.country}</p>
+                <p>{getCountryName(profile.country)}</p>
                 {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
               </address>
             ) : (

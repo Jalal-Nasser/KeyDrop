@@ -43,7 +43,7 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
       return Promise.reject(new Error("User not signed in"))
     }
     if (!isFormValid) {
-      toast.error("Please fill in all required billing details.")
+      toast.error("Please fill in all required billing details and agree to the terms.")
       return Promise.reject(new Error("Billing form is invalid"))
     }
 
@@ -51,6 +51,20 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
       await handleProfileUpdate()
     } catch (error) {
       return Promise.reject(error)
+    }
+
+    const shippingDetails = {
+      name: {
+        full_name: `${billingDetails.first_name} ${billingDetails.last_name}`,
+      },
+      address: {
+        address_line_1: billingDetails.address_line_1,
+        address_line_2: billingDetails.address_line_2,
+        admin_area_2: billingDetails.city,
+        admin_area_1: billingDetails.state_province_region,
+        postal_code: billingDetails.postal_code,
+        country_code: billingDetails.country,
+      },
     }
 
     return actions.order.create({
@@ -61,8 +75,12 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
             currency_code: "USD",
             value: cartTotal.toFixed(2),
           },
+          shipping: shippingDetails,
         },
       ],
+      application_context: {
+        shipping_preference: 'SET_PROVIDED_ADDRESS',
+      },
     })
   }
 

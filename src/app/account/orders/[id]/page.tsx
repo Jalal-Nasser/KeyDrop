@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { getCountryName } from "@/lib/countries"
 
 interface Order {
   id: string;
@@ -87,7 +88,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 <p>{profile.address_line_1}</p>
                 {profile.address_line_2 && <p>{profile.address_line_2}</p>}
                 <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
-                <p>{profile.country}</p>
+                <p>{getCountryName(profile.country)}</p>
                 {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
               </div>
             )}

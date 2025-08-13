@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account/actions"
+import { CountrySelect } from "@/components/country-select"
 
 const profileBillingSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -42,7 +43,7 @@ const profileBillingSchema = z.object({
   city: z.string().trim().min(1, "City is required"),
   state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
   postal_code: z.string().trim().min(1, "Postal code is required"),
-  country: z.string().trim().min(1, "Country is required"),
+  country: z.string().trim().length(2, "Country is required"),
 });
 
 const checkoutSchema = profileBillingSchema.extend({
@@ -400,7 +401,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="postal_code" render={({ field }) => (<FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="country" render={({ field }) => (
+                        <FormItem><FormLabel>Country</FormLabel><FormControl><CountrySelect value={field.value || ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
+                      )} />
                     </div>
                     <FormField
                       control={form.control}
