@@ -1,11 +1,10 @@
 "use client"
 
-import {
-  PayPalButtons,
-} from "@paypal/react-paypal-js"
+import { PayPalButtons } from "@paypal/react-paypal-js"
 import { useSession } from "@/context/session-context"
 import { toast } from "sonner"
 import { Product } from "@/types/product"
+import { useRouter } from "next/navigation"
 
 interface PayPalButtonProps {
   product: Product
@@ -13,85 +12,70 @@ interface PayPalButtonProps {
 }
 
 export function PayPalButton({ product, quantity }: PayPalButtonProps) {
-  const { session, supabase } = useSession()
+  const { session } = useSession()
+  const router = useRouter()
 
-  // Removed parsePrice as product.price is now a number
-
-  const createOrder = (data: any, actions: any) => { // Changed type from CreateOrderData to any
+  const createOrder = async () => {
     if (!session) {
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
     }
 
-    const price = product.price // Directly use product.price as it's a number
-    const totalValue = (price * quantity).toFixed(2)
+    const totalValue = (product.price * quantity).toFixed(2)
 
-    return actions.order.create({
-      purchase_units: [
-        {
-          description: product.name,
-          amount: {
-            currency_code: "USD",
-            value: totalValue,
-          },
-        },
-      ],
-    })
+    try {
+      const response = await fetch("/api/paypal/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_price: totalValue,
+          currency_code: "USD",
+        }),
+      })
+      const order = await response.json()
+      if (order.id) {
+        return order.id
+      } else {
+        throw new Error(order.error || "Failed to create order.")
+      }
+    } catch (err: any) {
+      toast.error(err.message)
+      return Promise.reject(err)
+    }
   }
 
-  const onApprove = async (data: any, actions: any) => { // Changed type from OnApproveData to any
-    if (!actions.order) {
-      toast.error("Something went wrong with the PayPal order. Please try again.")
-      return Promise.reject(new Error("Order actions not available"))
-    }
+  const onApprove = async (data: any) => {
+    const toastId = toast.loading("Processing your payment...")
+    try {
+      // For single product purchases, we can pass a simplified cart
+      const cartItem = { ...product, quantity }
+      const cartTotal = product.price * quantity
 
-    const details = await actions.order.capture()
-    const price = product.price // Directly use product.price as it's a number
-    const total = price * quantity
+      const response = await fetch("/api/paypal/capture-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderID: data.orderID,
+          cartItems: [cartItem],
+          cartTotal: cartTotal,
+          billingDetails: {}, // Billing details are not collected on this page
+        }),
+      })
+      const result = await response.json()
 
-    if (details.status === "COMPLETED") {
-      toast.success("Payment successful! Your order is being processed.")
-
-      if (supabase && session) {
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert({
-            user_id: session.user.id,
-            status: "completed",
-            total: total,
-            payment_gateway: "paypal",
-            payment_id: details.id,
-          })
-          .select()
-          .single()
-
-        if (orderError) {
-          toast.error(`Failed to save your order: ${orderError.message}`)
-          return
-        }
-
-        const { error: itemError } = await supabase.from("order_items").insert({
-          order_id: orderData.id,
-          product_id: product.id,
-          quantity: quantity,
-          price_at_purchase: price, // Directly use price as it's a number
-        })
-
-        if (itemError) {
-          toast.error(`Failed to save order items: ${itemError.message}`)
-        } else {
-          toast.success("Your order has been successfully saved.")
-        }
+      if (result.success) {
+        toast.success("Payment successful! Your order has been placed.", { id: toastId })
+        router.push(`/account/orders/${result.orderId}`)
+      } else {
+        throw new Error(result.error || "Payment capture failed.")
       }
-    } else {
-      toast.error("Payment not completed. Please try again.")
+    } catch (err: any) {
+      toast.error(err.message, { id: toastId })
     }
   }
 
   const onError = (err: any) => {
-    toast.error(
-      "An error occurred during the PayPal transaction. Please try again."
-    )
+    toast.error("An error occurred during the transaction. Please try again.")
     console.error("PayPal Error:", err)
   }
 
