@@ -1,48 +1,135 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
+import crypto from 'crypto'
 import { sendMail } from '@/lib/postmark'
 
-async function verifyTurnstile(token: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
+// Zod schema for validating the request body
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required.'),
+  email: z.string().email('Invalid email address.'),
+  subject: z.string().min(1, 'Subject is required.'),
+  message: z.string().min(10, 'Message must be at least 10 characters.'),
+  turnstileToken: z.string().min(1, 'Turnstile token is missing.'),
+})
+
+// Turnstile verification function
+async function verifyTurnstile(token: string, ip?: string) {
+  const secret = process.env.TURNSTILE_SECRET_KEY
   if (!secret) {
-    console.error("TURNSTILE_SECRET_KEY is not set in environment variables.");
-    throw new Error("Server configuration error: Missing Turnstile secret key.");
+    throw new Error("TURNSTILE_SECRET_KEY is not set.")
   }
 
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v2/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`,
-  });
+  const body = new URLSearchParams({
+    secret,
+    response: token,
+    ...(ip && { remoteip: ip }),
+  })
 
-  const data = await response.json();
-  return data.success;
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body,
+  })
+
+  const data = await response.json()
+  return data as { success: boolean; 'error-codes'?: string[] }
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.ip || req.headers.get('x-forwarded-for')
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
-    const { name, email, message, turnstileToken } = await req.json()
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    const body = await req.json()
+    const validation = contactSchema.safeParse(body)
+
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid input.', issues: validation.error.issues }, { status: 400 })
     }
 
-    // Verify the Turnstile token
-    if (!turnstileToken) {
-      return NextResponse.json({ error: 'CAPTCHA challenge is required.' }, { status: 400 });
-    }
-    const isVerified = await verifyTurnstile(turnstileToken);
-    if (!isVerified) {
-      return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 403 });
+    const { name, email, subject, message, turnstileToken } = validation.data
+
+    // 1. Verify Turnstile token
+    const turnstileResponse = await verifyTurnstile(turnstileToken, ip)
+    if (!turnstileResponse.success) {
+      return NextResponse.json({ error: 'CAPTCHA verification failed.', details: turnstileResponse['error-codes'] }, { status: 403 })
     }
 
-    // Send email to your support address
-    await sendMail({
-      to: 'support@yourdomain.com', // Change to your support email
-      subject: `Contact Form Submission from ${name}`,
-      html: `<p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Message:</b><br/>${message}</p>`,
+    // 2. Rate Limiting (5 submissions per 10 minutes)
+    const rateLimitKey = `contact:${ip}`
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+
+    const { data: rateLimitData, error: rateLimitError } = await supabaseAdmin
+      .from('rate_limits')
+      .select('*')
+      .eq('key', rateLimitKey)
+      .single()
+
+    if (rateLimitData && new Date(rateLimitData.window_start) > new Date(tenMinutesAgo)) {
+      if (rateLimitData.count >= 5) {
+        return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      }
+      await supabaseAdmin.from('rate_limits').update({ count: rateLimitData.count + 1 }).eq('key', rateLimitKey)
+    } else {
+      await supabaseAdmin.from('rate_limits').upsert({ key: rateLimitKey, count: 1, window_start: new Date().toISOString() })
+    }
+
+    // 3. Duplicate Submission Guard (same email + message from same IP within 2 minutes)
+    const messageHash = crypto.createHash('sha256').update(`${email}:${message}`).digest('hex')
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+
+    const { data: existingMessage, error: duplicateCheckError } = await supabaseAdmin
+      .from('contact_messages')
+      .select('id')
+      .eq('ip', ip)
+      .eq('message_sha', messageHash)
+      .gte('created_at', twoMinutesAgo)
+      .limit(1)
+      .single()
+
+    if (existingMessage) {
+      return NextResponse.json({ error: 'This looks like a duplicate submission.' }, { status: 409 })
+    }
+
+    // 4. Insert into database
+    const { error: insertError } = await supabaseAdmin.from('contact_messages').insert({
+      name,
+      email,
+      subject,
+      message,
+      ip,
+      message_sha: messageHash,
     })
-    return NextResponse.json({ success: true })
+
+    if (insertError) {
+      throw new Error(`Database insert error: ${insertError.message}`)
+    }
+
+    // 5. (Optional) Send notification email
+    try {
+      await sendMail({
+        to: 'support@dropskey.com', // Your support email
+        subject: `New Contact Form Submission: ${subject}`,
+        html: `
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>IP Address:</strong> ${ip}</p>
+          <hr>
+          <p><strong>Message:</strong></p>
+          <p>${message}</p>
+        `,
+      })
+    } catch (emailError) {
+      console.error("Failed to send contact notification email:", emailError)
+      // Do not block the user response for this
+    }
+
+    return NextResponse.json({ success: true, message: 'Your message has been sent successfully!' })
   } catch (error: any) {
-    console.error("Error in contact form API:", error);
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 });
+    console.error('Contact form API error:', error)
+    return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 })
   }
 }
