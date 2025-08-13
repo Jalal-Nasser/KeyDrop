@@ -56,7 +56,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         setWishlistItems([])
       } else {
         // Filter out items where product data might be null or empty
-        const validItems = data.filter((item: any) => item.products && item.products.length > 0) as WishlistItem[]
+        const validItems = data.filter(item => item.products && item.products.length > 0) as WishlistItem[]
         setWishlistItems(validItems)
       }
       setIsLoadingWishlist(false)

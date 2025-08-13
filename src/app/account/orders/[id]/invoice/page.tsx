@@ -53,7 +53,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
 
   if (error || !order) {
     console.error("Error fetching invoice details:", error)
-    return notFound()
+    notFound()
   }
 
   const processingFee = order.total * 0.15;

@@ -24,7 +24,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           "prose dark:prose-invert prose-sm sm:prose-base max-w-none rounded-md border min-h-[150px] border-input bg-background px-3 py-2 focus:outline-none",
       },
     },
-    onUpdate({ editor }: { editor: any }) {
+    onUpdate({ editor }) {
       onChange(editor.getHTML())
     },
     immediatelyRender: false, // Add this line to prevent SSR hydration mismatches

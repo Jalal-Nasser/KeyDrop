@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Printer, ArrowLeft } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useSession } from "@/context/session-context"
+import { supabase } from "@/integrations/supabase/client"
 import Link from "next/link"
 
 export function InvoiceActions() {
-  const { session, supabase } = useSession()
+  const { session } = useSession()
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function InvoiceActions() {
       }
     }
     checkAdminStatus()
-  }, [session, supabase])
+  }, [session])
 
   const handlePrint = () => {
     window.print()

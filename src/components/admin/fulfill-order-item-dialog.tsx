@@ -34,16 +34,15 @@ export function FulfillOrderItemDialog({ orderItemId, productName, children }: F
       return
     }
 
-    startTransition(() => {
-      fulfillOrderItem(orderItemId, productKey.trim()).then((result) => {
-        if (result.success) {
-          toast.success(result.message)
-          setIsOpen(false)
-          setProductKey("")
-        } else {
-          toast.error(result.message)
-        }
-      })
+    startTransition(async () => {
+      const result = await fulfillOrderItem(orderItemId, productKey.trim())
+      if (result.success) {
+        toast.success(result.message)
+        setIsOpen(false)
+        setProductKey("")
+      } else {
+        toast.error(result.message)
+      }
     })
   }
 

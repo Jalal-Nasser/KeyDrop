@@ -11,15 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { format } from "date-fns/format"
-import { parseISO } from "date-fns/parseISO"
-import { startOfMonth } from "date-fns/startOfMonth"
-import { endOfMonth } from "date-fns/endOfMonth"
-import { startOfYear } from "date-fns/startOfYear"
-import { endOfYear } from "date-fns/endOfYear"
-import { eachDayOfInterval } from "date-fns/eachDayOfInterval"
-import { eachMonthOfInterval } from "date-fns/eachMonthOfInterval"
-import { eachYearOfInterval } from "date-fns/eachYearOfInterval"
+import { format, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval, eachYearOfInterval } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"

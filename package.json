@@ -49,7 +49,6 @@
     "embla-carousel-react": "8.5.1",
     "graphql": "latest",
     "graphql-request": "latest",
-    "html-react-parser": "^5.2.6",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "^14.0.0",

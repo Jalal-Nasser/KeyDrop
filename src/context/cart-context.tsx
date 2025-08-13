@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { toast } from "sonner"
 import { Product } from "@/types/product"
 import { CartItem } from "@/types/cart"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Import useRouter
 
 interface CartContextType {
   cartItems: CartItem[]
@@ -20,11 +20,9 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [isMounted, setIsMounted] = useState(false)
-  const router = useRouter()
+  const router = useRouter() // Initialize useRouter
 
   useEffect(() => {
-    setIsMounted(true)
     try {
       const storedCart = localStorage.getItem("cart")
       if (storedCart) {
@@ -37,16 +35,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem("cart", JSON.stringify(cartItems))
-    }
-  }, [cartItems, isMounted])
+    localStorage.setItem("cart", JSON.stringify(cartItems))
+  }, [cartItems])
+
+  // Removed parsePrice as price is now consistently a number
 
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id)
-      let newQuantityInCart = quantity;
-      const toastId = `cart-add-${product.id}`;
+      let newQuantityInCart = quantity; // This will be the quantity after this operation
+      const toastId = `cart-add-${product.id}`; // Unique ID for this product's toast
 
       if (existingItem) {
         newQuantityInCart = existingItem.quantity + quantity;
@@ -74,6 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           },
           duration: 3000,
         });
+        // Ensure price is stored as a number
         return [...prevItems, { ...product, quantity, price: product.price }]
       }
     })
@@ -84,7 +83,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const itemToRemove = prevItems.find(item => item.id === productId)
       if (itemToRemove) {
         toast.info(`${itemToRemove.name} removed from cart.`, {
-          duration: 2000,
+          duration: 2000, // Shorter duration for removal
         });
       }
       return prevItems.filter(item => item.id !== productId)
@@ -100,6 +99,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const updatedItems = prevItems.map(item =>
         item.id === productId ? { ...item, quantity } : item
       );
+      // No toast here, as addToCart handles updates and this is for direct quantity changes
       return updatedItems;
     });
   }
@@ -111,10 +111,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const cartCount = isMounted ? cartItems.reduce((count, item) => count + item.quantity, 0) : 0
-  const cartTotal = isMounted ? cartItems.reduce((total, item) => {
+  const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
+  const cartTotal = cartItems.reduce((total, item) => {
+    // Price is now directly a number
     return total + item.price * item.quantity
-  }, 0) : 0
+  }, 0)
 
   return (
     <CartContext.Provider

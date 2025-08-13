@@ -16,52 +16,32 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
 import Link from "next/link"
-
-type Client = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  company_name: string | null;
-}
 
 export default async function AdminClientsPage() {
   const supabase = createSupabaseServerClient()
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
 
-  if (sessionError || !session) {
-    return redirect("/login")
+  if (!session) {
+    redirect("/login")
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
     .single()
 
-  if (profileError) {
-    console.error("Error fetching admin profile:", profileError)
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Error Loading Clients</CardTitle>
-          <CardDescription>
-            There was an error verifying admin status. Please try again later.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    )
-  }
-
   if (!profile?.is_admin) {
     redirect("/account")
   }
 
-  // Select only existing columns and order by name
+  // Select only safe columns to avoid permission issues
   const { data: clients, error } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, company_name')
-    .order('first_name', { ascending: true })
+    .select('id, first_name, last_name, company_name, created_at')
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error("Error fetching clients:", error)
@@ -89,14 +69,16 @@ export default async function AdminClientsPage() {
             <TableRow>
               <TableHead>Full Name</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Joined Date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clients?.map((client: Client) => (
+            {clients?.map((client) => (
               <TableRow key={client.id}>
                 <TableCell>{(client.first_name || '') + ' ' + (client.last_name || '')}</TableCell>
                 <TableCell>{client.company_name || 'N/A'}</TableCell>
+                <TableCell>{client.created_at ? format(new Date(client.created_at), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/clients/${client.id}/orders`}>View Client Orders</Link>

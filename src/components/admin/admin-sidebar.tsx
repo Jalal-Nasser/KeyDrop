@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package, Tag, X, ClipboardList, Users, Megaphone, Settings } from "lucide-react"
+import { Home, Package, Tag, X, ClipboardList, Users } from "lucide-react" // Removed Settings icon
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -19,9 +19,8 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: "/admin/orders", label: "Orders", icon: ClipboardList },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/coupons", label: "Coupons", icon: Tag },
-    { href: "/admin/clients", label: "Clients", icon: Users },
-    { href: "/admin/store-notice", label: "Store Notice", icon: Megaphone },
-    { href: "/admin/settings", label: "Site Settings", icon: Settings },
+    // Removed Services link
+    { href: "/admin/clients", label: "Clients", icon: Users }, // Keep Clients link
   ]
 
   return (

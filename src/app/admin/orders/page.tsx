@@ -26,7 +26,7 @@ export default async function AdminOrdersPage() {
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
-    return redirect("/login")
+    redirect("/login")
   }
 
   const { data: profile } = await supabase
