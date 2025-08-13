@@ -8,13 +8,13 @@ import { CartItem } from "@/types/cart"
 import { useRouter } from "next/navigation"
 
 interface PayPalCartButtonProps {
-  cartTotal: number
+  cartTotal: number // This will now be for display only
   cartItems: CartItem[]
   billingDetails: any
   isFormValid: boolean
 }
 
-export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormValid }: PayPalCartButtonProps) {
+export function PayPalCartButton({ cartItems, billingDetails, isFormValid }: PayPalCartButtonProps) {
   const { session } = useSession()
   const { clearCart } = useCart()
   const router = useRouter()
@@ -29,38 +29,60 @@ export function PayPalCartButton({ cartTotal, cartItems, billingDetails, isFormV
       return Promise.reject(new Error("Billing form is invalid"))
     }
 
+    const toastId = toast.loading("Creating secure order...")
+
     try {
-      const response = await fetch("/api/paypal/create-order", {
+      // Step 1: Create our internal order to get a trusted total and orderId
+      const createOrderResponse = await fetch("/api/checkout/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          order_price: cartTotal,
-          currency_code: "USD",
+          cartItems: cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
+          // promoCode: "...", // Pass promo code here if applicable
         }),
-      })
-      const order = await response.json()
-      if (order.id) {
-        return order.id
+      });
+
+      const ourOrder = await createOrderResponse.json();
+      if (!createOrderResponse.ok) {
+        throw new Error(ourOrder.error || "Failed to create order.");
+      }
+      
+      toast.loading("Preparing PayPal payment...", { id: toastId });
+
+      // Step 2: Create the PayPal order using our trusted orderId
+      const createPayPalOrderResponse = await fetch("/api/paypal/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: ourOrder.orderId }),
+      });
+
+      const payPalOrder = await createPayPalOrderResponse.json();
+      if (payPalOrder.paypalOrderId) {
+        toast.dismiss(toastId);
+        // Attach our internal orderId to the context for onApprove
+        return JSON.stringify({ paypalOrderId: payPalOrder.paypalOrderId, ourOrderId: ourOrder.orderId });
       } else {
-        throw new Error(order.error || "Failed to create order.")
+        throw new Error(payPalOrder.error || "Failed to prepare PayPal payment.");
       }
     } catch (err: any) {
-      toast.error(err.message)
-      return Promise.reject(err)
+      toast.error(err.message, { id: toastId });
+      return Promise.reject(err);
     }
   }
 
-  const onApprove = async (data: any) => {
+  const onApprove = async (data: any, actions: any) => {
     const toastId = toast.loading("Processing your payment...")
     try {
-      const response = await fetch("/api/paypal/capture-order", {
+      // The createOrder function now returns a JSON string with both IDs
+      const context = JSON.parse(data.orderID);
+      const { paypalOrderId, ourOrderId } = context;
+
+      const response = await fetch("/api/paypal/capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          orderID: data.orderID,
-          cartItems,
-          cartTotal,
-          billingDetails,
+          orderId: ourOrderId,
+          paypalOrderId: paypalOrderId,
         }),
       })
       const result = await response.json()
