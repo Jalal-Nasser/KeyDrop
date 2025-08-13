@@ -36,7 +36,7 @@ async function verifyTurnstile(token: string, ip?: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.ip || req.headers.get('x-forwarded-for')
+  const ip = req.ip || req.headers.get('x-forwarded-for') || undefined
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

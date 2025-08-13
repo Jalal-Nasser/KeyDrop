@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import Turnstile, { TurnstileInstance } from "react-turnstile"
+import Turnstile from "react-turnstile"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,7 +39,6 @@ function ContactFormComponent() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const turnstileRef = useRef<TurnstileInstance>(null)
 
   async function onSubmit(values: ContactFormValues) {
     setIsSubmitting(true)
@@ -57,6 +56,7 @@ function ContactFormComponent() {
       if (res.ok) {
         toast.success("Message sent successfully!", { id: toastId })
         form.reset()
+        setTurnstileToken(null)
       } else {
         toast.error(`Failed to send message: ${data.error || "An unknown error occurred."}`, { id: toastId })
       }
@@ -65,8 +65,6 @@ function ContactFormComponent() {
       toast.error(`Failed to send message: ${error.message || "Network error."}`, { id: toastId })
     } finally {
       setIsSubmitting(false)
-      turnstileRef.current?.reset()
-      setTurnstileToken(null)
     }
   }
 
@@ -95,7 +93,6 @@ function ContactFormComponent() {
             )} />
             
             <Turnstile
-              ref={turnstileRef}
               sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               onVerify={(token) => setTurnstileToken(token)}
               onExpire={() => setTurnstileToken(null)}
