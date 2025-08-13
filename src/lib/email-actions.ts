@@ -10,17 +10,23 @@ import {
   renderRegistrationConfirmationTemplateToHtml,
   renderProductDeliveryTemplateToHtml
 } from '@/lib/render-email-template';
+import { Json } from '@/types/supabase';
 
 // Define types that match the Supabase query result structure
 interface FetchedProduct {
   name: string;
   download_url: string | null;
   is_digital: boolean | null;
+  image: string | null; // Added for Discord notification
 }
 
 interface FetchedOrderItem {
   quantity: number;
   price_at_purchase: number;
+  product_name: string | null; // Added
+  sku: string | null; // Added
+  unit_price: number | null; // Added
+  line_total: number | null; // Added
   products: FetchedProduct[] | null; // Changed to array
 }
 
@@ -43,6 +49,9 @@ interface FullFetchedOrder {
   total: number;
   status: string;
   payment_gateway: string | null;
+  amounts: Json | null; // Added
+  promo_code: string | null; // Added
+  promo_snapshot: Json | null; // Added
   order_items: FetchedOrderItem[];
   profiles: FetchedProfile | null;
 }
@@ -54,8 +63,8 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
     const { data: fetchedOrder, error: orderError } = await supabase
       .from('orders')
       .select(`
-        id, created_at, total, status, payment_gateway,
-        order_items ( quantity, price_at_purchase, products ( name, download_url, is_digital ) ),
+        id, created_at, total, status, payment_gateway, amounts, promo_code, promo_snapshot,
+        order_items ( quantity, price_at_purchase, product_name, sku, unit_price, line_total ),
         profiles ( first_name, last_name, company_name, vat_number, address_line_1, address_line_2, city, state_province_region, postal_code, country )
       `)
       .eq('id', payload.orderId)
@@ -76,6 +85,9 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       total: fetchedOrder.total,
       status: fetchedOrder.status,
       payment_gateway: fetchedOrder.payment_gateway,
+      amounts: fetchedOrder.amounts, // Pass amounts
+      promo_code: fetchedOrder.promo_code, // Pass promo_code
+      promo_snapshot: fetchedOrder.promo_snapshot, // Pass promo_snapshot
       order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: oi.products || [] })), // Ensure products is an array
     };
 

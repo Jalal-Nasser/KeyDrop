@@ -67,12 +67,12 @@ export function AdminOrderListClient({ orders }: { orders: OrderWithDetails[] })
                     <div className="flex items-center gap-3">
                       <Package className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">{item.products?.name || 'Unknown Product'}</p>
+                        <p className="font-medium">{item.product_name || item.products?.[0]?.name || 'Unknown Product'}</p>
                         <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                       </div>
                     </div>
                     <div>
-                      {item.products?.is_digital ? (
+                      {item.products?.[0]?.is_digital ? (
                         item.product_key ? (
                           <div className="flex items-center gap-2 text-green-600">
                             <ShieldCheck className="h-5 w-5" />
@@ -80,7 +80,7 @@ export function AdminOrderListClient({ orders }: { orders: OrderWithDetails[] })
                             <p className="text-xs font-mono p-1 bg-green-100 rounded">Key Sent</p>
                           </div>
                         ) : (
-                          <FulfillOrderItemDialog orderItemId={item.id} productName={item.products.name || ''}>
+                          <FulfillOrderItemDialog orderItemId={item.id} productName={item.product_name || item.products?.[0]?.name || ''}>
                             <Button size="sm">
                               <KeyRound className="mr-2 h-4 w-4" />
                               Fulfill

@@ -13,7 +13,7 @@ import { Database } from "@/types/supabase"
 type ProductInfo = Pick<Database['public']['Tables']['products']['Row'], 'name' | 'is_digital' | 'image'>
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
-  products: ProductInfo | null
+  products: ProductInfo[] | null // Changed to array
 }
 
 export type OrderWithDetails = Database['public']['Tables']['orders']['Row'] & {
@@ -48,10 +48,11 @@ export default async function AdminOrdersPage() {
         last_name
       ),
       order_items (
-        *,
+        id, product_id, quantity, price_at_purchase, product_key, product_name, sku, unit_price, line_total,
         products (
           name,
-          is_digital
+          is_digital,
+          image
         )
       )
     `)

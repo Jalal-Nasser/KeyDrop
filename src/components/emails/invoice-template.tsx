@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { format } from "date-fns";
+import { Json } from '@/types/supabase';
 
 interface Product {
   name: string;
@@ -10,7 +11,9 @@ interface Product {
 interface OrderItem {
   quantity: number;
   price_at_purchase: number;
-  products: { name: string; }[] | null;
+  product_name: string | null; // Added
+  unit_price: number | null; // Added
+  line_total: number | null; // Added
 }
 
 export interface Profile {
@@ -32,6 +35,9 @@ export interface Order {
   total: number;
   status: string;
   payment_gateway: string | null;
+  amounts: Json | null; // Added
+  promo_code: string | null; // Added
+  promo_snapshot: Json | null; // Added
   order_items: OrderItem[];
 }
 
@@ -41,9 +47,7 @@ interface InvoiceTemplateProps {
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile }) => {
-  const processingFee = order.total * 0.15;
-  const credit = 0.00; // Assuming no credit for now
-  const finalTotal = order.total + processingFee - credit;
+  const amounts = order.amounts as { subtotal: string, discount: string, tax: string, total: string, currency: string } || { subtotal: order.total.toFixed(2), discount: "0.00", tax: "0.00", total: order.total.toFixed(2), currency: "USD" };
 
   // Format date as readable string
   const invoiceDate = new Date(order.created_at).toLocaleDateString('en-US', {
@@ -179,8 +183,8 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             </thead>
             <tbody>
               {order.order_items.map((item, index) => {
-                const productName = item.products?.[0]?.name || 'Product';
-                const lineTotal = (item.quantity * item.price_at_purchase).toFixed(2);
+                const productName = item.product_name || 'Unknown Product';
+                const lineTotal = (item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2);
                 return (
                   <tr key={index}>
                     <td>{productName}</td>
@@ -192,21 +196,25 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             <tfoot>
               <tr>
                 <td className="total">Sub Total</td>
-                <td className="total">${order.total.toFixed(2)}</td>
+                <td className="total">${parseFloat(amounts.subtotal).toFixed(2)}</td>
               </tr>
-              <tr>
-                <td className="total">Fees</td>
-                <td className="total">${processingFee.toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td className="total">Credit</td>
-                <td className="total">${credit.toFixed(2)}</td>
-              </tr>
+              {parseFloat(amounts.discount) > 0 && (
+                <tr>
+                  <td className="total">Discount</td>
+                  <td className="total">-${parseFloat(amounts.discount).toFixed(2)}</td>
+                </tr>
+              )}
+              {parseFloat(amounts.tax) > 0 && (
+                <tr>
+                  <td className="total">Tax</td>
+                  <td className="total">${parseFloat(amounts.tax).toFixed(2)}</td>
+                </tr>
+              )}
             </tfoot>
           </table>
 
           <div className="footer-total">
-            Total: ${finalTotal.toFixed(2)}
+            Total: ${parseFloat(amounts.total).toFixed(2)}
           </div>
         </div>
       </body>

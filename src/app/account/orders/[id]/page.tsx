@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { getCountryName } from "@/lib/countries"
+import { Json } from "@/types/supabase"
 
 interface Order {
   id: string;
@@ -15,6 +16,9 @@ interface Order {
   status: string;
   payment_gateway: string | null;
   payment_id: string | null;
+  amounts: Json | null; // Added
+  promo_code: string | null; // Added
+  promo_snapshot: Json | null; // Added
   order_items: OrderItem[];
   profiles: {
     first_name: string | null;
@@ -35,9 +39,10 @@ interface OrderItem {
   product_id: number;
   quantity: number;
   price_at_purchase: number;
-  products: {
-    name: string;
-  }[] | null; // Changed to array of objects
+  product_name: string | null; // Added
+  sku: string | null; // Added
+  unit_price: number | null; // Added
+  line_total: number | null; // Added
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -46,8 +51,8 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   const { data: order, error } = await supabase
     .from('orders')
     .select(`
-      id, created_at, total, status, payment_gateway, payment_id,
-      order_items (id, product_id, quantity, price_at_purchase, products (name)),
+      id, created_at, total, status, payment_gateway, payment_id, amounts, promo_code, promo_snapshot,
+      order_items (id, product_id, quantity, price_at_purchase, product_name, sku, unit_price, line_total),
       profiles (first_name, last_name, company_name, vat_number, address_line_1, address_line_2, city, state_province_region, postal_code, country)
     `)
     .eq('id', params.id)
@@ -58,10 +63,8 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
     notFound()
   }
 
-  const processingFee = order.total * 0.15;
-  const finalTotal = order.total + processingFee;
-
   const profile = order.profiles?.[0];
+  const amounts = order.amounts as { subtotal: string, discount: string, tax: string, total: string, currency: string } || { subtotal: order.total.toFixed(2), discount: "0.00", tax: "0.00", total: order.total.toFixed(2), currency: "USD" };
 
   return (
     <div className="container mx-auto p-4 py-12">
@@ -79,6 +82,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <p><strong>Status:</strong> <span className="font-medium capitalize">{order.status}</span></p>
               <p><strong>Payment Gateway:</strong> {order.payment_gateway || 'N/A'}</p>
               {order.payment_id && <p><strong>Payment ID:</strong> {order.payment_id}</p>}
+              {order.promo_code && <p><strong>Promo Code:</strong> {order.promo_code}</p>}
             </div>
             {profile && (
               <div>
@@ -103,17 +107,17 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Subtotal</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Line Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {order.order_items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.products?.[0]?.name || `Product ${item.product_id}`}</TableCell>
+                    <TableCell className="font-medium">{item.product_name || `Product ${item.product_id}`}</TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">${item.price_at_purchase.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">${(item.quantity * item.price_at_purchase).toFixed(2)}</TableCell>
+                    <TableCell className="text-right">${(item.unit_price || item.price_at_purchase).toFixed(2)}</TableCell>
+                    <TableCell className="text-right">${(item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -122,16 +126,24 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <div className="w-full max-w-xs space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>${order.total.toFixed(2)}</span>
+                  <span>${parseFloat(amounts.subtotal).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Processing Fee (15%):</span>
-                  <span>${processingFee.toFixed(2)}</span>
-                </div>
+                {parseFloat(amounts.discount) > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount:</span>
+                    <span>-${parseFloat(amounts.discount).toFixed(2)}</span>
+                  </div>
+                )}
+                {parseFloat(amounts.tax) > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tax:</span>
+                    <span>${parseFloat(amounts.tax).toFixed(2)}</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total:</span>
-                  <span>${finalTotal.toFixed(2)}</span>
+                  <span>${parseFloat(amounts.total).toFixed(2)}</span>
                 </div>
               </div>
             </div>

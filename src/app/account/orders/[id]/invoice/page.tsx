@@ -6,6 +6,7 @@ import { InvoiceActions } from "@/components/invoice-actions"
 import { Suspense } from "react"
 import { AutoPrinter } from "@/components/auto-printer"
 import { getCountryName } from "@/lib/countries"
+import { Json } from "@/types/supabase"
 
 interface Order {
   id: string;
@@ -14,6 +15,9 @@ interface Order {
   status: string;
   payment_gateway: string | null;
   payment_id: string | null;
+  amounts: Json | null; // Added
+  promo_code: string | null; // Added
+  promo_snapshot: Json | null; // Added
   order_items: OrderItem[];
   profiles: {
     first_name: string | null;
@@ -34,9 +38,10 @@ interface OrderItem {
   product_id: number;
   quantity: number;
   price_at_purchase: number;
-  products: {
-    name: string;
-  }[] | null; // Changed to array of objects
+  product_name: string | null; // Added
+  sku: string | null; // Added
+  unit_price: number | null; // Added
+  line_total: number | null; // Added
 }
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
@@ -45,8 +50,8 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: order, error } = await supabase
     .from('orders')
     .select(`
-      id, created_at, total, status, payment_gateway, payment_id,
-      order_items (id, product_id, quantity, price_at_purchase, products (name)),
+      id, created_at, total, status, payment_gateway, payment_id, amounts, promo_code, promo_snapshot,
+      order_items (id, product_id, quantity, price_at_purchase, product_name, sku, unit_price, line_total),
       profiles (first_name, last_name, company_name, vat_number, address_line_1, address_line_2, city, state_province_region, postal_code, country)
     `)
     .eq('id', params.id)
@@ -57,10 +62,8 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     notFound()
   }
 
-  const processingFee = order.total * 0.15;
-  const finalTotal = order.total + processingFee;
-
   const profile = order.profiles?.[0];
+  const amounts = order.amounts as { subtotal: string, discount: string, tax: string, total: string, currency: string } || { subtotal: order.total.toFixed(2), discount: "0.00", tax: "0.00", total: order.total.toFixed(2), currency: "USD" };
 
   return (
     <div className="container mx-auto p-4 py-8 print:p-0 bg-background">
@@ -126,25 +129,33 @@ export default async function InvoicePage({ params }: { params: { id: string } }
             <tbody>
               {order.order_items.map((item) => (
                 <tr key={item.id} className="border-b border-border">
-                  <td className="py-3 text-muted-foreground">{item.products?.[0]?.name || `Product ${item.product_id}`}</td>
+                  <td className="py-3 text-muted-foreground">{item.product_name || `Product ${item.product_id}`}</td>
                   <td className="py-3 text-right text-muted-foreground">{item.quantity}</td>
-                  <td className="py-3 text-right text-muted-foreground">${item.price_at_purchase.toFixed(2)}</td>
-                  <td className="py-3 text-right text-muted-foreground">${(item.quantity * item.price_at_purchase).toFixed(2)}</td>
+                  <td className="py-3 text-right text-muted-foreground">${(item.unit_price || item.price_at_purchase).toFixed(2)}</td>
+                  <td className="py-3 text-right text-muted-foreground">${(item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="border-t border-border">
                 <td colSpan={3} className="py-3 text-right font-semibold text-foreground">Subtotal:</td>
-                <td className="py-3 text-right font-semibold text-foreground">${order.total.toFixed(2)}</td>
+                <td className="py-3 text-right font-semibold text-foreground">${parseFloat(amounts.subtotal).toFixed(2)}</td>
               </tr>
-              <tr>
-                <td colSpan={3} className="py-3 text-right font-semibold text-foreground">Processing Fee (15%):</td>
-                <td className="py-3 text-right font-semibold text-foreground">${processingFee.toFixed(2)}</td>
-              </tr>
+              {parseFloat(amounts.discount) > 0 && (
+                <tr>
+                  <td colSpan={3} className="py-3 text-right font-semibold text-green-600">Discount:</td>
+                  <td className="py-3 text-right font-semibold text-green-600">-${parseFloat(amounts.discount).toFixed(2)}</td>
+                </tr>
+              )}
+              {parseFloat(amounts.tax) > 0 && (
+                <tr>
+                  <td colSpan={3} className="py-3 text-right font-semibold text-foreground">Tax:</td>
+                  <td className="py-3 text-right font-semibold text-foreground">${parseFloat(amounts.tax).toFixed(2)}</td>
+                </tr>
+              )}
               <tr className="bg-muted">
                 <td colSpan={3} className="py-4 text-right text-xl font-bold text-foreground">TOTAL:</td>
-                <td className="py-4 text-right text-xl font-bold text-foreground">${finalTotal.toFixed(2)}</td>
+                <td className="py-4 text-right text-xl font-bold text-foreground">${parseFloat(amounts.total).toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>

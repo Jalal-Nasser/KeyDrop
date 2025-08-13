@@ -4,11 +4,13 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { revalidatePath } from "next/cache"
 import { sendOrderStatusUpdate, sendOrderConfirmation, sendProductDelivery } from "@/lib/email-actions"
 import { createClient } from '@supabase/supabase-js'
+import { Json } from "@/types/supabase"
 
 // Define a type for the expected structure of updatedItem
 interface UpdatedOrderItemResult {
   order_id: string;
-  products: { name: string }[] | null; // Changed to array
+  product_name: string | null; // Changed to product_name
+  products: { name: string, image: string | null }[] | null; // Changed to array
   orders: { user_id: string; total: number; profiles: { first_name: string | null } | null } | null;
 }
 
@@ -27,6 +29,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
       .eq('id', orderItemId)
       .select(`
         order_id,
+        product_name,
         products (name, image),
         orders ( user_id, total, profiles (first_name) )
       `)
@@ -35,8 +38,8 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     if (itemUpdateError) throw new Error(`Failed to update order item: ${itemUpdateError?.message}`)
     if (!updatedItem) throw new Error('Order item not found or could not be updated.');
 
-    const { order_id, products, orders } = updatedItem;
-    if (!products || !orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
+    const { order_id, product_name, products, orders } = updatedItem;
+    if (!orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
 
     // 2. Send the delivery email
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(orders.user_id)
@@ -46,7 +49,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
       userEmail: user.email,
       firstName: orders.profiles.first_name || 'Valued Customer',
       orderId: order_id,
-      productName: products[0]?.name || 'Unknown Product', // Access first element
+      productName: product_name || products?.[0]?.name || 'Unknown Product', // Use product_name from order_items
       productKey: productKey,
     })
 
@@ -98,7 +101,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
   try {
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select(`user_id, total, order_items (products (image))`) // Fetch order items with product images
+      .select(`user_id, total, order_items (product_name, products (image))`) // Fetch order items with product names and images
       .eq('id', orderId)
       .single()
 

@@ -21,9 +21,7 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Database } from "@/types/supabase"
 
-type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
-  products: Pick<Database['public']['Tables']['products']['Row'], 'name'> | null
-}
+type OrderItem = Database['public']['Tables']['order_items']['Row']
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
   order_items: OrderItem[]
@@ -42,8 +40,7 @@ export default async function AccountOrdersPage() {
     .select(`
       *,
       order_items!inner(
-        *, 
-        products:products!inner(name)
+        id, product_id, quantity, price_at_purchase, product_name, unit_price, line_total
       )
     `)
     .eq('user_id', session.user.id)
@@ -83,7 +80,7 @@ export default async function AccountOrdersPage() {
                   <TableCell>
                     {order.order_items.map((item, index) => (
                       <span key={index}>
-                        {item.quantity} x {item.products?.name}
+                        {item.quantity} x {item.product_name || `Product ${item.product_id}`}
                         {index < (order.order_items.length - 1) ? ', ' : ''}
                       </span>
                     ))}
