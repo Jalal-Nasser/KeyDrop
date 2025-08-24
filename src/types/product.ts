@@ -1,18 +1,18 @@
 export interface Product {
   id: number
   name: string
-  description?: string
-  price: number // Changed from string to number
+  description?: string | null // Changed to allow null
+  price: number
   image?: string | null
   is_digital?: boolean
-  download_url?: string
-  sale_price?: number
+  download_url?: string | null // Changed to allow null
+  sale_price?: number | null // Changed to allow null
   is_on_sale?: boolean
-  sale_percent?: number
+  sale_percent?: number | null // Changed to allow null
   // New fields
-  sku?: string
-  tag?: string
-  category?: string
+  sku?: string | null // Changed to allow null
+  tag?: string | null // Changed to allow null
+  category?: string | null // Changed to allow null
   is_most_sold?: boolean
   // SEO fields
   seo_title?: string | null

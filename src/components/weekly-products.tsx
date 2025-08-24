@@ -12,7 +12,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
-import { ProductCard } from "./product-card" // New import
+import { ProductCard } from "./product-card"
 
 export default function WeeklyProducts({ title }: { title: string }) {
   const { addToCart } = useCart()
@@ -36,7 +36,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         console.error("Error fetching weekly products:", error)
         setError(error.message)
       } else {
-        setProducts(data || [])
+        setProducts(data as Product[] || []) // Cast to Product[]
       }
       setLoading(false)
     }
@@ -60,7 +60,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
         ) : products.length === 0 ? (
           <p className="text-center text-muted-foreground">No products found for this section.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"> {/* Changed lg:grid-cols-3 to lg:grid-cols-4 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react" // Import Suspense
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { ProductGrid } from "@/components/product-grid"
@@ -13,7 +13,7 @@ function ShopContent() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const searchParams = useSearchParams() // This hook requires Suspense
+  const searchParams = useSearchParams()
   const supabase = createClientComponentClient<Database>()
 
   useEffect(() => {
@@ -34,7 +34,7 @@ function ShopContent() {
         console.error("Error fetching products:", error)
         setError(error.message)
       } else {
-        setProducts(data || [])
+        setProducts(data as Product[] || []) // Cast to Product[]
       }
       setLoading(false)
     }

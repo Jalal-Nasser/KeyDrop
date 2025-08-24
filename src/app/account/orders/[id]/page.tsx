@@ -16,9 +16,9 @@ interface Order {
   status: string;
   payment_gateway: string | null;
   payment_id: string | null;
-  amounts: Json | null; // Added
-  promo_code: string | null; // Added
-  promo_snapshot: Json | null; // Added
+  amounts: Json | null;
+  promo_code: string | null;
+  promo_snapshot: Json | null;
   order_items: OrderItem[];
   profiles: {
     first_name: string | null;
@@ -39,10 +39,10 @@ interface OrderItem {
   product_id: number;
   quantity: number;
   price_at_purchase: number;
-  product_name: string | null; // Added
-  sku: string | null; // Added
-  unit_price: number | null; // Added
-  line_total: number | null; // Added
+  product_name: string | null;
+  sku: string | null;
+  unit_price: number | null;
+  line_total: number | null;
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {

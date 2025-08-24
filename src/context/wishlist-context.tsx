@@ -8,7 +8,7 @@ import { toast } from "sonner"
 interface WishlistItem {
   id: string // wishlist_item ID
   product_id: number
-  products: Product[] // Changed to array of Product
+  product: Product // Changed to single Product
 }
 
 interface WishlistContextType {
@@ -43,9 +43,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         .select(`
           id,
           product_id,
-          products (
+          product:products (
             id, name, description, price, image, is_digital, download_url,
-            sale_price, is_on_sale, sale_percent, sku, tag, category, is_most_sold
+            sale_price, is_on_sale, sale_percent, sku, tag, category, is_most_sold,
+            seo_title, seo_description, seo_keywords
           )
         `)
         .eq("user_id", session.user.id)
@@ -55,8 +56,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         toast.error("Failed to load your wishlist.")
         setWishlistItems([])
       } else {
-        // Filter out items where product data might be null or empty
-        const validItems = data.filter(item => item.products && item.products.length > 0) as WishlistItem[]
+        // Filter out items where product data might be null
+        const validItems = data.filter(item => item.product !== null) as WishlistItem[]
         setWishlistItems(validItems)
       }
       setIsLoadingWishlist(false)
@@ -95,16 +96,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           .select(`
             id,
             product_id,
-            products (
+            product:products (
               id, name, description, price, image, is_digital, download_url,
-              sale_price, is_on_sale, sale_percent, sku, tag, category, is_most_sold
+              sale_price, is_on_sale, sale_percent, sku, tag, category, is_most_sold,
+              seo_title, seo_description, seo_keywords
             )
           `)
           .eq("user_id", session.user.id)
           .eq("product_id", product.id)
           .single()
 
-        if (fetchError || !newItem?.products) {
+        if (fetchError || !newItem?.product) {
           console.error("Error fetching new wishlist item:", fetchError)
           toast.error(`Added ${product.name} to wishlist, but failed to update list. Please refresh.`, { id: toastId })
         } else {
@@ -130,7 +132,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const toastId = toast.loading(`Removing ${itemToRemove.products[0].name} from wishlist...`)
+    const toastId = toast.loading(`Removing ${itemToRemove.product.name} from wishlist...`)
     try {
       const { error } = await supabase
         .from("wishlist_items")
@@ -142,7 +144,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         throw error
       } else {
         setWishlistItems(prev => prev.filter(item => item.product_id !== productId))
-        toast.success(`${itemToRemove.products[0].name} removed from wishlist.`, { id: toastId })
+        toast.success(`${itemToRemove.product.name} removed from wishlist.`, { id: toastId })
       }
     } catch (error: any) {
       console.error("Error removing from wishlist:", error)

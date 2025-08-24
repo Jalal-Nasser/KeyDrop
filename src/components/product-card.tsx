@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card"
 import { ShoppingCart, Minus, Plus, Heart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
-import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
+import { useWishlist } from "@/context/wishlist-context"
 import { getImagePath } from "@/lib/utils"
 import { Product } from "@/types/product"
 import {
@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ProductQuickView } from "./product-quick-view" // Import the new component
+import { ProductQuickView } from "./product-quick-view"
 
 interface ProductCardProps {
   product: Product
@@ -28,7 +28,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1)
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const { addToCart } = useCart()
-  const { addToWishlist, removeFromWishlist, isProductInWishlist } = useWishlist() // Use wishlist hook
+  const { addToWishlist, removeFromWishlist, isProductInWishlist } = useWishlist()
 
   const handleAddToCart = () => {
     addToCart(product, quantity)
@@ -48,9 +48,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const displayPrice = product.is_on_sale && product.sale_price !== null && product.sale_price !== undefined
     ? product.sale_price.toFixed(2)
-    : product.price.toFixed(2); // Directly use product.price
+    : product.price.toFixed(2);
 
-  const originalPrice = product.price.toFixed(2); // Directly use product.price
+  const originalPrice = product.price.toFixed(2);
 
   const imagePath = getImagePath(product.image);
 
@@ -95,7 +95,7 @@ export function ProductCard({ product }: ProductCardProps) {
               QUICK VIEW
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-3xl p-0"> {/* Adjust max-width as needed */}
+          <DialogContent className="sm:max-w-3xl p-0">
             <ProductQuickView product={product} />
           </DialogContent>
         </Dialog>

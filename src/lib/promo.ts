@@ -5,7 +5,7 @@ import { Database } from '@/types/supabase';
 interface Promotion {
   id: string;
   code: string;
-  type: 'percent' | 'fixed';
+  type: 'percent' | 'fixed'; // Changed to literal types
   value: number; // Stored as numeric (dollars) in DB, but used as percentage or fixed dollar value
   applies_to: 'all' | 'product_ids' | null;
   product_ids: number[] | null;
@@ -66,23 +66,29 @@ export async function resolveDiscount(
     throw new Error('Invalid or inactive promo code.');
   }
 
+  // Type assertion to match the Promotion interface's 'type' field
+  const typedPromotion: Promotion = {
+    ...promotion,
+    type: promotion.type as 'percent' | 'fixed',
+  };
+
   // Validate time window
   const now = new Date();
-  if (promotion.start_at && new Date(promotion.start_at) > now) {
+  if (typedPromotion.start_at && new Date(typedPromotion.start_at) > now) {
     throw new Error('Promo code is not yet active.');
   }
-  if (promotion.end_at && new Date(promotion.end_at) < now) {
+  if (typedPromotion.end_at && new Date(typedPromotion.end_at) < now) {
     throw new Error('Promo code has expired.');
   }
 
   // Validate minimum subtotal
-  if (promotion.min_subtotal !== null && toCents(promotion.min_subtotal) > subtotalCents) {
-    throw new Error(`Minimum subtotal of $${promotion.min_subtotal.toFixed(2)} required for this promo.`);
+  if (typedPromotion.min_subtotal !== null && toCents(typedPromotion.min_subtotal) > subtotalCents) {
+    throw new Error(`Minimum subtotal of $${typedPromotion.min_subtotal.toFixed(2)} required for this promo.`);
   }
 
   // Validate product applicability
-  if (promotion.applies_to === 'product_ids' && promotion.product_ids && promotion.product_ids.length > 0) {
-    const applicableProductIds = new Set(promotion.product_ids);
+  if (typedPromotion.applies_to === 'product_ids' && typedPromotion.product_ids && typedPromotion.product_ids.length > 0) {
+    const applicableProductIds = new Set(typedPromotion.product_ids);
     const hasApplicableItems = cartItems.some(item => applicableProductIds.has(item.productId));
     if (!hasApplicableItems) {
       throw new Error('This promo code is not applicable to any items in your cart.');
@@ -95,12 +101,12 @@ export async function resolveDiscount(
   }
 
   let discountCents = cents(0);
-  if (promotion.type === 'percent') {
-    // promotion.value is a percentage (e.g., 10 for 10%)
-    discountCents = Math.round(subtotalCents * (promotion.value / 100));
-  } else if (promotion.type === 'fixed') {
-    // promotion.value is a fixed dollar amount
-    discountCents = toCents(promotion.value);
+  if (typedPromotion.type === 'percent') {
+    // typedPromotion.value is a percentage (e.g., 10 for 10%)
+    discountCents = Math.round(subtotalCents * (typedPromotion.value / 100));
+  } else if (typedPromotion.type === 'fixed') {
+    // typedPromotion.value is a fixed dollar amount
+    discountCents = toCents(typedPromotion.value);
   }
 
   // Ensure discount does not exceed subtotal
@@ -112,5 +118,5 @@ export async function resolveDiscount(
   // TODO: Implement usage_limit and per_user_limit checks (requires tracking usage in DB)
   // For now, we'll assume these are handled externally or not strictly enforced.
 
-  return { discountCents, promoSnapshot: promotion };
+  return { discountCents, promoSnapshot: typedPromotion };
 }

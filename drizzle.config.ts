@@ -3,7 +3,8 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
     dialect: 'postgresql',
     dbCredentials: {
-        url: process.env.NETLIFY_DATABASE_URL!
+        // Replace with your actual Supabase connection string
+        url: 'postgresql://postgres:YOLWFGfUiY2ZHxpT@db.notncpmpmgostfxesrvk.supabase.co:5432/postgres'
     },
     schema: './db/schema.ts',
     /**

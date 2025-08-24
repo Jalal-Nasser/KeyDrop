@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer'
 import { sendMail } from '@/lib/postmark'
 import { 
   renderInvoiceTemplateToHtml,
-  renderPurchaseConfirmationTemplateToHtml, // Still imported, but not used for main body
+  renderPurchaseConfirmationTemplateToHtml,
   renderOrderStatusChangedTemplateToHtml,
   renderProfileUpdateTemplateToHtml,
   renderRegistrationConfirmationTemplateToHtml,
@@ -17,17 +17,17 @@ interface FetchedProduct {
   name: string;
   download_url: string | null;
   is_digital: boolean | null;
-  image: string | null; // Added for Discord notification
+  image: string | null;
 }
 
 interface FetchedOrderItem {
   quantity: number;
   price_at_purchase: number;
-  product_name: string | null; // Added
-  sku: string | null; // Added
-  unit_price: number | null; // Added
-  line_total: number | null; // Added
-  products: FetchedProduct[] | null; // Changed to array
+  product_name: string | null;
+  sku: string | null;
+  unit_price: number | null;
+  line_total: number | null;
+  products: FetchedProduct[] | null;
 }
 
 interface FetchedProfile {
@@ -49,9 +49,9 @@ interface FullFetchedOrder {
   total: number;
   status: string;
   payment_gateway: string | null;
-  amounts: Json | null; // Added
-  promo_code: string | null; // Added
-  promo_snapshot: Json | null; // Added
+  amounts: Json | null;
+  promo_code: string | null;
+  promo_snapshot: Json | null;
   order_items: FetchedOrderItem[];
   profiles: FetchedProfile | null;
 }
@@ -85,23 +85,19 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
       total: fetchedOrder.total,
       status: fetchedOrder.status,
       payment_gateway: fetchedOrder.payment_gateway,
-      amounts: fetchedOrder.amounts, // Pass amounts
-      promo_code: fetchedOrder.promo_code, // Pass promo_code
-      promo_snapshot: fetchedOrder.promo_snapshot, // Pass promo_snapshot
-      order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: oi.products || [] })), // Ensure products is an array
+      amounts: fetchedOrder.amounts,
+      promo_code: fetchedOrder.promo_code,
+      promo_snapshot: fetchedOrder.promo_snapshot,
+      order_items: fetchedOrder.order_items.map(oi => ({ ...oi, products: oi.products || [] })),
     };
 
-    // Render the invoice HTML to be the main body of the email
     const invoiceHtml = await renderInvoiceTemplateToHtml(orderForInvoiceTemplate, profile);
     
-    // No longer sending purchaseConfirmationHtml as the main body, nor attaching the invoice.
-    // The invoice IS the email body now.
-
     await sendMail({
       to: payload.userEmail,
-      subject: `Your Dropskey Invoice #${fetchedOrder.id.substring(0, 8)}`, // Updated subject
-      html: invoiceHtml, // Send invoice HTML as the main body
-      attachments: [], // No attachments needed if invoice is the body
+      subject: `Your Dropskey Invoice #${fetchedOrder.id.substring(0, 8)}`,
+      html: invoiceHtml,
+      attachments: [],
     })
 
     return { success: true }

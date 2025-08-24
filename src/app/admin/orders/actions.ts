@@ -9,8 +9,8 @@ import { Json } from "@/types/supabase"
 // Define a type for the expected structure of updatedItem
 interface UpdatedOrderItemResult {
   order_id: string;
-  product_name: string | null; // Changed to product_name
-  products: { name: string, image: string | null }[] | null; // Changed to array
+  product_name: string | null;
+  products: { name: string, image: string | null }[] | null;
   orders: { user_id: string; total: number; profiles: { first_name: string | null } | null } | null;
 }
 
@@ -49,14 +49,14 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
       userEmail: user.email,
       firstName: orders.profiles.first_name || 'Valued Customer',
       orderId: order_id,
-      productName: product_name || products?.[0]?.name || 'Unknown Product', // Use product_name from order_items
+      productName: product_name || products?.[0]?.name || 'Unknown Product',
       productKey: productKey,
     })
 
     // 3. Check if all items in the order are fulfilled
     const { data: allItems, error: allItemsError } = await supabase
       .from('order_items')
-      .select('product_key, products (image)') // Fetch product image
+      .select('product_key, products (image)')
       .eq('order_id', order_id)
 
     if (allItemsError) throw new Error(`Could not check order status: ${allItemsError.message}`)
@@ -73,7 +73,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
       if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
       
       // Determine the product image for the notification (use first available)
-      const firstProductImage = allItems.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null; // Access first element
+      const firstProductImage = allItems.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
       
       // Send Discord notification for completed order
       await supabaseAdmin.functions.invoke('discord-order-notification', {
@@ -82,7 +82,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
           orderId: order_id,
           cartTotal: orders.total,
           userEmail: user.email,
-          productImage: firstProductImage // Pass the image
+          productImage: firstProductImage
         }
       }).catch(err => console.error("Discord notification for completed order failed:", err));
     }
@@ -101,7 +101,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
   try {
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select(`user_id, total, order_items (product_name, products (image))`) // Fetch order items with product names and images
+      .select(`user_id, total, order_items (product_name, products (image))`)
       .eq('id', orderId)
       .single()
 
@@ -144,7 +144,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     // Send Discord notification for cancelled order
     if (status === 'cancelled') {
       // Determine the product image for the notification (use first available)
-      const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null; // Access first element
+      const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
 
       await supabaseAdmin.functions.invoke('discord-order-notification', {
         body: {
@@ -152,7 +152,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
           orderId: orderId,
           cartTotal: order.total,
           userEmail: user.email,
-          productImage: firstProductImage // Pass the image
+          productImage: firstProductImage
         }
       }).catch(err => console.error("Discord notification for cancelled order failed:", err));
     }
