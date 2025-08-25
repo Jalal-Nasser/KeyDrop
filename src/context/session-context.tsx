@@ -21,21 +21,34 @@
 
       useEffect(() => {
         let unsub: { unsubscribe: () => void } | null = null
+        
+        // Load client immediately with protection 
+        // Hard-fallback is in getSupabaseBrowserClient if getPublicEnv fails
+        const supabase = getSupabaseBrowserClient()
+        setSbClient(supabase)
+        
         const init = async () => {
-          // Ensure public env is present (handles CSP blocking inline script)
-          await getPublicEnv()
-          const supabase = getSupabaseBrowserClient()
-          setSbClient(supabase)
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          try {
+            // Ensure public env is present (handles CSP blocking inline script)
+            await getPublicEnv()
+            
+            // Set up auth change listener
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+              setSession(session)
+              setIsLoading(false)
+            })
+            unsub = subscription
+
+            // Get initial session
+            const { data: { session } } = await supabase.auth.getSession()
             setSession(session)
             setIsLoading(false)
-          })
-          unsub = subscription
-
-          const { data: { session } } = await supabase.auth.getSession()
-          setSession(session)
-          setIsLoading(false)
+          } catch (e) {
+            console.error("Error initializing session:", e)
+            setIsLoading(false)
+          }
         }
+        
         init()
 
         return () => {

@@ -49,14 +49,35 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `window.__PUBLIC_ENV = ${JSON.stringify({
-              NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || null,
-              NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || null,
+              NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://notncpmpmgostfxesrvk.supabase.co",
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s",
               NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || null,
               NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || null,
               NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || null,
             })};`,
           }}
         />
+        {/* Fallback script if CSP blocks inline script */}
+        <Script id="env-loader" strategy="beforeInteractive">
+          {`
+            if (typeof window !== 'undefined' && !window.__PUBLIC_ENV) {
+              window.__PUBLIC_ENV = {
+                NEXT_PUBLIC_SUPABASE_URL: "https://notncpmpmgostfxesrvk.supabase.co",
+                NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
+              };
+              
+              // Try to fetch real values async
+              fetch('/api/env/public', { cache: 'no-store' })
+                .then(res => res.json())
+                .then(data => {
+                  window.__PUBLIC_ENV = data;
+                })
+                .catch(err => {
+                  console.warn("Could not fetch public env, using fallback", err);
+                });
+            }
+          `}
+        </Script>
         {/* Google Tag Manager - Part 2 (NoScript) */}
         {gtmId && (
           <noscript>
