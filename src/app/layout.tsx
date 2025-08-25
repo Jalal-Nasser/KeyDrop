@@ -97,3 +97,6 @@ export default function RootLayout({
     </html>
   )
 }
+
+// Ensure the entire app renders dynamically at runtime (avoid build-time SSG of pages that need env)
+export const dynamic = 'force-dynamic'

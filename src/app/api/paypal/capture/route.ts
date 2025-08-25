@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
-import { paypalClient } from '@/lib/paypal';
+import { getPaypalClient } from '@/lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import { capturePayPalOrderSchema } from '@/lib/schemas';
 import { sendOrderConfirmation } from '@/lib/email-actions';
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
     request.requestBody({} as any);
 
-    const capture = await paypalClient.execute(request);
+  const capture = await getPaypalClient().execute(request);
     const captureData = capture.result;
 
     if (captureData.status === 'COMPLETED') {

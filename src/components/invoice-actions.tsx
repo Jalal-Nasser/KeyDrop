@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Printer, ArrowLeft } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useSession } from "@/context/session-context"
-import { supabase } from "@/integrations/supabase/client"
+import { getSupabaseBrowserClient } from "@/integrations/supabase/client"
 import Link from "next/link"
 
 export function InvoiceActions() {
@@ -13,6 +13,7 @@ export function InvoiceActions() {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
+  const supabase = getSupabaseBrowserClient()
       if (session?.user) {
         const { data, error } = await supabase
           .from('profiles')

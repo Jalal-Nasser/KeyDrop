@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
-import { paypalClient } from '@/lib/paypal';
+import { getPaypalClient } from '@/lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import { createPayPalOrderSchema } from '@/lib/schemas';
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const payPalOrder = await paypalClient.execute(request);
+  const payPalOrder = await getPaypalClient().execute(request);
     
     // Store the PayPal Order ID in our database
     const { error: updateError } = await supabase
