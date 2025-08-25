@@ -1,23 +1,20 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import Script from "next/script" // Import Script from next/script
-import { headers } from "next/headers"
-import { generateEarlyInitScript } from "@/lib/early-init-script"
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import Script from "next/script";
 
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { SessionProvider } from "@/context/session-context"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Toaster } from "@/components/ui/sonner"
-import { PayPalProvider } from "@/context/paypal-provider"
-import { CartProvider } from "@/context/cart-context"
-import { MobileNavBar } from "@/components/mobile-nav-bar"
-import { WishlistProvider } from "@/context/wishlist-context"
-import { PublicEnvLoader } from "@/components/public-env-loader"
-import { EarlySupabaseInit } from "@/components/early-supabase-init"
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SessionProvider } from "@/context/session-context";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { Toaster } from "@/components/ui/sonner";
+import { PayPalProvider } from "@/context/paypal-provider";
+import { CartProvider } from "@/context/cart-context";
+import { MobileNavBar } from "@/components/mobile-nav-bar";
+import { WishlistProvider } from "@/context/wishlist-context";
+import { PublicEnvLoader } from "@/components/public-env-loader";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "DropsKey",
@@ -31,36 +28,26 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
-  
-  // Check if middleware requested script injection
-  const headersInstance = headers();
-  const shouldInjectScript = headersInstance.get('x-inject-early-init') === 'true';
-  
-  // Generate the early init script to inject into head
-  const earlyInitScript = shouldInjectScript ? generateEarlyInitScript() : '';
 
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* Ultra-early Supabase initialization script - injected directly into HTML */}
-      <head dangerouslySetInnerHTML={{ __html: earlyInitScript }} />
-      
-      {/* Backup initialization script */}
-      <EarlySupabaseInit />
-      
-      {/* Google Tag Manager - Part 1 (Head) */}
-      {gtmId && (
-        <Script id="google-tag-manager-head" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      <head>
+        {/* Google Tag Manager - Part 1 (Head) */}
+        {gtmId && (
+          <Script id="google-tag-manager-head" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','${gtmId}');`}
-        </Script>
-      )}
+          </Script>
+        )}
+      </head>
+
       <body className={inter.className}>
         {/* Inject runtime public env for client-side fallback */}
         <script
@@ -177,8 +164,8 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
 
 // Ensure the entire app renders dynamically at runtime (avoid build-time SSG of pages that need env)
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
