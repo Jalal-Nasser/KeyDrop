@@ -12,6 +12,7 @@ import { PayPalProvider } from "@/context/paypal-provider";
 import { CartProvider } from "@/context/cart-context";
 import { MobileNavBar } from "@/components/mobile-nav-bar";
 import { WishlistProvider } from "@/context/wishlist-context";
+import { HashAuthRedirect } from "@/components/hash-auth-redirect";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -148,6 +149,8 @@ export default function RootLayout({
         >
           <PayPalProvider>
             <SessionProvider>
+              {/* If an OAuth provider returns tokens in the URL hash on any route, normalize to /auth/callback */}
+              <HashAuthRedirect />
               <CartProvider>
                 <WishlistProvider>
                   <Header className="print:hidden" />

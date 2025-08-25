@@ -93,27 +93,31 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           {/* Render Auth only once Supabase client is ready to avoid runtime errors */}
           {supabase && (
             <Auth
-            key={open ? "auth-dialog-open" : "auth-dialog-closed"}
+              key={open ? "auth-dialog-open" : "auth-dialog-closed"}
               supabaseClient={supabase}
-            providers={['google', 'github']}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: "#1e73be",
-                    brandAccent: "#28a745",
+              providers={['google', 'github']}
+              appearance={{
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: "#1e73be",
+                      brandAccent: "#28a745",
+                    },
                   },
                 },
-              },
-            }}
-            theme="light"
-            showLinks={true}
-              redirectTo={`${(
-                process.env.NEXT_PUBLIC_BASE_URL ||
-                ((typeof window !== 'undefined' && (window as any).__PUBLIC_ENV?.NEXT_PUBLIC_BASE_URL) as string) ||
-                (typeof window !== 'undefined' ? window.location.origin : '')
-              )}/auth/callback`}
+              }}
+              theme="light"
+              showLinks={true}
+              redirectTo={`${(() => {
+                // Prefer the actual browser origin in production to avoid leaking localhost
+                if (typeof window !== 'undefined' && window.location?.origin) {
+                  return window.location.origin
+                }
+                // Fallbacks for non-browser contexts
+                const pub = (typeof window !== 'undefined' ? (window as any).__PUBLIC_ENV : undefined) || {}
+                return pub.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || ''
+              })()}/auth/callback`}
             />
           )}
           {emailError && (
