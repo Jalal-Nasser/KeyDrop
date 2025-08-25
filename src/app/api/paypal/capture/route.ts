@@ -10,9 +10,9 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const supabase = createSupabaseServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       .from('orders')
       .select('id, user_id, total, order_items(products(image))') // Fetch product image for Discord notification
       .eq('id', orderId)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (orderFetchError || !order) {
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Send confirmation email
-      await sendOrderConfirmation({ orderId, userEmail: session.user.email! });
+      await sendOrderConfirmation({ orderId, userEmail: user.email! });
 
       // Send Discord notification for new order
       const supabaseAdmin = createClient(
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
           notificationType: 'new_order',
           orderId: orderId,
           cartTotal: order.total,
-          userEmail: session.user.email,
+          userEmail: user.email,
           productImage: firstProductImage // Pass the image
         }
       }).catch(err => console.error("Discord notification for new order failed:", err));

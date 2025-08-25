@@ -8,9 +8,9 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const supabase = createSupabaseServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       .from('orders')
       .select('total, amounts, status, order_items(product_name, sku, unit_price, quantity)')
       .eq('id', orderId)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (orderError || !order) {

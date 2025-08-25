@@ -11,6 +11,7 @@ export const order_items = pgTable('order_items', {
     order_id: integer().notNull(),
     product_name: text().notNull(),
     sku: text(),
+    quantity: integer('quantity').notNull(),
     unit_price: numeric().notNull(),
     line_total: numeric().notNull()
 });

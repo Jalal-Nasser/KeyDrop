@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
 
 export async function POST(req: NextRequest) {
   const supabase = createSupabaseServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         status: 'pending',
         total: roundMoney(totalCents / 100), // Store total in dollars
         amounts: amounts,
