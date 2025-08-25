@@ -39,9 +39,17 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   try {
     // Try to prevent too many client creation attempts
     if (_failedCreateCount > 2) {
-      console.warn("Too many failed Supabase client creation attempts - using fallback")
-      _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY)
-      return _supabase
+      console.warn("Too many failed Supabase client creation attempts - using direct fallback")
+      try {
+        _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY)
+        return _supabase
+      } catch (err) {
+        console.error("Even direct client creation failed, creating minimal client", err)
+        // Absolute last resort with no options - most resilient approach possible
+        const { createClient } = require('@supabase/supabase-js')
+        _supabase = createClient(FALLBACK_URL, FALLBACK_KEY) as SupabaseClient<Database>
+        return _supabase
+      }
     }
 
     // Get env from various sources

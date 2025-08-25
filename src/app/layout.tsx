@@ -12,6 +12,7 @@ import { PayPalProvider } from "@/context/paypal-provider"
 import { CartProvider } from "@/context/cart-context"
 import { MobileNavBar } from "@/components/mobile-nav-bar"
 import { WishlistProvider } from "@/context/wishlist-context"
+import { PublicEnvLoader } from "@/components/public-env-loader"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -112,6 +113,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <PublicEnvLoader />
           <PayPalProvider>
             <SessionProvider>
               <CartProvider>
