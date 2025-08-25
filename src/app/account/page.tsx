@@ -21,6 +21,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import Link from "next/link"
 import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
+import { useRouter } from "next/navigation"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/account/actions"
 import { CountrySelect } from "@/components/country-select"
 
@@ -42,6 +43,8 @@ type ProfileFormValues = z.infer<typeof profileSchema>
 export default function AccountPage() {
   const { session, supabase } = useSession()
   const [isAdmin, setIsAdmin] = useState(false)
+  const router = useRouter()
+  const [signingOut, setSigningOut] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -196,7 +199,35 @@ export default function AccountPage() {
                    <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/account/orders">View Order History</Link>
                   </Button>
-                  <Button type="button" onClick={() => supabase?.auth.signOut()} variant="secondary" className="w-full sm:w-auto">
+                  <Button
+                    type="button"
+                    disabled={signingOut}
+                    onClick={async () => {
+                      if (!supabase) return
+                      setSigningOut(true)
+                      try {
+                        // Prefer local sign-out to avoid 403s from global revoke on some setups
+                        const { error } = await supabase.auth.signOut({ scope: 'local' as any })
+                        if (error) throw error
+                      } catch (err: any) {
+                        // Fallback: hard clear local session artifacts
+                        try {
+                          if (typeof window !== 'undefined') {
+                            Object.keys(localStorage)
+                              .filter((k) => k.startsWith('sb-') || k.includes('supabase'))
+                              .forEach((k) => localStorage.removeItem(k))
+                          }
+                        } catch {}
+                      } finally {
+                        setSigningOut(false)
+                        // Redirect home and force a refresh to reset UI state
+                        router.push('/')
+                        router.refresh()
+                      }
+                    }}
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                  >
                     Sign Out
                   </Button>
                 </div>
