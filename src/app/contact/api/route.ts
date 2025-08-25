@@ -110,8 +110,10 @@ export async function POST(req: NextRequest) {
 
     // 5. (Optional) Send notification email
     try {
+      const toAddress = process.env.POSTMARK_TO || 'support@dropskey.com'
+      const fromAddress = process.env.POSTMARK_FROM || 'no-reply@dropskey.com'
       await sendMail({
-        to: 'support@dropskey.com', // Your support email
+        to: toAddress,
         subject: `New Contact Form Submission: ${subject}`,
         html: `
           <p><strong>Name:</strong> ${name}</p>
@@ -121,6 +123,8 @@ export async function POST(req: NextRequest) {
           <p><strong>Message:</strong></p>
           <p>${message}</p>
         `,
+  from: fromAddress,
+  replyTo: email,
       })
     } catch (emailError) {
       console.error("Failed to send contact notification email:", emailError)
