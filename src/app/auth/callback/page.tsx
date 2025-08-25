@@ -11,12 +11,21 @@ export default function AuthCallbackPage() {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash
       if (hash && hash.includes('access_token')) {
-        // Let Supabase client pick it up from the hash; then navigate away
-        // Give a brief tick for auth helpers to process the hash
-        setTimeout(() => {
-          router.replace('/account')
-        }, 50)
-        return
+        const params = new URLSearchParams(hash.replace(/^#/, ''))
+        const access_token = params.get('access_token')
+        const refresh_token = params.get('refresh_token')
+        if (access_token && refresh_token) {
+          // Ask the server to set a secure session cookie for SSR/API use
+          fetch('/api/auth/set-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token, refresh_token }),
+            credentials: 'include',
+          }).finally(() => {
+            router.replace('/account')
+          })
+          return
+        }
       }
     }
     router.replace('/account')
