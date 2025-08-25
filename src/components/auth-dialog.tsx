@@ -90,9 +90,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-6">
-          <Auth
+          {/* Render Auth only once Supabase client is ready to avoid runtime errors */}
+          {supabase && (
+            <Auth
             key={open ? "auth-dialog-open" : "auth-dialog-closed"}
-            supabaseClient={supabase}
+              supabaseClient={supabase}
             providers={['google', 'github']}
             appearance={{
               theme: ThemeSupa,
@@ -107,8 +109,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             }}
             theme="light"
             showLinks={true}
-            redirectTo={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`}
-          />
+              redirectTo={`${(
+                process.env.NEXT_PUBLIC_BASE_URL ||
+                ((typeof window !== 'undefined' && (window as any).__PUBLIC_ENV?.NEXT_PUBLIC_BASE_URL) as string) ||
+                (typeof window !== 'undefined' ? window.location.origin : '')
+              )}/auth/callback`}
+            />
+          )}
           {emailError && (
             <div className="text-red-600 text-sm text-center">{emailError}</div>
           )}

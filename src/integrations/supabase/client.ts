@@ -8,8 +8,8 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   if (_supabase) return _supabase
   const pub: any = (typeof window !== 'undefined' && (window as any).__PUBLIC_ENV) || {}
   _supabase = createClientComponentClient<Database>({
-    supabaseUrl: (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || pub.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || pub.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  supabaseUrl: (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || (process.env.SUPABASE_URL as string) || pub.NEXT_PUBLIC_SUPABASE_URL,
+  supabaseKey: (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || (process.env.SUPABASE_ANON_KEY as string) || pub.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   })
   return _supabase
 }

@@ -122,7 +122,7 @@ export default function ContactForm() {
               )}
             />
             <Turnstile
-              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              sitekey={(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string) || ((typeof window !== 'undefined' && (window as any).__PUBLIC_ENV?.NEXT_PUBLIC_TURNSTILE_SITE_KEY) as string)}
               onVerify={(token) => setTurnstileToken(token)}
               onExpire={() => setTurnstileToken(null)}
               onError={() => toast.error("Turnstile challenge failed. Please refresh the page.")}
