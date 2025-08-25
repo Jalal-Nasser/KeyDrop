@@ -176,6 +176,10 @@ export function ProductForm({ product }: ProductFormProps) {
 
     try {
       if (selectedImageFile) {
+        if (!supabase) {
+          throw new Error("Supabase client not initialized");
+        }
+        
         const fileExtension = selectedImageFile.name.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
         const filePath = `public/${fileName}`;
@@ -249,6 +253,11 @@ export function ProductForm({ product }: ProductFormProps) {
             const pathInBucket = pathSegments.length > 1 ? pathSegments[1] : null;
 
             if (pathInBucket) {
+              if (!supabase) {
+                console.warn("Supabase client not initialized, skipping image deletion");
+                return;
+              }
+              
               const { error: deleteImageError } = await supabase.storage
                 .from('product-images')
                 .remove([pathInBucket]);

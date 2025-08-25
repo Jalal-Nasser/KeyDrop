@@ -1,8 +1,8 @@
 "use client"
 
-    import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
-  import { createClientComponentClient, Session, SupabaseClient } from "@supabase/auth-helpers-nextjs"
-  import { Database } from "@/types/supabase"
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createClientComponentClient, Session, SupabaseClient } from "@supabase/auth-helpers-nextjs"
+import { Database } from "@/types/supabase-wrapper"
   import { getSupabaseBrowserClient } from "@/integrations/supabase/client"
   import { getPublicEnv } from "@/lib/public-env"
   import { createDirectSupabaseClient } from "@/lib/supabase-safe-client"

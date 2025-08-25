@@ -79,6 +79,9 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
     const loadUsers = async () => {
       try {
         setIsLoadingUsers(true);
+        if (!supabase) {
+          throw new Error("Supabase client not initialized");
+        }
         const { data, error } = await supabase
           .from('profiles')
           .select('id, first_name, last_name')

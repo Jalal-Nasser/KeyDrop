@@ -35,6 +35,11 @@ export function IncomeChart() {
     const fetchOrders = async () => {
       setLoading(true)
       setError(null)
+      if (!supabase) {
+        setError("Supabase client not initialized");
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from("orders")
         .select("id, created_at, total") // Added 'id' to the select statement

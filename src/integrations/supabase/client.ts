@@ -1,6 +1,6 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
-import { Database } from "@/types/supabase"
+import { Database } from "@/types/supabase-wrapper"
 
 // Hard-coded fallback if EVERYTHING else fails (use as last resort)
 const FALLBACK_URL = "https://notncpmpmgostfxesrvk.supabase.co"
