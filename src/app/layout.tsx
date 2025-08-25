@@ -45,6 +45,18 @@ export default function RootLayout({
         </Script>
       )}
       <body className={inter.className}>
+        {/* Inject runtime public env for client-side fallback */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__PUBLIC_ENV = ${JSON.stringify({
+              NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || null,
+              NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || null,
+              NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || null,
+              NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || null,
+            })};`,
+          }}
+        />
         {/* Google Tag Manager - Part 2 (NoScript) */}
         {gtmId && (
           <noscript>
