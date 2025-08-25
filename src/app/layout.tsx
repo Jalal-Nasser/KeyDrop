@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script" // Import Script from next/script
+import { headers } from "next/headers"
+import { generateEarlyInitScript } from "@/lib/early-init-script"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -13,6 +15,7 @@ import { CartProvider } from "@/context/cart-context"
 import { MobileNavBar } from "@/components/mobile-nav-bar"
 import { WishlistProvider } from "@/context/wishlist-context"
 import { PublicEnvLoader } from "@/components/public-env-loader"
+import { EarlySupabaseInit } from "@/components/early-supabase-init"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,9 +35,22 @@ export default function RootLayout({
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  
+  // Check if middleware requested script injection
+  const headersInstance = headers();
+  const shouldInjectScript = headersInstance.get('x-inject-early-init') === 'true';
+  
+  // Generate the early init script to inject into head
+  const earlyInitScript = shouldInjectScript ? generateEarlyInitScript() : '';
 
   return (
     <html lang="en" suppressHydrationWarning>
+      {/* Ultra-early Supabase initialization script - injected directly into HTML */}
+      <head dangerouslySetInnerHTML={{ __html: earlyInitScript }} />
+      
+      {/* Backup initialization script */}
+      <EarlySupabaseInit />
+      
       {/* Google Tag Manager - Part 1 (Head) */}
       {gtmId && (
         <Script id="google-tag-manager-head" strategy="afterInteractive">
@@ -58,24 +74,55 @@ export default function RootLayout({
             })};`,
           }}
         />
-        {/* Fallback script if CSP blocks inline script */}
+        {/* Fallback script if CSP blocks inline script - now with cached Supabase credentials */}
         <Script id="env-loader" strategy="beforeInteractive">
           {`
-            if (typeof window !== 'undefined' && !window.__PUBLIC_ENV) {
-              window.__PUBLIC_ENV = {
-                NEXT_PUBLIC_SUPABASE_URL: "https://notncpmpmgostfxesrvk.supabase.co",
-                NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
-              };
+            if (typeof window !== 'undefined') {
+              // Initialize PUBLIC_ENV
+              if (!window.__PUBLIC_ENV) {
+                window.__PUBLIC_ENV = {
+                  NEXT_PUBLIC_SUPABASE_URL: "https://notncpmpmgostfxesrvk.supabase.co",
+                  NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
+                };
+              }
               
-              // Try to fetch real values async
-              fetch('/api/env/public', { cache: 'no-store' })
+              // Store credentials in localStorage for persistence
+              try {
+                localStorage.setItem('__SUPABASE_CREDS', JSON.stringify({
+                  url: window.__PUBLIC_ENV.NEXT_PUBLIC_SUPABASE_URL,
+                  key: window.__PUBLIC_ENV.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                }));
+              } catch(e) {}
+              
+              // Try to fetch real values async with multiple retries
+              function fetchEnv(retries = 3) {
+                fetch('/api/env/public', { 
+                  cache: 'no-store', 
+                  headers: { 'x-priority': 'high' } 
+                })
                 .then(res => res.json())
                 .then(data => {
-                  window.__PUBLIC_ENV = data;
+                  if (data && data.NEXT_PUBLIC_SUPABASE_URL) {
+                    window.__PUBLIC_ENV = data;
+                    
+                    // Update stored credentials
+                    try {
+                      localStorage.setItem('__SUPABASE_CREDS', JSON.stringify({
+                        url: data.NEXT_PUBLIC_SUPABASE_URL,
+                        key: data.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                      }));
+                    } catch(e) {}
+                  }
                 })
                 .catch(err => {
-                  console.warn("Could not fetch public env, using fallback", err);
+                  console.warn("Could not fetch public env, retries left: " + (retries-1));
+                  if (retries > 0) {
+                    setTimeout(() => fetchEnv(retries-1), 1000); // Try again after 1 second
+                  }
                 });
+              }
+              
+              fetchEnv();
             }
           `}
         </Script>

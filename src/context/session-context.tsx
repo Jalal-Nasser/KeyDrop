@@ -15,35 +15,50 @@ import { Database } from "@/types/supabase-wrapper"
 
     const SessionContext = createContext<SessionContextType | undefined>(undefined)
 
+    // This component provides immediate access to a Supabase client 
+    // even before environment variables are loaded
     export function SessionProvider({ children }: { children: ReactNode }) {
       const [session, setSession] = useState<Session | null>(null)
       const [isLoading, setIsLoading] = useState(true)
       const [sbClient, setSbClient] = useState<SupabaseClient<Database> | null>(null)
 
+      // Initialize client immediately during component creation
+      // This runs during the initial render, not in an effect
+      if (!sbClient) {
+        try {
+          // Always use direct client that bypasses validation
+          const client = createDirectSupabaseClient()
+          setSbClient(client)
+        } catch (e) {
+          console.error("Failed to create client during initialization", e)
+        }
+      }
+      
       useEffect(() => {
         let unsub: { unsubscribe: () => void } | null = null
         
-        // Try DIRECT client creation that doesn't validate env
-        const initClient = () => {
+        // If we don't have a client yet, try again
+        if (!sbClient) {
           try {
-            // This bypasses auth-helpers validation completely
-            return createDirectSupabaseClient()
+            const client = createDirectSupabaseClient()
+            setSbClient(client)
           } catch (e) {
-            console.error("Failed to create direct client, using fallback", e)
-            // Last resort attempt
-            try {
-              return getSupabaseBrowserClient()
-            } catch (e2) {
-              console.error("All client creation attempts failed", e2)
-              // Return null - UI will render but features won't work
-              return null
-            }
+            console.error("Failed to create direct client in effect", e)
           }
         }
         
-        // Use safe direct client
-        const supabase = initClient()
-        setSbClient(supabase)
+        // Use existing client or try one last time
+        const supabase = sbClient || (() => {
+          try { 
+            return createDirectSupabaseClient()
+          } catch (e) { 
+            return null 
+          }
+        })()
+        
+        if (!sbClient && supabase) {
+          setSbClient(supabase)
+        }
         
         const init = async () => {
           try {
