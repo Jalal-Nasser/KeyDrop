@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   try {
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('total, amounts, status, order_items(product_name, sku, unit_price, quantity)')
+      .select('total, amounts, status, order_items(product_name, sku, unit_price, quantity, products(name))')
       .eq('id', orderId)
       .eq('user_id', user.id)
       .single();
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
           }
         },
         items: order.order_items.map((item: any) => ({
-          name: item.product_name || 'Unknown Product',
+          name: item.product_name || (item.products?.[0]?.name ?? 'Unknown Product'),
           sku: item.sku || undefined,
           quantity: item.quantity.toString(),
           unit_amount: {

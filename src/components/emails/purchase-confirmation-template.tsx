@@ -13,7 +13,7 @@ export const PurchaseConfirmationTemplate: React.FC<PurchaseConfirmationTemplate
   <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#333' }}>
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <img src={LOGO_URL} alt="Dropskey Logo" style={{ width: '150px' }} />
+  <img src={LOGO_URL} alt="Dropskey Logo" width={150} height={50} style={{ width: '150px', maxWidth: '150px', height: 'auto', display: 'block', margin: '0 auto' }} />
       </div>
       <h2 style={{ color: '#000' }}>Thank you for your order, {firstName}!</h2>
       <p>Your order <strong>#{orderId.substring(0, 8)}</strong> has been received and is now being processed. We will notify you again once your products have been delivered. You can find your detailed invoice attached to this email.</p>

@@ -14,6 +14,8 @@ interface OrderItem {
   product_name: string | null; // Added
   unit_price: number | null; // Added
   line_total: number | null; // Added
+  // Optional joined product info for safer fallback
+  products?: Array<{ name?: string | null }> | null;
 }
 
 export interface Profile {
@@ -147,7 +149,13 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
       <body>
         <div className="invoice-box">
           <div className="invoice-header">
-            <img src="https://i.imgur.com/dcJe2iS.png" alt="Dropskey LTD" className="top-logo" />
+            <img
+              src="https://i.imgur.com/dcJe2iS.png"
+              alt="Dropskey LTD"
+              width="200"
+              height="60"
+              style={{ width: '200px', maxWidth: '200px', height: 'auto', display: 'block' }}
+            />
             <div style={{ textAlign: 'right' }}>
               <strong>Dropskey LTD</strong><br />
               4283 Express Lane<br />
@@ -183,7 +191,8 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             </thead>
             <tbody>
               {order.order_items.map((item, index) => {
-                const productName = item.product_name || 'Unknown Product';
+                const fallbackName = (item.products && item.products[0]?.name) || null;
+                const productName = item.product_name || fallbackName || 'Unknown Product';
                 const lineTotal = (item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2);
                 return (
                   <tr key={index}>

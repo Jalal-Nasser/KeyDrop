@@ -11,7 +11,7 @@ export const ProfileUpdateTemplate: React.FC<ProfileUpdateTemplateProps> = ({ fi
   <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#333' }}>
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <img src={LOGO_URL} alt="Dropskey Logo" style={{ width: '150px' }} />
+  <img src={LOGO_URL} alt="Dropskey Logo" width={150} height={50} style={{ width: '150px', maxWidth: '150px', height: 'auto', display: 'block', margin: '0 auto' }} />
       </div>
       <h2 style={{ color: '#000' }}>Your Profile Has Been Updated</h2>
       <p>Hello {firstName},</p>

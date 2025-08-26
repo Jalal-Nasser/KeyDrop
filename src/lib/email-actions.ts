@@ -60,11 +60,11 @@ export async function sendOrderConfirmation(payload: { orderId: string; userEmai
   const supabase = createSupabaseServerClient()
 
   try {
-    const { data: fetchedOrder, error: orderError } = await supabase
+  const { data: fetchedOrder, error: orderError } = await supabase
       .from('orders')
       .select(`
         id, created_at, total, status, payment_gateway, amounts, promo_code, promo_snapshot,
-        order_items ( quantity, price_at_purchase, product_name, sku, unit_price, line_total ),
+    order_items ( quantity, price_at_purchase, product_name, sku, unit_price, line_total, products(name) ),
         profiles ( first_name, last_name, company_name, vat_number, address_line_1, address_line_2, city, state_province_region, postal_code, country )
       `)
       .eq('id', payload.orderId)
