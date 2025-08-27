@@ -16,6 +16,12 @@ interface UpdatedOrderItemResult {
 
 export async function fulfillOrderItem(orderItemId: string, productKey: string) {
   const supabase = createSupabaseServerClient()
+  
+  // Debug environment variables
+  console.log('Debug Environment Variables:')
+  console.log('URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Present' : 'Missing')
+  console.log('Service Role Key:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `Present (length: ${process.env.SUPABASE_SERVICE_ROLE_KEY.length})` : 'Missing')
+  
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -41,12 +47,19 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     const { order_id, product_name, products, orders } = updatedItem;
     if (!orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
 
-    // 2. Send the delivery email
+    // 2. Get user email from Supabase auth
+    console.log('Getting user by ID:', orders.user_id);
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(orders.user_id)
-    if (userError || !user?.email) throw new Error(`Could not get user email: ${userError?.message}`)
+    console.log('User fetch result:', { user: user ? 'Found' : 'Not found', error: userError?.message });
+    
+    if (userError || !user?.email) {
+      throw new Error(`Could not get user email: ${userError?.message || 'No email found'}`)
+    }
+    
+    const userEmail = user.email;
 
     await sendProductDelivery({
-      userEmail: user.email,
+      userEmail: userEmail,
       firstName: orders.profiles.first_name || 'Valued Customer',
       orderId: order_id,
       productName: product_name || products?.[0]?.name || 'Unknown Product',
@@ -81,7 +94,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
           notificationType: 'order_completed',
           orderId: order_id,
           cartTotal: orders.total,
-          userEmail: user.email,
+          userEmail: userEmail,
           productImage: firstProductImage
         }
       }).catch(err => console.error("Discord notification for completed order failed:", err));

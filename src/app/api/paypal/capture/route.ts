@@ -45,12 +45,12 @@ export async function POST(req: NextRequest) {
     const captureData = capture.result;
 
     if (captureData.status === 'COMPLETED') {
+      // Mark payment captured and set order status to completed
       const { error: updateError } = await supabase
         .from('orders')
         .update({
           status: 'completed',
           payment_id: captureData.id, // Store PayPal capture ID
-          // Consider storing more raw captureData if needed for auditing
         })
         .eq('id', orderId);
 
@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
         // Continue to send email as payment was successful, but log the DB error.
       }
 
-      // Send confirmation email
-      await sendOrderConfirmation({ orderId, userEmail: user.email! });
+  // Optional: send order confirmation (receipt). This does NOT deliver product keys.
+  await sendOrderConfirmation({ orderId, userEmail: user.email! });
 
       // Send Discord notification for new order
       const supabaseAdmin = createClient(

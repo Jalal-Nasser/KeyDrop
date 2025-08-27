@@ -4,6 +4,7 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
+import { createSupabaseServerClient } from "@/lib/supabaseServer"
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -19,7 +20,7 @@ const profileSchema = z.object({
 })
 
 export async function updateCurrentUserProfile(profileData: unknown) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
@@ -54,7 +55,7 @@ export async function updateCurrentUserProfile(profileData: unknown) {
 }
 
 export async function getCurrentUserProfile() {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
@@ -76,7 +77,7 @@ export async function getCurrentUserProfile() {
 }
 
 export async function getAllUserProfilesForAdmin() {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {

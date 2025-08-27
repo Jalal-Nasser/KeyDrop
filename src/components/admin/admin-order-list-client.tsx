@@ -6,16 +6,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge, badgeVariants } from "@/components/ui/badge"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { OrderWithDetails } from "@/app/admin/orders/page"
 import { format } from "date-fns"
 import { OrderStatusUpdater } from "./order-status-updater"
-import { ReSendInvoiceButton } from "./resend-invoice-button" // Corrected import name
 import { FulfillOrderItemDialog } from "./fulfill-order-item-dialog"
-import { CheckCircle, KeyRound, Package, ShieldCheck, XCircle } from "lucide-react"
+import { CheckCircle, Mail, Package, ShieldCheck, XCircle } from "lucide-react"
 
-function getStatusVariant(status: string) {
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline"
+function getStatusVariant(status: string): BadgeVariant {
   switch (status) {
     case "completed":
       return "default"
@@ -46,9 +47,9 @@ export function AdminOrderListClient({ orders }: { orders: OrderWithDetails[] })
               </div>
               <div className="flex items-center gap-4">
                 <span className="hidden md:inline-block font-bold text-lg">${order.total.toFixed(2)}</span>
-                <Badge variant={getStatusVariant(order.status)} className="capitalize">
+                <div className={cn(badgeVariants({ variant: getStatusVariant(order.status) }), "capitalize")}>
                   {order.status}
-                </Badge>
+                </div>
               </div>
             </div>
           </AccordionTrigger>
@@ -58,11 +59,10 @@ export function AdminOrderListClient({ orders }: { orders: OrderWithDetails[] })
                 <h4 className="font-semibold">Order Items</h4>
                 <div className="flex items-center gap-2">
                   <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
-                  <ReSendInvoiceButton orderId={order.id} />
                 </div>
               </div>
               <div className="space-y-2">
-                {order.order_items.map((item) => (
+                {order.order_items.map((item: OrderWithDetails["order_items"][number]) => (
                   <div key={item.id} className="flex justify-between items-center p-2 bg-background rounded-md">
                     <div className="flex items-center gap-3">
                       <Package className="h-5 w-5 text-muted-foreground" />
@@ -72,27 +72,26 @@ export function AdminOrderListClient({ orders }: { orders: OrderWithDetails[] })
                       </div>
                     </div>
                     <div>
-                      {item.products?.[0]?.is_digital ? (
-                        item.product_key ? (
-                          <div className="flex items-center gap-2 text-green-600">
+                      {/* Show send code button for all items to test */}
+                      <div className="flex items-center gap-2">
+                        {item.product_key && (
+                          <div className="flex items-center gap-2 text-green-600 mr-2">
                             <ShieldCheck className="h-5 w-5" />
-                            <span className="font-medium">Fulfilled</span>
-                            <p className="text-xs font-mono p-1 bg-green-100 rounded">Key Sent</p>
+                            <span className="font-medium text-sm">Fulfilled</span>
                           </div>
+                        )}
+                        <FulfillOrderItemDialog orderItemId={item.id} productName={item.product_name || item.products?.[0]?.name || ''}>
+                          <Button className={buttonVariants({ size: 'sm', variant: 'default' })}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Send code
+                          </Button>
+                        </FulfillOrderItemDialog>
+                        {item.products?.[0]?.is_digital ? (
+                          <span className="text-xs text-green-600 ml-2">Digital</span>
                         ) : (
-                          <FulfillOrderItemDialog orderItemId={item.id} productName={item.product_name || item.products?.[0]?.name || ''}>
-                            <Button size="sm">
-                              <KeyRound className="mr-2 h-4 w-4" />
-                              Fulfill
-                            </Button>
-                          </FulfillOrderItemDialog>
-                        )
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <CheckCircle className="h-5 w-5" />
-                          <span className="font-medium">Physical Item</span>
-                        </div>
-                      )}
+                          <span className="text-xs text-gray-500 ml-2">Physical</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

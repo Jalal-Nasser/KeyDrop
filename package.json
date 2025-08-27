@@ -63,6 +63,7 @@
     "react-turnstile": "^1.1.4",
     "recharts": "2.15.0",
     "resend": "^4.6.0",
+    "sharp": "^0.34.3",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

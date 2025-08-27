@@ -23,16 +23,16 @@ export type OrderWithDetails = Database['public']['Tables']['orders']['Row'] & {
 
 export default async function AdminOrdersPage() {
   const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     redirect("/login")
   }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
 
   if (!profile?.is_admin) {
