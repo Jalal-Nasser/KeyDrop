@@ -154,7 +154,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
       firstName: profile?.first_name || 'Valued Customer' 
     });
 
-    // Send Discord notification for cancelled order
+    // Send Discord notification for status changes
     if (status === 'cancelled') {
       // Determine the product image for the notification (use first available)
       const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
@@ -168,6 +168,19 @@ export async function updateOrderStatus(orderId: string, status: string) {
           productImage: firstProductImage
         }
       }).catch(err => console.error("Discord notification for cancelled order failed:", err));
+    } else if (status === 'received') {
+      // Determine the product image for the notification (use first available)
+      const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
+
+      await supabaseAdmin.functions.invoke('discord-order-notification', {
+        body: {
+          notificationType: 'order_received',
+          orderId: orderId,
+          cartTotal: order.total,
+          userEmail: user.email,
+          productImage: firstProductImage
+        }
+      }).catch(err => console.error("Discord notification for received order failed:", err));
     }
 
     revalidatePath('/admin/orders')

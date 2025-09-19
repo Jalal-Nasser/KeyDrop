@@ -22,6 +22,8 @@ import { Loader2, ShieldCheck, Lock } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
+import { AuthDialog } from "@/components/auth-dialog"
+import { PaymentCountdownTimer } from "@/components/payment-countdown-timer"
 import { Database } from "@/types/supabase"
 import {
   Select,
@@ -95,6 +97,8 @@ export default function CheckoutPage() {
   const [users, setUsers] = useState<ClientProfileOption[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<string>("")
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
+  const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(null)
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -465,13 +469,32 @@ export default function CheckoutPage() {
                 {!session ? (
                   <div className="text-center text-destructive">
                     <p>You must be signed in to complete your purchase.</p>
-                    <p>Please <Link href="/account" className="underline font-bold">sign in or create an account</Link>.</p>
+                    <p>Please <button onClick={() => setIsAuthDialogOpen(true)} className="underline font-bold hover:text-primary">sign in or create an account</button>.</p>
                   </div>
                 ) : (
-                  <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                  <PayPalCartButton 
+                    cartTotal={finalCartTotal} 
+                    cartItems={cartItems} 
+                    billingDetails={form.watch()} 
+                    isFormValid={form.formState.isValid}
+                    onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)}
+                  />
                 )}
               </CardContent>
             </Card>
+            
+            {/* Payment Countdown Timer */}
+            {orderCreatedAt && (
+              <PaymentCountdownTimer 
+                orderCreatedAt={orderCreatedAt}
+                timeoutMinutes={10}
+                onTimeout={() => {
+                  // Refresh the page when time expires
+                  window.location.reload()
+                }}
+                className="mb-4"
+              />
+            )}
             <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
                 <CardHeader className="p-0 pb-4">
                   <ShieldCheck className="h-12 w-12 mx-auto mb-2 text-white" />
@@ -488,6 +511,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </div>
   )
 }

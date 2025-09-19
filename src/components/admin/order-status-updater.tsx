@@ -35,6 +35,7 @@ export function OrderStatusUpdater({ orderId, currentStatus }: OrderStatusUpdate
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="received">Received</SelectItem>
           {/* 'Completed' is now set automatically when all items are fulfilled */}
           <SelectItem value="cancelled">Cancelled</SelectItem>
         </SelectContent>

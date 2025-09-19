@@ -126,14 +126,18 @@ export async function sendProductDelivery(payload: { userEmail: string, firstNam
   }
 }
 
-export async function sendOrderStatusUpdate(payload: { orderId: string; userEmail: string; status: string; firstName: string; }) {
+export async function sendOrderStatusUpdate(payload: { orderId: string; userEmail: string; status: string; firstName: string; isAutoCancelled?: boolean; }) {
   try {
-    const { orderId, userEmail, status, firstName } = payload;
-    const html = await renderOrderStatusChangedTemplateToHtml(firstName, orderId, status);
+    const { orderId, userEmail, status, firstName, isAutoCancelled = false } = payload;
+    const html = await renderOrderStatusChangedTemplateToHtml(firstName, orderId, status, isAutoCancelled);
+
+    const subject = isAutoCancelled 
+      ? `Your Dropskey Order #${orderId.substring(0, 8)} has been automatically cancelled`
+      : `Your Dropskey Order #${orderId.substring(0, 8)} has been ${status}`;
 
     await sendMail({
       to: userEmail,
-      subject: `Your Dropskey Order #${orderId.substring(0, 8)} has been ${status}`,
+      subject,
       html,
       attachments: [],
     });

@@ -22,6 +22,8 @@ function getStatusVariant(status: string): BadgeVariant {
       return "default"
     case "pending":
       return "default"
+    case "received":
+      return "secondary"
     case "cancelled":
       return "destructive"
     default:

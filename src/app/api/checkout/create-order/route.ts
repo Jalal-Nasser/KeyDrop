@@ -88,12 +88,14 @@ export async function POST(req: NextRequest) {
 
     // 4. Calculate final totals (in cents, then convert to dollars for storage)
     const taxCents = cents(0); // Placeholder for tax calculation
-    const totalCents = subtotalCents - discountCents + taxCents;
+    const processFeesCents = Math.round(subtotalCents * 0.15); // 15% process fees
+    const totalCents = subtotalCents - discountCents + taxCents + processFeesCents;
 
     const amounts = {
       subtotal: fromCents(subtotalCents),
       discount: fromCents(discountCents),
       tax: fromCents(taxCents),
+      process_fees: fromCents(processFeesCents),
       total: fromCents(totalCents),
       currency: 'USD',
     };

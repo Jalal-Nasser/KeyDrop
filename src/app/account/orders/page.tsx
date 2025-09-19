@@ -87,7 +87,11 @@ export default async function AccountOrdersPage() {
                   </TableCell>
                   <TableCell>${order.total.toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                    <Badge variant={
+                      order.status === 'completed' ? 'default' : 
+                      order.status === 'received' ? 'secondary' :
+                      order.status === 'cancelled' ? 'destructive' : 'secondary'
+                    }>
                       {order.status}
                     </Badge>
                   </TableCell>

@@ -16,12 +16,16 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
   const supabase = createSupabaseServerClient()
 
   try {
+    // Calculate process fees (15%)
+    const processingFee = cartTotal * 0.15
+    const finalTotal = cartTotal + processingFee
+
     // 1. Create the order for the target user with 'pending' status
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: targetUserId,
-        total: cartTotal,
+        total: finalTotal, // Use total with process fees
         status: "pending", // Changed from "completed"
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,

@@ -64,6 +64,42 @@ function createOrderCancelledEmbed(orderId: string, cartTotal: number, userEmail
   };
 }
 
+// New function for auto-cancelled orders
+function createOrderAutoCancelledEmbed(orderId: string, cartTotal: number, userEmail: string, productImage: string | null) {
+  return {
+    title: "Order Auto-Cancelled ⏰",
+    description: `An order has been automatically cancelled due to incomplete payment.`,
+    color: 16776960, // Yellow/Orange
+    fields: [
+      { name: "Order ID", value: `\`${orderId}\``, inline: true },
+      { name: "Total", value: `$${cartTotal.toFixed(2)}`, inline: true },
+      { name: "Customer Email", value: userEmail, inline: false },
+      { name: "Reason", value: "Payment not completed within 10 minutes", inline: false }
+    ],
+    thumbnail: productImage ? { url: productImage } : undefined,
+    timestamp: new Date().toISOString(),
+    footer: { text: "Dropskey Store" }
+  };
+}
+
+// New function for received orders
+function createOrderReceivedEmbed(orderId: string, cartTotal: number, userEmail: string, productImage: string | null) {
+  return {
+    title: "Order Received 📦",
+    description: `An order has been received and is being processed.`,
+    color: 3447003, // Blue
+    fields: [
+      { name: "Order ID", value: `\`${orderId}\``, inline: true },
+      { name: "Total", value: `$${cartTotal.toFixed(2)}`, inline: true },
+      { name: "Customer Email", value: userEmail, inline: false },
+      { name: "Status", value: "Order received and being prepared for fulfillment", inline: false }
+    ],
+    thumbnail: productImage ? { url: productImage } : undefined,
+    timestamp: new Date().toISOString(),
+    footer: { text: "Dropskey Store" }
+  };
+}
+
 // Main function to handle requests
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -84,11 +120,17 @@ serve(async (req: Request) => {
       case 'new_order':
         embed = createNewOrderEmbed(orderId, cartTotal, userEmail, cartItems);
         break;
+      case 'order_received':
+        embed = createOrderReceivedEmbed(orderId, cartTotal, userEmail, productImage);
+        break;
       case 'order_completed':
         embed = createOrderCompletedEmbed(orderId, cartTotal, userEmail, productImage); // Passed productImage
         break;
       case 'order_cancelled':
         embed = createOrderCancelledEmbed(orderId, cartTotal, userEmail, productImage); // Passed productImage
+        break;
+      case 'order_auto_cancelled':
+        embed = createOrderAutoCancelledEmbed(orderId, cartTotal, userEmail, productImage);
         break;
       default:
         throw new Error(`Invalid notification type: ${notificationType}`);

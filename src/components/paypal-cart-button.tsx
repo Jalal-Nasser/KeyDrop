@@ -13,9 +13,10 @@ interface PayPalCartButtonProps {
   cartItems: CartItem[]
   billingDetails: any
   isFormValid: boolean
+  onOrderCreated?: (orderCreatedTime: string) => void
 }
 
-export function PayPalCartButton({ cartItems, billingDetails, isFormValid }: PayPalCartButtonProps) {
+export function PayPalCartButton({ cartItems, billingDetails, isFormValid, onOrderCreated }: PayPalCartButtonProps) {
   const { session } = useSession()
   const { clearCart } = useCart()
   const router = useRouter()
@@ -50,14 +51,20 @@ export function PayPalCartButton({ cartItems, billingDetails, isFormValid }: Pay
       }
       
       setInternalOrderId(ourOrder.orderId); // Store our internal order ID in state
+      
+      // Notify parent component that order was created
+      onOrderCreated?.(new Date().toISOString());
 
       toast.loading("Preparing PayPal payment...", { id: toastId });
 
-      // Step 2: Create the PayPal order using our trusted orderId
+      // Step 2: Create the PayPal order using our trusted orderId and total
       const createPayPalOrderResponse = await fetch("/api/paypal/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: ourOrder.orderId }),
+        body: JSON.stringify({ 
+          orderId: ourOrder.orderId,
+          // The order total from the API already includes process fees
+        }),
       });
 
       const payPalOrder = await createPayPalOrderResponse.json();

@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
               currency_code: (order.amounts as any)?.currency || 'USD',
               value: (order.amounts as any)?.tax || '0.00', // Use tax from amounts
             },
+            handling: {
+              currency_code: (order.amounts as any)?.currency || 'USD',
+              value: (order.amounts as any)?.process_fees || '0.00', // Use process fees from amounts
+            },
           }
         },
         items: order.order_items.map((item: any) => ({

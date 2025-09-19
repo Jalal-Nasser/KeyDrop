@@ -34,8 +34,8 @@ export async function renderPurchaseConfirmationTemplateToHtml(firstName: string
   return renderTemplate(PurchaseConfirmationTemplate, { firstName, orderId, productListHtml });
 }
 
-export async function renderOrderStatusChangedTemplateToHtml(firstName: string, orderId: string, newStatus: string): Promise<string> {
-  return renderTemplate(OrderStatusChangedTemplate, { firstName, orderId, newStatus });
+export async function renderOrderStatusChangedTemplateToHtml(firstName: string, orderId: string, newStatus: string, isAutoCancelled: boolean = false): Promise<string> {
+  return renderTemplate(OrderStatusChangedTemplate, { firstName, orderId, newStatus, isAutoCancelled });
 }
 
 export async function renderProfileUpdateTemplateToHtml(firstName: string): Promise<string> {
