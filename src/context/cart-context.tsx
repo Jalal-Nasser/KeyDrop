@@ -26,7 +26,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const storedCart = localStorage.getItem("cart")
       if (storedCart) {
-        setCartItems(JSON.parse(storedCart))
+        const parsed: CartItem[] = JSON.parse(storedCart)
+        // Migration: ensure effective price respects sale pricing
+        const migrated = parsed.map((item: any) => {
+          const effectivePrice = item?.is_on_sale && item?.sale_price != null
+            ? Number(item.sale_price)
+            : Number(item.price)
+          return { ...item, price: effectivePrice }
+        })
+        setCartItems(migrated)
       }
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error)
@@ -72,8 +80,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
           },
           duration: 3000,
         });
-        // Ensure price is stored as a number
-        return [...prevItems, { ...product, quantity, price: product.price }]
+        // Ensure price is stored as a number; prefer sale price when product is on sale
+        const effectivePrice = (product as any).is_on_sale && (product as any).sale_price != null
+          ? (product as any).sale_price as number
+          : product.price as number
+        return [...prevItems, { ...product, quantity, price: effectivePrice }]
       }
     })
   }
@@ -113,8 +124,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
   const cartTotal = cartItems.reduce((total, item) => {
-    // Price is now directly a number
-    return total + item.price * item.quantity
+    const effectivePrice = (item as any).is_on_sale && (item as any).sale_price != null
+      ? (item as any).sale_price as number
+      : item.price as number
+    return total + effectivePrice * item.quantity
   }, 0)
 
   return (
