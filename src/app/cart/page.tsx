@@ -6,12 +6,16 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { PromoCodeForm } from "@/components/promo-code-form"
-import { Trash2, Minus, Plus, ShieldCheck } from "lucide-react"
-import { getImagePath } from "@/lib/utils" // Updated import
+import { Minus, Plus, ShoppingCart, Trash2, ArrowLeft, CheckCircle, Shield, Truck, RefreshCw, Tag, ShieldCheck } from "lucide-react"
+import { toast } from "sonner"
+import { getImagePath } from "@/lib/utils"
+// Using CSS transitions instead of framer-motion
+const AnimatedDiv = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+  <div className={`transition-all duration-300 ${className}`}>{children}</div>
+);
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = ["Shopping Cart", "Checkout", "Order Status"]
@@ -47,6 +51,145 @@ const Stepper = ({ step }: { step: number }) => {
     </div>
   )
 }
+
+// Simple promo code form component
+const PromoCodeForm = () => {
+  const [promoCode, setPromoCode] = React.useState('')
+  const [isValid, setIsValid] = React.useState<boolean | null>(null)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Simple validation - in a real app, you would validate with your backend
+    if (promoCode.trim()) {
+      setIsValid(true)
+      toast.success('Promo code applied successfully!')
+    } else {
+      setIsValid(false)
+      toast.error('Please enter a valid promo code')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Promo code"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        <Button type="submit" variant="outline">
+          Apply
+        </Button>
+      </div>
+      {isValid === false && (
+        <p className="mt-1 text-xs text-red-500">Invalid promo code</p>
+      )}
+    </form>
+  )
+}
+
+const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any; onUpdateQuantity: (id: number, quantity: number) => void; onRemove: (id: number) => void }) => {
+  const isOnSale = item.is_on_sale && item.sale_price !== null && item.sale_price !== undefined;
+  const itemTotal = isOnSale ? item.sale_price! * item.quantity : item.price * item.quantity;
+  
+  return (
+    <div 
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+    >
+      <div className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="relative h-24 w-24 md:h-28 md:w-28 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-700 flex-shrink-0">
+            <Image 
+              src={getImagePath(item.image)} 
+              alt={item.name} 
+              fill 
+              sizes="(max-width: 768px) 100vw, 280px"
+              className="object-contain p-2 hover:scale-105 transition-transform duration-300"
+            />
+            {isOnSale && (
+              <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                SALE
+              </span>
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-start">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-lg line-clamp-2">
+                {item.name}
+              </h3>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onRemove(item.id);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Remove</span>
+              </Button>
+            </div>
+            
+            <div className="mt-2 flex items-center">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center border rounded-lg overflow-hidden">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 rounded-none" 
+                    onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <div className="w-10 text-center text-sm font-medium">
+                    {item.quantity}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 rounded-none"
+                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col items-end ml-auto">
+                  <div className="text-right">
+                    {isOnSale ? (
+                      <div className="flex flex-col items-end">
+                        <span className="text-gray-500 dark:text-gray-400 line-through text-sm">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </span>
+                        <span className="text-red-600 dark:text-red-400 font-bold text-lg">
+                          ${itemTotal.toFixed(2)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-lg">${itemTotal.toFixed(2)}</span>
+                    )}
+                  </div>
+                  {isOnSale && (
+                    <span className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      Save ${((item.price - item.sale_price!) * item.quantity).toFixed(2)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function CartPage() {
   const router = useRouter()
@@ -91,52 +234,19 @@ export default function CartPage() {
               </div>
               <Separator className="hidden md:block mb-4" />
               <div className="space-y-6">
-                {cartItems.map(item => (
-                  <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-                    <div className="col-span-2 flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-md overflow-hidden border bg-card flex-shrink-0">
-                        <Image src={getImagePath(item.image)} alt={item.name} fill sizes="80px" className="object-contain p-1" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <Button variant="link" size="sm" className="text-red-500 p-0 h-auto" onClick={() => removeFromCart(item.id)}>
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="font-medium">
-                      {item.is_on_sale && item.sale_price !== null && item.sale_price !== undefined ? (
-                        <div className="flex flex-col">
-                          <span className="text-gray-500 line-through text-sm">${item.price.toFixed(2)}</span>
-                          <span className="text-red-600">${item.sale_price.toFixed(2)}</span>
-                        </div>
-                      ) : (
-                        <span>${item.price.toFixed(2)}</span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center border rounded-md w-fit">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateQuantity(item.id, parseInt(e.target.value, 10) || 1)}
-                          className="w-12 h-8 text-center border-x border-y-0 focus-visible:ring-0"
-                        />
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="font-medium text-right">${(item.price * item.quantity).toFixed(2)}</div> {/* Directly use item.price */}
+                {cartItems.map((item) => (
+                  <div key={item.id} className="transition-all duration-300">
+                    <CartItem 
+                      item={item} 
+                      onUpdateQuantity={updateQuantity} 
+                      onRemove={removeFromCart} 
+                    />
                   </div>
                 ))}
               </div>
               <Separator className="my-6" />
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="w-full md:w-auto">
+                <div className="w-full md:w-80">
                   <PromoCodeForm />
                 </div>
                 <Button variant="outline" onClick={clearCart}>
@@ -179,7 +289,7 @@ export default function CartPage() {
             <div className="border border-green-200 rounded-lg p-6 text-center bg-green-50">
               <p className="font-semibold text-sm uppercase text-green-700">Guaranteed Safe Checkout</p>
               <div className="flex justify-center items-center gap-4 mt-4 text-muted-foreground">
-                <ShieldCheck />
+                <ShieldCheck className="h-5 w-5" />
                 <p className="text-xs">Your Payment is 100% Secure</p>
               </div>
             </div>
