@@ -13,6 +13,7 @@ import { CartProvider } from "@/context/cart-context";
 import { MobileNavBar } from "@/components/mobile-nav-bar";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { HashAuthRedirect } from "@/components/hash-auth-redirect";
+import { FacebookPixel } from "@/components/FacebookPixel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Facebook Pixel */}
+        <FacebookPixel />
+        
         {/* Google Tag Manager - Part 1 (Head) */}
         {gtmId && (
           <Script id="google-tag-manager-head" strategy="afterInteractive">
