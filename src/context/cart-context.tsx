@@ -13,7 +13,9 @@ interface CartContextType {
   updateQuantity: (productId: number, quantity: number) => void
   clearCart: () => void
   cartCount: number
-  cartTotal: number
+  cartTotal: number,
+  cartSubtotal: number,
+  discountAmount: number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -27,13 +29,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const storedCart = localStorage.getItem("cart")
       if (storedCart) {
         const parsed: CartItem[] = JSON.parse(storedCart)
-        // Migration: ensure effective price respects sale pricing
-        const migrated = parsed.map((item: any) => {
-          const effectivePrice = item?.is_on_sale && item?.sale_price != null
-            ? Number(item.sale_price)
-            : Number(item.price)
-          return { ...item, price: effectivePrice }
-        })
+        // Migration: ensure we store both original and sale prices
+        const migrated = parsed.map((item: any) => ({
+          ...item,
+          price: Number(item.price),  // Original price
+          sale_price: item.sale_price != null ? Number(item.sale_price) : null,
+          is_on_sale: item.is_on_sale || false
+        }))
         setCartItems(migrated)
       }
     } catch (error) {
@@ -80,11 +82,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
           },
           duration: 3000,
         });
-        // Ensure price is stored as a number; prefer sale price when product is on sale
-        const effectivePrice = (product as any).is_on_sale && (product as any).sale_price != null
-          ? (product as any).sale_price as number
-          : product.price as number
-        return [...prevItems, { ...product, quantity, price: effectivePrice }]
+        // Store both original and sale prices
+        const salePrice = (product as any).sale_price != null 
+          ? Number((product as any).sale_price) 
+          : null;
+        const isOnSale = (product as any).is_on_sale || false;
+        
+        return [...prevItems, { 
+          ...product, 
+          quantity, 
+          price: Number(product.price),  // Original price
+          sale_price: salePrice,
+          is_on_sale: isOnSale
+        }]
       }
     })
   }
@@ -122,13 +132,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0)
-  const cartTotal = cartItems.reduce((total, item) => {
-    const effectivePrice = (item as any).is_on_sale && (item as any).sale_price != null
-      ? (item as any).sale_price as number
-      : item.price as number
-    return total + effectivePrice * item.quantity
-  }, 0)
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  
+  // Calculate subtotal (sum of all items' original prices)
+  const cartSubtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+  
+  // Calculate total after applying sale prices
+  const cartTotal = cartItems.reduce(
+    (sum, item) => {
+      const itemPrice = (item.is_on_sale && item.sale_price !== null && item.sale_price !== undefined) 
+        ? item.sale_price 
+        : item.price;
+      return sum + (itemPrice * item.quantity);
+    },
+    0
+  )
+  
+  // Calculate total discount amount
+  const discountAmount = cartItems.reduce(
+    (sum, item) => {
+      if (item.is_on_sale && item.sale_price !== null && item.sale_price !== undefined) {
+        return sum + ((item.price - item.sale_price) * item.quantity);
+      }
+      return sum;
+    },
+    0
+  )
 
   return (
     <CartContext.Provider
@@ -140,6 +172,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         cartCount,
         cartTotal,
+        cartSubtotal,
+        discountAmount,
       }}
     >
       {children}

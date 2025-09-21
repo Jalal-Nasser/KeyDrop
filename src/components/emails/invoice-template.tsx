@@ -156,12 +156,14 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
               height="60"
               style={{ width: '200px', maxWidth: '200px', height: 'auto', display: 'block' }}
             />
-            <div style={{ textAlign: 'right' }}>
-              <strong>Dropskey LTD</strong><br />
-              4283 Express Lane<br />
-              Suite 193-395<br />
-              Sarasota, FL 34249<br />
-              VAT Number: 20115192
+            <div style={{ textAlign: 'left', marginTop: '20px' }}>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Dropskey LTD</strong><br />
+                4283 Express Lane<br />
+                Suite 193-395<br />
+                Sarasota, FL 34249<br />
+                VAT Number: 20115192
+              </div>
             </div>
           </div>
 

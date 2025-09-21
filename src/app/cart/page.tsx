@@ -50,7 +50,16 @@ const Stepper = ({ step }: { step: number }) => {
 
 export default function CartPage() {
   const router = useRouter()
-  const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { 
+    cartItems, 
+    cartTotal, 
+    cartCount, 
+    cartSubtotal,
+    discountAmount,
+    updateQuantity, 
+    removeFromCart, 
+    clearCart 
+  } = useCart()
 
   if (cartCount === 0) {
     return (
@@ -95,7 +104,16 @@ export default function CartPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-medium">${item.price.toFixed(2)}</div> {/* Directly use item.price */}
+                    <div className="font-medium">
+                      {item.is_on_sale && item.sale_price !== null && item.sale_price !== undefined ? (
+                        <div className="flex flex-col">
+                          <span className="text-gray-500 line-through text-sm">${item.price.toFixed(2)}</span>
+                          <span className="text-red-600">${item.sale_price.toFixed(2)}</span>
+                        </div>
+                      ) : (
+                        <span>${item.price.toFixed(2)}</span>
+                      )}
+                    </div>
                     <div>
                       <div className="flex items-center border rounded-md w-fit">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -131,10 +149,25 @@ export default function CartPage() {
             <Card>
               <CardHeader><CardTitle className="text-center">Cart Totals</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span>Process Fees (15%)</span><span>${processingFee.toFixed(2)}</span></div>
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>${cartSubtotal.toFixed(2)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount</span>
+                    <span>-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Process Fees (15%)</span>
+                  <span>${processingFee.toFixed(2)}</span>
+                </div>
                 <Separator />
-                <div className="flex justify-between font-bold text-lg"><span>Total</span><span>${finalCartTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>${finalCartTotal.toFixed(2)}</span>
+                </div>
                 <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white" size="lg" onClick={() => router.push('/checkout')}>
                   Proceed to Checkout
                 </Button>
