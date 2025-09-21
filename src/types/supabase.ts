@@ -23,7 +23,17 @@ export type Database = {
           name: string
           subject: string
         }
-      }
+      },
+      profiles: {
+        Row: {
+          id: string
+          first_name: string | null
+          last_name: string | null
+          email: string | null
+          // Add other profile fields as needed
+          [key: string]: any
+        }
+      },
       // Other tables would go here
     }
     Views: {}

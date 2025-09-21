@@ -138,13 +138,13 @@ export default function CartPage() {
                 <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white" size="lg" onClick={() => router.push('/checkout')}>
                   Proceed to Checkout
                 </Button>
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full bg-purple-600 hover:bg-purple-700 text-white border-purple-600" asChild>
                   <Link href="/shop">Continue Shopping</Link>
                 </Button>
               </CardContent>
             </Card>
-            <div className="border rounded-lg p-6 text-center bg-card">
-              <p className="font-semibold text-sm uppercase text-muted-foreground">Guaranteed Safe Checkout</p>
+            <div className="border border-green-200 rounded-lg p-6 text-center bg-green-50">
+              <p className="font-semibold text-sm uppercase text-green-700">Guaranteed Safe Checkout</p>
               <div className="flex justify-center items-center gap-4 mt-4 text-muted-foreground">
                 <ShieldCheck />
                 <p className="text-xs">Your Payment is 100% Secure</p>

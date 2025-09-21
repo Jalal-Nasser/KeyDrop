@@ -23,7 +23,7 @@ import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
 import { AuthDialog } from "@/components/auth-dialog"
-import { PaymentCountdownTimer } from "@/components/payment-countdown-timer"
+import { CountdownTimer } from "@/components/countdown-timer"
 import { Database } from "@/types/supabase"
 import {
   Select,
@@ -98,7 +98,15 @@ export default function CheckoutPage() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<string>("")
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
-  const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(null)
+  const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(new Date().toISOString())
+  const [isExpired, setIsExpired] = useState(false)
+
+  useEffect(() => {
+    if (isExpired) {
+      toast.error("Your session has expired. Please try again.")
+      router.push("/shop")
+    }
+  }, [isExpired, router])
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -225,6 +233,12 @@ export default function CheckoutPage() {
           <Stepper step={2} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mt-8">
             <div className="lg:col-span-3 space-y-8">
+        {orderCreatedAt && (
+          <CountdownTimer 
+            initialMinutes={10} 
+            onExpire={() => setIsExpired(true)} 
+          />
+        )}
               <Card className="shadow-lg rounded-lg">
                 <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
                 <CardContent>
@@ -485,15 +499,15 @@ export default function CheckoutPage() {
             
             {/* Payment Countdown Timer */}
             {orderCreatedAt && (
-              <PaymentCountdownTimer 
-                orderCreatedAt={orderCreatedAt}
-                timeoutMinutes={10}
-                onTimeout={() => {
-                  // Refresh the page when time expires
-                  window.location.reload()
-                }}
-                className="mb-4"
-              />
+              <div className="mb-4">
+                <CountdownTimer 
+                  initialMinutes={10}
+                  onExpire={() => {
+                    // Refresh the page when time expires
+                    window.location.reload()
+                  }}
+                />
+              </div>
             )}
             <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
                 <CardHeader className="p-0 pb-4">
