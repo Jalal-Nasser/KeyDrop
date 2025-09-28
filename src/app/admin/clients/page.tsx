@@ -19,6 +19,14 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import Link from "next/link"
 
+interface Client {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  company_name: string | null
+  created_at: string
+}
+
 export default async function AdminClientsPage() {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
@@ -27,30 +35,37 @@ export default async function AdminClientsPage() {
     redirect("/login")
   }
 
-  const { data: profile } = await supabase
+  // Check admin status
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
     .single()
 
-  if (!profile?.is_admin) {
+  if (profileError || !profile?.is_admin) {
+    console.error('Admin check failed:', profileError)
     redirect("/account")
   }
 
-  // Select only safe columns to avoid permission issues
-  const { data: clients, error } = await supabase
-    .from('profiles')
-    .select('id, first_name, last_name, company_name, created_at')
-    .order('created_at', { ascending: false })
+  let clients: Client[] = []
+  
+  try {
+    // Fetch clients with error handling
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, company_name, created_at')
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error("Error fetching clients:", error)
+    if (error) throw error
+    clients = data || []
+  } catch (error) {
+    console.error('Error fetching clients:', error)
     return (
       <Card>
         <CardHeader>
           <CardTitle>Error Loading Clients</CardTitle>
           <CardDescription>
-            There was an error loading the clients list. Please check your database permissions and RLS policies.
+            There was an error loading the clients list. Please check your database permissions.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -61,7 +76,12 @@ export default async function AdminClientsPage() {
     <Card>
       <CardHeader>
         <CardTitle>Clients</CardTitle>
-        <CardDescription>List of registered clients with details.</CardDescription>
+        <CardDescription>
+          {clients.length === 0 
+            ? 'No clients found or you do not have permission to view them.'
+            : 'List of registered clients with details.'
+          }
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>

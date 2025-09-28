@@ -84,31 +84,97 @@ export async function getAllUserProfilesForAdmin() {
     return { data: null, error: "User not authenticated." }
   }
 
-  const { data: adminProfiles, error: adminError } = await supabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', session.user.id)
-    .limit(1)
+  try {
+    // Verify admin status
+    const { data: adminProfile, error: adminError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .single()
 
-  if (adminError) {
-    return { data: null, error: "Could not verify admin status." }
+    if (adminError || !adminProfile?.is_admin) {
+      return { data: null, error: "Unauthorized: Admin access required." }
+    }
+
+    // Get all users with their email from auth.users
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, email, created_at')
+      .order('created_at', { ascending: false });
+
+    if (usersError) throw usersError;
+
+    // Get profile info for these users
+    const userIds = users.map(user => user.id);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, is_admin')
+      .in('id', userIds);
+
+    if (profilesError) throw profilesError;
+
+    // Define profile type
+    type UserProfile = {
+      id: string;
+      first_name?: string | null;
+      last_name?: string | null;
+      is_admin?: boolean | null;
+    };
+
+    // Combine the data
+    const userData = users.map(user => {
+      const profile = (profiles as UserProfile[]).find(p => p.id === user.id) || {} as UserProfile;
+      return {
+        id: user.id,
+        email: user.email || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        is_admin: profile.is_admin || false,
+        created_at: user.created_at
+      };
+    });
+
+    return { data: userData, error: null };
+  } catch (error) {
+    console.error("Error in getAllUserProfilesForAdmin:", error);
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : "Failed to fetch users" 
+    };
   }
+}
+
+export async function createUserProfile(userId: string, email: string) {
+  const supabase = createSupabaseServerClient()
   
-  const adminProfile = adminProfiles?.[0]
+  // Check if profile already exists
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .single()
 
-  if (!adminProfile || !adminProfile.is_admin) {
-    return { data: null, error: "Unauthorized: User is not an admin." }
+  if (existingProfile) {
+    return { success: true, message: 'Profile already exists' }
   }
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name")
-    .order("first_name", { ascending: true });
+  // Create new profile
+  const { error } = await supabase
+    .from('profiles')
+    .insert([
+      { 
+        id: userId,
+        email: email,
+        first_name: '',
+        last_name: '',
+        created_at: new Date().toISOString()
+      }
+    ])
 
   if (error) {
-    console.error("Error fetching all users for admin:", error)
-    return { data: null, error: error.message }
+    console.error('Error creating user profile:', error)
+    return { success: false, error: error.message }
   }
 
-  return { data, error: null }
+  return { success: true }
 }

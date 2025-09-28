@@ -31,24 +31,15 @@ function isAllowedEmail(email: string) {
   const domain = email.split("@")[1]?.toLowerCase();
   return allowedDomains.includes(domain);
 }
-
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { supabase, session } = useSession()
   const [emailError, setEmailError] = useState<string | null>(null)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
 
-  // Close the dialog automatically when a session is established
-  useEffect(() => {
-    if (session) {
-      onOpenChange(false)
-    }
-  }, [session, onOpenChange])
-
-  // Intercept form submission to validate email domain
+  // Handle email input validation
   useEffect(() => {
     if (!open) return;
 
-    // Wait for the Auth UI to render the email input
     const interval = setInterval(() => {
       const input = document.querySelector('input[type="email"]') as HTMLInputElement | null;
       if (input) {
@@ -78,6 +69,43 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }, 300);
 
     return () => clearInterval(interval);
+  }, [open]);
+
+  // Handle auth state changes and profile creation
+  useEffect(() => {
+    if (!supabase) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          try {
+            // Create a profile for new users
+            const response = await fetch('/api/auth/create-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: session.user.id,
+                email: session.user.email
+              })
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              console.error('Error creating user profile:', error);
+            }
+
+            // Close the dialog after successful sign in
+            onOpenChange(false);
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+          }
+        }
+      }
+    );
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, [open]);
 
   return (

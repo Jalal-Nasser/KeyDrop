@@ -14,6 +14,7 @@ import { MobileNavBar } from "@/components/mobile-nav-bar";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { HashAuthRedirect } from "@/components/hash-auth-redirect";
 import { FacebookPixel } from "@/components/FacebookPixel";
+import GoogleTagManager from "@/components/google-tag-manager";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,7 +41,10 @@ export default function RootLayout({
         {/* Facebook Pixel */}
         <FacebookPixel />
         
-        {/* Google Tag Manager - Part 1 (Head) */}
+        {/* Google Tag Manager */}
+        <GoogleTagManager />
+        
+        {/* Google Tag Manager - Part 1 (Head) - Keeping for backward compatibility */}
         {gtmId && (
           <Script id="google-tag-manager-head" strategy="afterInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
