@@ -36,7 +36,19 @@ async function verifyTurnstile(token: string, ip?: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.ip || req.headers.get('x-forwarded-for') || undefined
+  // Get the IP address and handle the case where it might contain multiple IPs (like with x-forwarded-for)
+  const getClientIp = (req: NextRequest) => {
+    // Get the x-forwarded-for header if it exists
+    const xForwardedFor = req.headers.get('x-forwarded-for');
+    if (xForwardedFor) {
+      // Take the first IP address if there are multiple
+      return xForwardedFor.split(',')[0].trim();
+    }
+    // Fall back to req.ip or undefined
+    return req.ip || undefined;
+  };
+  
+  const ip = getClientIp(req);
   const supabaseAdmin = createClient(
     (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -59,7 +71,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Rate Limiting (5 submissions per 10 minutes)
-    const rateLimitKey = `contact:${ip}`
+    // Use a default key if IP is not available (shouldn't happen in production with proper proxy setup)
+    const rateLimitKey = ip ? `contact:${ip}` : `contact:anonymous-${crypto.randomUUID()}`
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
 
     const { data: rateLimitData, error: rateLimitError } = await supabaseAdmin
