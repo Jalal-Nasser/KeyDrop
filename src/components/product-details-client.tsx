@@ -4,7 +4,6 @@
     import Image from "next/image"
     import { Button } from "@/components/ui/button"
     import { ShoppingCart, Heart } from "lucide-react" // Import Heart icon
-    import { PayPalButton } from "@/components/paypal-button"
     import { Product } from "@/types/product"
     import { useCart } from "@/context/cart-context"
     import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
@@ -87,7 +86,6 @@
                 <Heart className={isProductInWishlist(product.id) ? "mr-2 h-5 w-5 text-red-500 fill-red-500" : "mr-2 h-5 w-5 text-gray-500"} />
                 {isProductInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
               </Button>
-              <PayPalButton product={product} quantity={quantity} />
             </div>
 
             <Separator className="my-6" />
