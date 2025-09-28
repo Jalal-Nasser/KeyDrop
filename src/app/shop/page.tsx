@@ -2,11 +2,10 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { ProductGrid } from "@/components/product-grid"
 import { Product } from "@/types/product"
-import { Database } from "@/types/supabase"
 import { Loader2 } from "lucide-react"
+import supabase from "@/lib/supabase-client"
 
 // This component contains the logic that uses useSearchParams
 function ShopContent() {
@@ -14,7 +13,6 @@ function ShopContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
-  const supabase = createClientComponentClient<Database>()
 
   useEffect(() => {
     const fetchProducts = async () => {

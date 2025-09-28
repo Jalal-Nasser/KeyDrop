@@ -4,11 +4,17 @@ import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-import type { FacebookPixelEvent } from '@/types/facebook-pixel';
-
+// Extend the Window interface to include Facebook Pixel
 declare global {
   interface Window {
-    fbq: FacebookPixelEvent;
+    fbq: {
+      (event: 'track', eventName: string, parameters?: Record<string, any>): void;
+      (event: 'init', pixelId: string): void;
+      loaded?: boolean;
+      queue?: any[];
+      push?: (...args: any[]) => void;
+      version?: string;
+    };
     _fbq?: any;
   }
 }
@@ -17,6 +23,11 @@ export default function FacebookPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || '';
+  
+  // Don't render anything if we don't have a pixel ID
+  if (!pixelId) {
+    return null;
+  }
 
   // Track page views on route changes
   useEffect(() => {

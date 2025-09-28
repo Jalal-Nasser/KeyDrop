@@ -1,6 +1,5 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
-import { Database } from "@/types/supabase-wrapper"
+import { Database } from "@/types/supabase-fixed"
 
 // Hard-coded fallback if EVERYTHING else fails (use as last resort)
 const FALLBACK_URL = "https://notncpmpmgostfxesrvk.supabase.co"
@@ -41,7 +40,13 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
     if (_failedCreateCount > 2) {
       console.warn("Too many failed Supabase client creation attempts - using direct fallback")
       try {
-        _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY)
+        _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        })
         return _supabase
       } catch (err) {
         console.error("Even direct client creation failed, creating minimal client", err)
@@ -69,15 +74,14 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
       throw new Error("Missing Supabase URL or key")
     }
     
-    if (isBrowser()) {
-      _supabase = createClientComponentClient<Database>({
-        supabaseUrl,
-        supabaseKey,
-      })
-    } else {
-      // Direct client if helpers fail
-      _supabase = createClient<Database>(supabaseUrl, supabaseKey)
-    }
+    // Always use the direct client for consistency
+    _supabase = createClient<Database>(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
     
     return _supabase
   } catch (e) {

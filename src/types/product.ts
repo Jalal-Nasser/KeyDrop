@@ -1,19 +1,21 @@
 export interface Product {
   id: number
   name: string
-  description?: string | null // Changed to allow null
+  description?: string | null
   price: number
   image?: string | null
   is_digital?: boolean
-  download_url?: string | null // Changed to allow null
-  sale_price?: number | null // Changed to allow null
+  download_url?: string | null
+  sale_price?: number | null
   is_on_sale?: boolean
-  sale_percent?: number | null // Changed to allow null
-  // New fields
-  sku?: string | null // Changed to allow null
-  tag?: string | null // Changed to allow null
-  category?: string | null // Changed to allow null
+  sale_percent?: number | null
+  sku?: string | null
+  tag?: string | null
+  category?: string | null
   is_most_sold?: boolean
+  featured?: boolean
+  inventory_count?: number | null
+  created_at?: string
   // SEO fields
   seo_title?: string | null
   seo_description?: string | null

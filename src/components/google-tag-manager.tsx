@@ -4,6 +4,7 @@ import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
+// Extend the Window interface to include dataLayer
 declare global {
   interface Window {
     dataLayer: any[];
@@ -13,7 +14,12 @@ declare global {
 export default function GoogleTagManager() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const gtmId = 'GTM-NZGG76FW';
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-NZGG76FW';
+  
+  // Don't render anything if we don't have a GTM ID
+  if (!gtmId) {
+    return null;
+  }
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.dataLayer) {
