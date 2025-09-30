@@ -1,4 +1,4 @@
-// Fetch and cache public env at runtime for client side
+// Get public environment variables
 export type PublicEnv = {
   NEXT_PUBLIC_SUPABASE_URL?: string | null
   NEXT_PUBLIC_SUPABASE_ANON_KEY?: string | null
@@ -7,27 +7,29 @@ export type PublicEnv = {
   NEXT_PUBLIC_BASE_URL?: string | null
 }
 
-let _publicEnvLoaded = false
-
-export async function getPublicEnv(): Promise<PublicEnv> {
-  if (typeof window === 'undefined') return {}
-  const w = window as any
-  if (w.__PUBLIC_ENV) {
-    _publicEnvLoaded = true
-    return w.__PUBLIC_ENV as PublicEnv
-  }
-  if (!_publicEnvLoaded) {
-    try {
-      const res = await fetch('/api/env/public', { cache: 'no-store' })
-      if (res.ok) {
-        const data = await res.json()
-        w.__PUBLIC_ENV = data
-        _publicEnvLoaded = true
-        return data as PublicEnv
-      }
-    } catch (e) {
-      // ignore; fallback to empty
+// Get public env variables directly from the window object or process.env
+export function getPublicEnv(): PublicEnv {
+  // In the browser
+  if (typeof window !== 'undefined') {
+    const w = window as any;
+    if (!w.__PUBLIC_ENV) {
+      w.__PUBLIC_ENV = {
+        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+        NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || window.location.origin
+      };
     }
+    return w.__PUBLIC_ENV as PublicEnv;
   }
-  return (w.__PUBLIC_ENV as PublicEnv) || {}
+  
+  // On the server
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || ''
+  };
 }
