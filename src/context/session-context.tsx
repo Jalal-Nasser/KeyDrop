@@ -12,7 +12,7 @@ import React, {
 } from "react"
 import type { Session, User, SupabaseClient } from "@supabase/supabase-js" // Import SupabaseClient
 import { supabase } from "@/lib/supabase/client"
-import { Database } from "@/types/supabase" // Import Database type
+import { Database } from "@/types/supabase-fixed" // Changed to supabase-fixed for consistency
 
 type SessionContextType = {
   session: Session | null

@@ -39,7 +39,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     // 1. Update the order item with the product key
     const { data: updatedItem, error: itemUpdateError } = await supabase
       .from('order_items')
-      .update({ product_key: productKey } as OrderItemUpdate) // Cast to OrderItemUpdate
+      .update({ product_key: productKey }) // Removed explicit cast, now types should align
       .eq('id', orderItemId)
       .select(`
         order_id,
@@ -89,7 +89,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     if (allFulfilled) {
       const { error: orderUpdateError } = await supabase
         .from('orders')
-        .update({ status: 'completed' } as OrderUpdate) // Cast to OrderUpdate
+        .update({ status: 'completed' }) // Removed explicit cast, now types should align
         .eq('id', order_id)
 
       if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
@@ -149,7 +149,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status } as OrderUpdate) // Cast to OrderUpdate
+      .update({ status }) // Removed explicit cast, now types should align
       .eq('id', orderId)
 
     if (updateError) {

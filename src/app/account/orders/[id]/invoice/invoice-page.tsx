@@ -6,11 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Database } from "@/types/supabase-fixed";
+import { Database, Json } from "@/types/supabase-fixed"; // Import Json
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
   product_name: string;
-  price: number;
+  price_at_purchase: number; // Changed from price
   sku: string | null;
   line_total: number | null;
 };
@@ -29,6 +29,9 @@ type Profile = Database['public']['Tables']['profiles']['Row'] & {
 };
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
+  status: string; // Changed from payment_status
+  payment_id: string | null; // Changed from payment_intent_id
+  amounts: Json | null; // Added amounts
   order_items: OrderItem[];
   profiles: Profile[] | null;
 };
@@ -42,13 +45,7 @@ export default function InvoicePage() {
   const router = useRouter();
   
   // Calculate amounts
-  const amounts = {
-    subtotal: order?.subtotal?.toFixed(2) || '0.00',
-    discount: '0.00',
-    tax: order?.tax?.toFixed(2) || '0.00',
-    total: order?.total?.toFixed(2) || '0.00',
-    currency: 'USD'
-  };
+  const amounts = (order?.amounts || { subtotal: '0.00', discount: '0.00', tax: '0.00', total: '0.00', currency: 'USD' }) as { subtotal: string, discount: string, tax: string, total: string, currency: string };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -59,15 +56,14 @@ export default function InvoicePage() {
             id, 
             created_at, 
             total, 
-            payment_status, 
-            payment_intent_id, 
-            subtotal, 
-            tax,
+            status, 
+            payment_id, 
+            amounts,
             order_items (
               id, 
               product_id, 
               quantity, 
-              price, 
+              price_at_purchase, 
               product_name, 
               sku, 
               line_total
@@ -168,16 +164,16 @@ export default function InvoicePage() {
           <div className="text-right md:text-left">
             <h3 className="text-lg font-semibold mb-2 text-foreground">Payment Details:</h3>
             <p className="text-muted-foreground">
-              <strong>Method:</strong> {order.payment_intent_id ? 'Stripe' : 'N/A'}
+              <strong>Method:</strong> {order.payment_id ? 'Stripe' : 'N/A'}
             </p>
-            {order.payment_intent_id && (
+            {order.payment_id && (
               <p className="text-muted-foreground">
-                <strong>Transaction ID:</strong> {order.payment_intent_id}
+                <strong>Transaction ID:</strong> {order.payment_id}
               </p>
             )}
             <p className="text-muted-foreground">
               <strong>Status:</strong>{' '}
-              <span className="font-medium capitalize">{order.payment_status}</span>
+              <span className="font-medium capitalize">{order.status}</span>
             </p>
           </div>
         </div>
@@ -201,9 +197,9 @@ export default function InvoicePage() {
                   <td className="py-3 text-right text-muted-foreground">
                     {item.quantity}
                   </td>
-                  <td className="py-3 text-muted-foreground">${item.price.toFixed(2)}</td>
+                  <td className="py-3 text-muted-foreground">${item.price_at_purchase.toFixed(2)}</td>
                   <td className="py-3 text-right text-muted-foreground">
-                    {item.line_total ? `$${item.line_total.toFixed(2)}` : `$${(item.price * item.quantity).toFixed(2)}`}
+                    {item.line_total ? `$${item.line_total.toFixed(2)}` : `$${(item.price_at_purchase * item.quantity).toFixed(2)}`}
                   </td>
                 </tr>
               ))}
@@ -214,7 +210,7 @@ export default function InvoicePage() {
                   Subtotal:
                 </td>
                 <td className="py-3 text-right font-semibold text-foreground">
-                  ${amounts.subtotal}
+                  ${parseFloat(amounts.subtotal).toFixed(2)}
                 </td>
               </tr>
               {parseFloat(amounts.discount) > 0 && (
@@ -223,7 +219,7 @@ export default function InvoicePage() {
                     Discount:
                   </td>
                   <td className="py-3 text-right font-semibold text-green-600">
-                    -${amounts.discount}
+                    -${parseFloat(amounts.discount).toFixed(2)}
                   </td>
                 </tr>
               )}
@@ -233,7 +229,7 @@ export default function InvoicePage() {
                     Tax:
                   </td>
                   <td className="py-3 text-right font-semibold text-foreground">
-                    ${amounts.tax}
+                    ${parseFloat(amounts.tax).toFixed(2)}
                   </td>
                 </tr>
               )}
@@ -242,7 +238,7 @@ export default function InvoicePage() {
                   TOTAL:
                 </td>
                 <td className="py-4 text-right text-xl font-bold text-foreground">
-                  ${amounts.total}
+                  ${parseFloat(amounts.total).toFixed(2)}
                 </td>
               </tr>
             </tfoot>

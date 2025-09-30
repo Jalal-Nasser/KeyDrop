@@ -303,7 +303,7 @@ export default function CheckoutPage() {
                           </FormItem>
                         )}
                       />
-                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} />
+                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)} />
                       {profile?.is_admin && (
                         <>
                           <div className="relative my-6">
@@ -359,7 +359,20 @@ export default function CheckoutPage() {
                   </Form>
                 </CardContent>
               </Card>
-              <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+            
+            {/* Payment Countdown Timer */}
+            {orderCreatedAt && (
+              <div className="mb-4">
+                <CountdownTimer 
+                  initialMinutes={10}
+                  onExpire={() => {
+                    // Refresh the page when time expires
+                    window.location.reload()
+                  }}
+                />
+              </div>
+            )}
+            <Card className="shadow-lg rounded-lg text-center p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
                 <CardHeader className="p-0 pb-4">
                   <ShieldCheck className="h-12 w-12 mx-auto mb-2 text-white" />
                   <CardTitle className="text-xl font-bold text-white">Secure Checkout</CardTitle>
@@ -372,12 +385,13 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
           </div>
         </div>
       </div>
-    )
-  }
+      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
+    </div>
+  )
+}
 
   // Guest user view remains the same
   return (

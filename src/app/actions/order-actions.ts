@@ -18,7 +18,7 @@ export async function cancelExpiredOrders() {
     const { data: expiredOrders, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('payment_status', 'pending')
+      .eq('status', 'pending') // Changed payment_status to status
       .lt('created_at', tenMinutesAgo);
 
     if (error) {
@@ -32,7 +32,7 @@ export async function cancelExpiredOrders() {
       
       const { error: updateError } = await supabase
         .from('orders')
-        .update({ payment_status: 'cancelled' })
+        .update({ status: 'cancelled' }) // Changed payment_status to status
         .in('id', orderIds);
         
       if (updateError) {

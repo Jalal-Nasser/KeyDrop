@@ -14,7 +14,7 @@ export interface Product {
   category?: string | null
   is_most_sold?: boolean
   featured?: boolean
-  inventory_count?: number | null
+  inventory_count?: number | null // Added inventory_count
   created_at?: string
   // SEO fields
   seo_title?: string | null

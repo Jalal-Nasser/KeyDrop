@@ -44,8 +44,8 @@ interface CouponFormProps {
     code: string;
     discount_percent: number;
     assigned_user_id: string | null;
-    is_applied: boolean;
-    profiles?: Pick<Tables<'profiles'>, 'first_name' | 'last_name'>[] | null; // Explicitly type profiles
+    is_applied: boolean | null; // Changed to boolean | null
+    profiles?: Pick<Tables<'profiles'>, 'first_name' | 'last_name'> | null; // Explicitly type profiles
   };
 }
 
@@ -73,7 +73,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
       code: coupon?.code || "",
       discount_percent: coupon?.discount_percent || 0,
       assigned_user_id: coupon?.assigned_user_id || null,
-      is_applied: coupon?.is_applied || false,
+      is_applied: coupon?.is_applied ?? false, // Use nullish coalescing to default null to false
     },
   })
 

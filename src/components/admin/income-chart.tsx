@@ -29,6 +29,7 @@ export function IncomeChart() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [timeframe, setTimeframe] = useState<Timeframe>("daily") // Declared timeframe state
 
   useEffect(() => {
     const fetchOrders = async () => {

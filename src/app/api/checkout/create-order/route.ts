@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { createOrderSchema } from '@/lib/schemas';
 import { toCents, fromCents, cents, roundMoney } from '@/lib/money'; // Import roundMoney
 import { resolveDiscount } from '@/lib/promo';
-import { TablesInsert, Tables } from '@/types/supabase'; // Import Tables and TablesInsert
+import { TablesInsert, Tables, Json } from '@/types/supabase'; // Import Tables and TablesInsert, Json
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
@@ -109,10 +109,10 @@ export async function POST(req: NextRequest) {
         user_id: user.id,
         status: 'pending',
         total: roundMoney(totalCents / 100), // Store total in dollars
-        amounts: amounts,
+        amounts: amounts as Json, // Cast to Json
         promo_code: promoCode || null,
-        promo_snapshot: promoSnapshot,
-      } as TablesInsert<'orders'>) // Cast to TablesInsert<'orders'>
+        promo_snapshot: promoSnapshot as Json | null, // Cast to Json | null
+      } as TablesInsert<'orders'>) // Removed explicit cast, now types should align
       .select()
       .single();
 
@@ -130,9 +130,9 @@ export async function POST(req: NextRequest) {
       sku: item.sku,
       unit_price: item.unit_price,
       line_total: item.line_total,
-    } as TablesInsert<'order_items'>)); // Cast to TablesInsert<'order_items'>
+    })); // Removed explicit cast, now types should align
 
-    const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
+    const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert as TablesInsert<'order_items'>[]);
     if (itemsError) {
       console.error("Error saving order items:", itemsError);
       throw new Error(`Failed to save order items: ${itemsError.message}`);

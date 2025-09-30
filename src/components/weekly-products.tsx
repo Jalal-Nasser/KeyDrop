@@ -36,7 +36,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
             sale_price: item.sale_price ? Number(item.sale_price) : null,
             is_on_sale: Boolean(item.is_on_sale),
             is_most_sold: true,
-            inventory_count: Number(item.inventory_count) || 0,
+            inventory_count: Number((item as any).inventory_count) || 0, // Cast to any to access inventory_count
             is_digital: Boolean(item.is_digital)
           }));
           
@@ -58,7 +58,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
               sale_price: item.sale_price ? Number(item.sale_price) : null,
               is_on_sale: Boolean(item.is_on_sale),
               is_most_sold: false,
-              inventory_count: Number(item.inventory_count) || 0,
+              inventory_count: Number((item as any).inventory_count) || 0, // Cast to any to access inventory_count
               is_digital: Boolean(item.is_digital)
             }));
             

@@ -6,15 +6,15 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Json } from "@/types/supabase"
+import { Json, Tables } from "@/types/supabase" // Import Json and Tables
+
 interface Order {
   id: string;
   created_at: string;
   total: number;
-  payment_status: string;
-  payment_intent_id: string | null;
-  subtotal: number;
-  tax: number;
+  status: string; // Changed from payment_status
+  payment_id: string | null; // Changed from payment_intent_id
+  amounts: Json | null; // Added amounts
   profiles: {
     first_name: string | null;
     last_name: string | null;
@@ -24,7 +24,7 @@ interface Order {
     id: string;
     product_id: number;
     quantity: number;
-    price: number;
+    price_at_purchase: number;
     product_name: string;
     sku: string | null;
     line_total: number | null;
@@ -37,12 +37,12 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   const { data: order, error } = await supabase
     .from('orders')
     .select(`
-      id, created_at, total, payment_status, payment_intent_id, subtotal, tax,
-      order_items (id, product_id, quantity, price, product_name, sku, line_total),
+      id, created_at, total, status, payment_id, amounts,
+      order_items (id, product_id, quantity, price_at_purchase, product_name, sku, line_total),
       profiles (first_name, last_name, email)
     `)
     .eq('id', params.id)
-    .single()
+    .single() as { data: Order | null, error: any }; // Explicitly type order
 
   if (error || !order) {
     console.error("Error fetching order details:", error);
@@ -50,13 +50,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   }
 
   const profile = order.profiles;
-  const amounts = {
-    subtotal: order.subtotal.toFixed(2),
-    discount: "0.00",
-    tax: order.tax.toFixed(2),
-    total: order.total.toFixed(2),
-    currency: "USD"
-  };
+  const amounts = (order.amounts || { subtotal: 0, discount: 0, tax: 0, total: 0 }) as { subtotal: number, discount: number, tax: number, total: number, currency?: string };
 
   return (
     <div className="container mx-auto p-4 py-12">
@@ -71,8 +65,8 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
               <p><strong>Order ID:</strong> {order.id}</p>
               <p><strong>Date:</strong> {format(new Date(order.created_at), 'PPP p')}</p>
-              <p><strong>Status:</strong> <span className="font-medium capitalize">{order.payment_status}</span></p>
-              {order.payment_intent_id && <p><strong>Payment ID:</strong> {order.payment_intent_id}</p>}
+              <p><strong>Status:</strong> <span className="font-medium capitalize">{order.status}</span></p>
+              {order.payment_id && <p><strong>Payment ID:</strong> {order.payment_id}</p>}
             </div>
             {profile && (
               <div>
@@ -91,13 +85,14 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
                   <TableHead className="text-right">Unit Price</TableHead>
                   <TableHead className="text-right">Line Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {Array.isArray(order.order_items) && order.order_items.map((item: any) => {
-                  const price = typeof item.price === 'number' ? item.price : 0;
+                  const price = typeof item.price_at_purchase === 'number' ? item.price_at_purchase : 0;
                   const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
                   const lineTotal = typeof item.line_total === 'number' ? item.line_total : price * quantity;
                   const productName = item.product_name || `Product ${item.product_id || ''}`;
@@ -116,24 +111,25 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
             <div className="flex justify-end mt-4 text-lg font-semibold">
               <div className="w-full max-w-xs space-y-2">
                 <div className="flex justify-between">
-                  <span>${parseFloat(amounts.subtotal).toFixed(2)}</span>
+                  <span>Subtotal:</span>
+                  <span>${amounts.subtotal.toFixed(2)}</span>
                 </div>
-                {parseFloat(amounts.discount) > 0 && (
+                {amounts.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount:</span>
-                    <span>-${parseFloat(amounts.discount).toFixed(2)}</span>
+                    <span>-${amounts.discount.toFixed(2)}</span>
                   </div>
                 )}
-                {parseFloat(amounts.tax) > 0 && (
+                {amounts.tax > 0 && (
                   <div className="flex justify-between">
                     <span>Tax:</span>
-                    <span>${parseFloat(amounts.tax).toFixed(2)}</span>
+                    <span>${amounts.tax.toFixed(2)}</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total:</span>
-                  <span>${parseFloat(amounts.total).toFixed(2)}</span>
+                  <span>${amounts.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

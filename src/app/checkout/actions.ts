@@ -62,7 +62,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
         status: "pending", // Changed from "completed"
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,
-      } as TablesInsert<'orders'>) // Cast to TablesInsert<'orders'>
+      }) // Removed explicit cast, now types should align
       .select()
       .single()
 
@@ -78,7 +78,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
       product_name: oi.product_name,
       unit_price: oi.unit_price,
       line_total: oi.line_total,
-    } as TablesInsert<'order_items'>)) // Cast to TablesInsert<'order_items'>
+    })) // Removed explicit cast, now types should align
 
     const { error: itemsError } = await supabase
       .from("order_items")

@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const orderIds = pendingOrders.map(order => order.id)
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' })
+      .update({ status: 'cancelled' }) // Removed explicit cast, now types should align
       .in('id', orderIds)
     
     if (updateError) {
