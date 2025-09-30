@@ -22,7 +22,7 @@ export function Header({ className }: { className?: string }) {
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
   const navRef = useRef<HTMLElement>(null)
-  const { session } = useSession()
+  const { session, isLoading } = useSession() // Get isLoading
   const { cartCount, cartTotal } = useCart()
   const { wishlistCount } = useWishlist() // Use wishlist hook
 
@@ -99,15 +99,20 @@ export function Header({ className }: { className?: string }) {
                   )}
                 </Link>
                 <span className="text-border hidden sm:inline">|</span> {/* Hide separator on very small screens */}
-                {session ? (
+                {isLoading ? ( // Render a loading state for auth section
+                  <div className="flex items-center gap-x-1">
+                    <User className="w-4 h-4 animate-pulse" />
+                    <span className="hidden sm:inline animate-pulse">Loading...</span>
+                  </div>
+                ) : session ? (
                   <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                     <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">Account</span> {/* Hide text on very small screens */}
+                    <span className="hidden sm:inline">Account</span>
                   </Link>
                 ) : (
                   <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                     <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">Sign In</span> {/* Hide text on very small screens */}
+                    <span className="hidden sm:inline">Sign In</span>
                   </button>
                 )}
                 <span className="text-border">|</span>

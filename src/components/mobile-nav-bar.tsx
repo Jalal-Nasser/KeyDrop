@@ -11,7 +11,7 @@ import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 export function MobileNavBar({ className }: { className?: string }) {
   const pathname = usePathname()
   const { cartCount } = useCart() // Assuming cartCount can be used as a placeholder for wishlist count for now
-  const { session } = useSession()
+  const { session, isLoading: isLoadingSession } = useSession() // Use isLoading from useSession
   const { wishlistCount } = useWishlist() // Use wishlist hook
 
   const navItems = [
@@ -21,8 +21,8 @@ export function MobileNavBar({ className }: { className?: string }) {
     { href: "/account/orders", label: "Track Order", icon: PackageCheck },
   ]
 
-  // Add "My account" only if session exists
-  if (session) {
+  // Add "My account" only if session exists AND is not loading
+  if (!isLoadingSession && session) {
     navItems.push({ href: "/account", label: "My account", icon: User });
   }
 
@@ -47,6 +47,12 @@ export function MobileNavBar({ className }: { className?: string }) {
             )}
           </Link>
         ))}
+        {isLoadingSession && ( // Add a loading indicator for the session-dependent item
+          <div className="flex flex-col items-center text-xs text-gray-600 animate-pulse">
+            <User className="w-5 h-5 mb-1" />
+            <span>Loading...</span>
+          </div>
+        )}
       </nav>
     </div>
   )
