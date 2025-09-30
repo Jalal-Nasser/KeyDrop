@@ -42,7 +42,7 @@ export default function RootLayout({
             gtag('config', '${gaMeasurementId}');
           `}
         </Script>
-        <title>KeyDrop - Your Gaming Marketplace</title>
+        <title>Dropskey Digital Keys</title>
         <meta name="description" content="KeyDrop - Buy and sell game keys, gift cards, and more" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
