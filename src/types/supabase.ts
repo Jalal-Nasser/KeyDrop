@@ -80,36 +80,36 @@ export type Database = {
           order_id: string
           price_at_purchase: number
           product_id: number
-          product_key: string | null
+          product_key: string | null // Added
           product_name: string | null
           quantity: number
           sku: string | null
-          unit_price: number | null
-          line_total: number | null
+          unit_price: number | null // Added
+          line_total: number | null // Added
         }
         Insert: {
           id?: string
           order_id: string
           price_at_purchase: number
           product_id: number
-          product_key?: string | null
+          product_key?: string | null // Added
           product_name?: string | null
           quantity: number
           sku?: string | null
-          unit_price?: number | null
-          line_total?: number | null
+          unit_price?: number | null // Added
+          line_total?: number | null // Added
         }
         Update: {
           id?: string
           order_id?: string
           price_at_purchase?: number
           product_id?: number
-          product_key?: string | null
+          product_key?: string | null // Added
           product_name?: string | null
           quantity?: number
           sku?: string | null
-          unit_price?: number | null
-          line_total?: number | null
+          unit_price?: number | null // Added
+          line_total?: number | null // Added
         }
         Relationships: [
           {
@@ -130,38 +130,38 @@ export type Database = {
       }
       orders: {
         Row: {
-          amounts: Json | null
+          amounts: Json | null // Added
           created_at: string
           id: string
-          payment_gateway: string | null
-          payment_id: string | null
-          promo_code: string | null
-          promo_snapshot: Json | null
-          status: string
+          payment_gateway: string | null // Added
+          payment_id: string | null // Added
+          promo_code: string | null // Added
+          promo_snapshot: Json | null // Added
+          status: string // Added
           total: number
           user_id: string
         }
         Insert: {
-          amounts?: Json | null
+          amounts?: Json | null // Added
           created_at?: string
           id?: string
-          payment_gateway?: string | null
-          payment_id?: string | null
-          promo_code?: string | null
-          promo_snapshot?: Json | null
-          status?: string
+          payment_gateway?: string | null // Added
+          payment_id?: string | null // Added
+          promo_code?: string | null // Added
+          promo_snapshot?: Json | null // Added
+          status?: string // Added
           total: number
           user_id: string
         }
         Update: {
-          amounts?: Json | null
+          amounts?: Json | null // Added
           created_at?: string
           id?: string
-          payment_gateway?: string | null
-          payment_id?: string | null
-          promo_code?: string | null
-          promo_snapshot?: Json | null
-          status?: string
+          payment_gateway?: string | null // Added
+          payment_id?: string | null // Added
+          promo_code?: string | null // Added
+          promo_snapshot?: Json | null // Added
+          status?: string // Added
           total?: number
           user_id?: string
         }
@@ -237,46 +237,49 @@ export type Database = {
       }
       profiles: {
         Row: {
-          address_line_1: string | null
-          address_line_2: string | null
-          city: string | null
-          company_name: string | null
-          country: string | null
+          address_line_1: string | null // Added
+          address_line_2: string | null // Added
+          city: string | null // Added
+          company_name: string | null // Added
+          country: string | null // Added
           first_name: string | null
           id: string
-          is_admin: boolean | null
+          is_admin: boolean | null // Added
           last_name: string | null
-          postal_code: string | null
-          state_province_region: string | null
-          vat_number: string | null
+          postal_code: string | null // Added
+          state_province_region: string | null // Added
+          vat_number: string | null // Added
+          role: string | null // Added
         }
         Insert: {
-          address_line_1?: string | null
-          address_line_2?: string | null
-          city?: string | null
-          company_name?: string | null
-          country?: string | null
+          address_line_1?: string | null // Added
+          address_line_2?: string | null // Added
+          city?: string | null // Added
+          company_name?: string | null // Added
+          country?: string | null // Added
           first_name?: string | null
           id: string
-          is_admin?: boolean | null
+          is_admin?: boolean | null // Added
           last_name?: string | null
-          postal_code?: string | null
-          state_province_region?: string | null
-          vat_number?: string | null
+          postal_code?: string | null // Added
+          state_province_region?: string | null // Added
+          vat_number?: string | null // Added
+          role?: string | null // Added
         }
         Update: {
-          address_line_1?: string | null
-          address_line_2?: string | null
-          city?: string | null
-          company_name?: string | null
-          country?: string | null
+          address_line_1?: string | null // Added
+          address_line_2?: string | null // Added
+          city?: string | null // Added
+          company_name?: string | null // Added
+          country?: string | null // Added
           first_name?: string | null
           id?: string
-          is_admin?: boolean | null
+          is_admin?: boolean | null // Added
           last_name?: string | null
-          postal_code?: string | null
-          state_province_region?: string | null
-          vat_number?: string | null
+          postal_code?: string | null // Added
+          state_province_region?: string | null // Added
+          vat_number?: string | null // Added
+          role?: string | null // Added
         }
         Relationships: []
       }
@@ -473,17 +476,16 @@ export type Database = {
 }
 
 type PublicSchema = Database[Extract<keyof Database, "public">]
-type SchemaName = Exclude<keyof Database, '__InternalSupabase'>; // Define SchemaName
 
 export type Tables<
   PublicTableNameOrOptions extends
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: SchemaName }, // Use SchemaName here
-  TableName extends PublicTableNameOrOptions extends { schema: SchemaName }
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: SchemaName }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
@@ -503,11 +505,11 @@ export type Tables<
 export type TablesInsert<
   PublicTableNameOrOptions extends
     | keyof PublicSchema["Tables"]
-    | { schema: SchemaName }, // Use SchemaName here
-  TableName extends PublicTableNameOrOptions extends { schema: SchemaName }
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: SchemaName }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
@@ -524,11 +526,11 @@ export type TablesInsert<
 export type TablesUpdate<
   PublicTableNameOrOptions extends
     | keyof PublicSchema["Tables"]
-    | { schema: SchemaName }, // Use SchemaName here
-  TableName extends PublicTableNameOrOptions extends { schema: SchemaName }
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: SchemaName }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
@@ -545,11 +547,11 @@ export type TablesUpdate<
 export type Enums<
   PublicEnumNameOrOptions extends
     | keyof PublicSchema["Enums"]
-    | { schema: SchemaName }, // Use SchemaName here
-  EnumName extends PublicEnumNameOrOptions extends { schema: SchemaName }
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: SchemaName }
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/actions'
+import { createServerClient } from '@/lib/supabase/server' // Import the correct server client
 import { revalidatePath } from 'next/cache'
 
 export async function applyUserDiscount(formData: FormData) {
@@ -24,14 +24,14 @@ export async function applyUserDiscount(formData: FormData) {
     return { error: 'Percentage discount must be between 0 and 100' }
   }
 
-  const supabase = createClient()
+  const supabase = await createServerClient() // Await the client
   
   const { data, error } = await supabase
     .from('user_discounts')
     .upsert(
       {
-        user_id: userId,
-        discount_type: discountType,
+        user_id: userId as string, // Cast userId to string
+        discount_type: discountType as string, // Cast discountType to string
         discount_value: value,
         is_active: isActive,
         expires_at: expiresAt || null,
@@ -51,7 +51,7 @@ export async function applyUserDiscount(formData: FormData) {
 }
 
 export async function removeUserDiscount(userId: string) {
-  const supabase = createClient()
+  const supabase = await createServerClient() // Await the client
   
   const { error } = await supabase
     .from('user_discounts')

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { getPaypalClient } from '@/lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import { createPayPalOrderSchema } from '@/lib/schemas';
+import { Database } from '@/types/supabase'; // Import Database type
 
 export const runtime = "nodejs";
 
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  const payPalOrder = await getPaypalClient().execute(request);
+    const payPalOrder = await getPaypalClient().execute(request);
     
     // Store the PayPal Order ID in our database
     const { error: updateError } = await supabase

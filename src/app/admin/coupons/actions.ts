@@ -4,6 +4,7 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { v4 as uuidv4 } from 'uuid';
+import { createServerClient } from "@/lib/supabase/server"; // Import the correct server client
 
 interface CouponData {
   code: string;
@@ -13,7 +14,7 @@ interface CouponData {
 }
 
 export async function createCoupon(formData: CouponData) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createServerClient(); // Await the client
   console.log("Attempting to create coupon with data:", formData); // Added log
   const { error } = await supabase.from("coupons").insert([formData]);
   if (error) {
@@ -26,7 +27,7 @@ export async function createCoupon(formData: CouponData) {
 }
 
 export async function updateCoupon(id: string, formData: CouponData) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createServerClient(); // Await the client
   console.log(`Attempting to update coupon ${id} with data:`, formData); // Added log
   const { error } = await supabase.from("coupons").update(formData).eq("id", id);
   if (error) {
@@ -39,7 +40,7 @@ export async function updateCoupon(id: string, formData: CouponData) {
 }
 
 export async function deleteCoupon(id: string) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createServerClient(); // Await the client
   console.log(`Attempting to delete coupon with ID: ${id}`); // Added log
   const { error } = await supabase.from("coupons").delete().eq("id", id);
   if (error) {
@@ -52,7 +53,7 @@ export async function deleteCoupon(id: string) {
 }
 
 export async function fetchUsersForAssignment() {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createServerClient(); // Await the client
   
   const { data, error } = await supabase
     .from("profiles")

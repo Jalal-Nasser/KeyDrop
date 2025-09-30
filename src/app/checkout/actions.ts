@@ -6,6 +6,8 @@ import { CartItem } from "@/types/cart"
 import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from "next/cache"
 import { notifyAdminNewOrder } from "@/lib/whatsapp"
+import { Database } from "@/types/supabase" // Import Database type
+import { Json } from "@/types/supabase" // Import Json type
 
 interface CreateWalletOrderPayload {
   cartItems: CartItem[]
@@ -61,6 +63,14 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
         status: "pending", // Changed from "completed"
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,
+        amounts: {
+          subtotal: recalculatedSubtotal.toFixed(2),
+          discount: "0.00",
+          tax: "0.00",
+          process_fees: processingFee.toFixed(2),
+          total: finalTotal.toFixed(2),
+          currency: "USD",
+        } as Json,
       })
       .select()
       .single()
@@ -69,7 +79,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     const orderId = orderData.id
 
     // 2. Create order items using recalculated pricing
-    const orderItemsPrepared = orderItemsToInsert.map(oi => ({
+    const orderItemsPrepared: Database['public']['Tables']['order_items']['Insert'][] = orderItemsToInsert.map(oi => ({
       order_id: orderId,
       product_id: oi.product_id,
       quantity: oi.quantity,
@@ -86,7 +96,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     if (itemsError) throw itemsError
 
     // 3. Get the target user's email for the confirmation using an admin client
-    const supabaseAdmin = createClient(
+    const supabaseAdmin = createClient<Database>( // Explicitly type createClient
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )

@@ -12,6 +12,8 @@ import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { useSession } from "@/context/session-context"
 import { toast } from "sonner"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs" // Import createClientComponentClient
+import { Session, AuthChangeEvent } from "@supabase/supabase-js" // Import types
 
 interface AuthDialogProps {
   open: boolean;
@@ -32,7 +34,8 @@ function isAllowedEmail(email: string) {
   return allowedDomains.includes(domain);
 }
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
-  const { supabase, session } = useSession()
+  const { session } = useSession()
+  const supabase = createClientComponentClient() // Use createClientComponentClient directly
   const [emailError, setEmailError] = useState<string | null>(null)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -76,7 +79,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     if (!supabase) return;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => { // Explicitly type event and session
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             // Create a profile for new users
@@ -106,7 +109,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [open]);
+  }, [open, supabase]); // Add supabase to dependency array
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

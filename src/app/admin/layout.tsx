@@ -22,11 +22,11 @@ export default async function AdminLayout({
   try {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("role") // Select 'role' instead of 'is_admin'
       .eq("id", user.id)
       .single();
 
-    if (profileError || !profile?.is_admin) {
+    if (profileError || profile?.role !== 'admin') { // Check role
       console.log("AdminLayout: User is not admin or profile error, showing access denied.");
       return (
         <div className="container mx-auto py-20 text-center">

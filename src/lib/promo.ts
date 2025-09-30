@@ -7,7 +7,7 @@ interface Promotion {
   code: string;
   type: 'percent' | 'fixed'; // Changed to literal types
   value: number; // Stored as numeric (dollars) in DB, but used as percentage or fixed dollar value
-  applies_to: 'all' | 'product_ids' | null;
+  applies_to: 'all' | 'product_ids' | null; // Changed to literal types
   product_ids: number[] | null;
   min_subtotal: number | null; // In dollars
   start_at: string | null;

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { createOrderSchema } from '@/lib/schemas';
 import { toCents, fromCents, cents, roundMoney } from '@/lib/money'; // Import roundMoney
 import { resolveDiscount } from '@/lib/promo';
+import { Database } from '@/types/supabase'; // Import Database type
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
@@ -108,9 +109,9 @@ export async function POST(req: NextRequest) {
         user_id: user.id,
         status: 'pending',
         total: roundMoney(totalCents / 100), // Store total in dollars
-        amounts: amounts,
+        amounts: amounts as unknown as Json, // Cast to Json
         promo_code: promoCode || null,
-        promo_snapshot: promoSnapshot,
+        promo_snapshot: promoSnapshot as unknown as Json, // Cast to Json
       })
       .select()
       .single();
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
 
-    const itemsToInsert = orderItemsData.map(item => ({
+    const itemsToInsert: Database['public']['Tables']['order_items']['Insert'][] = orderItemsData.map(item => ({
       order_id: order.id,
       product_id: item.product_id,
       quantity: item.quantity,

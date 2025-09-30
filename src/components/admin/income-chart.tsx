@@ -15,6 +15,8 @@ import { format, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, eac
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs" // Import createClientComponentClient
+import { Database } from "@/types/supabase" // Import Database type
 
 interface Order {
   id: string
@@ -25,7 +27,8 @@ interface Order {
 type Timeframe = "daily" | "monthly" | "yearly"
 
 export function IncomeChart() {
-  const { supabase } = useSession()
+  const { session } = useSession() // Only need session for auth context, not supabase client directly
+  const supabase = createClientComponentClient<Database>() // Use createClientComponentClient directly
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +75,7 @@ export function IncomeChart() {
         key = format(date, "yyyy")
       }
 
-      aggregated[key] = (aggregated[key] || 0) + parseFloat(order.total.toString())
+      aggregated[key] = (aggregated[key] || 0) + order.total // Use order.total directly as it's a number
     })
 
     // Fill in missing dates/months/years with 0 for a continuous chart

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabaseServer'
 import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase' // Import Database type
+import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions' // Renamed to avoid conflict
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
           products (image)
         )
       `)
-      .eq('status', 'pending')
+      .eq('status', 'pending') // Corrected column name to 'status'
       .lt('created_at', cutoffTime.toISOString())
     
     if (fetchError) {
@@ -52,7 +54,7 @@ export async function POST(req: NextRequest) {
     const orderIds = pendingOrders.map(order => order.id)
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' })
+      .update({ status: 'cancelled' }) // Corrected column name to 'status'
       .in('id', orderIds)
     
     if (updateError) {
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Send notifications for each cancelled order
-    const supabaseAdmin = createClient(
+    const supabaseAdmin = createClient<Database>( // Explicitly type createClient
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
@@ -69,6 +71,10 @@ export async function POST(req: NextRequest) {
     const notificationPromises = pendingOrders.map(async (order) => {
       try {
         // Get user email
+        if (!order.user_id) {
+          console.error(`Skipping notification for order ${order.id}: user_id is null.`);
+          return;
+        }
         const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
         
         if (userError || !user || !user.email) {
@@ -84,7 +90,7 @@ export async function POST(req: NextRequest) {
           .single()
         
         // Send email notification
-        await sendOrderStatusUpdate({
+        await sendOrderStatusUpdateEmail({ // Use renamed import
           orderId: order.id,
           userEmail: user.email,
           status: 'cancelled',
@@ -92,17 +98,19 @@ export async function POST(req: NextRequest) {
           isAutoCancelled: true
         })
         
+        // Determine the product image for the notification (use first available)
+        const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
+
         // Send Discord notification
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/discord-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await supabaseAdmin.functions.invoke('discord-order-notification', {
+          body: {
             orderId: order.id,
-            total: order.total,
+            cartTotal: order.total, // Use order.total directly
             orderItems: order.order_items,
             notificationType: 'order_auto_cancelled',
-            userEmail: user.email
-          })
+            userEmail: user.email,
+            productImage: firstProductImage
+          }
         }).catch(err => console.error(`Discord notification for auto-cancelled order ${order.id} failed:`, err))
         
       } catch (error) {
@@ -129,30 +137,5 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Helper function to send order status update email
-async function sendOrderStatusUpdate({
-  orderId,
-  userEmail,
-  status,
-  firstName,
-  isAutoCancelled = false
-}: {
-  orderId: string
-  userEmail: string
-  status: string
-  firstName: string
-  isAutoCancelled?: boolean
-}) {
-  try {
-    const { sendOrderStatusUpdate } = await import('@/lib/order-mail')
-    await sendOrderStatusUpdate({
-      orderId,
-      userEmail,
-      status,
-      firstName,
-      isAutoCancelled
-    })
-  } catch (error) {
-    console.error('Error sending order status update email:', error)
-  }
-}
+// Helper function to send order status update email (removed as it's now imported from email-actions)
+// async function sendOrderStatusUpdate(...) { ... }

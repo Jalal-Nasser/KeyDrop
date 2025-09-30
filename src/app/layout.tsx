@@ -96,7 +96,6 @@ export default function RootLayout({
             />
           </noscript>
         )}
-        )}
         
         <ThemeProvider
           attribute="class"

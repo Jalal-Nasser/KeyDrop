@@ -6,6 +6,7 @@ import { capturePayPalOrderSchema } from '@/lib/schemas';
 import { sendOrderConfirmation } from '@/lib/email-actions';
 import { createClient } from '@supabase/supabase-js'; // Import for admin client
 import { notifyAdminNewOrder } from '@/lib/whatsapp';
+import { Database } from '@/types/supabase'; // Import Database type
 
 export const runtime = "nodejs";
 
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
     request.requestBody({} as any);
 
-  const capture = await getPaypalClient().execute(request);
+    const capture = await getPaypalClient().execute(request);
     const captureData = capture.result;
 
     if (captureData.status === 'COMPLETED') {
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       const { error: updateError } = await supabase
         .from('orders')
         .update({
-          status: 'completed',
+          status: 'completed', // Corrected column name to 'status'
           payment_id: captureData.id, // Store PayPal capture ID
         })
         .eq('id', orderId);
@@ -60,11 +61,11 @@ export async function POST(req: NextRequest) {
         // Continue to send email as payment was successful, but log the DB error.
       }
 
-  // Optional: send order confirmation (receipt). This does NOT deliver product keys.
-  await sendOrderConfirmation({ orderId, userEmail: user.email! });
+      // Optional: send order confirmation (receipt). This does NOT deliver product keys.
+      await sendOrderConfirmation({ orderId, userEmail: user.email! });
 
       // Send Discord notification for new order
-      const supabaseAdmin = createClient(
+      const supabaseAdmin = createClient<Database>( // Explicitly type createClient
         (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useSession } from "@/context/session-context"
 import { Product } from "@/types/product"
 import { toast } from "sonner"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs" // Import createClientComponentClient
+import { Database } from "@/types/supabase" // Import Database type
 
 interface WishlistItem {
   id: string // wishlist_item ID
@@ -23,13 +25,14 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const { session, supabase, isLoading: isLoadingSession } = useSession()
+  const { session, isLoading: isLoadingSession } = useSession()
+  const supabase = createClientComponentClient<Database>() // Use createClientComponentClient directly
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(true)
 
   useEffect(() => {
     const fetchWishlist = async () => {
-  if (isLoadingSession || !supabase) return // Wait for session and supabase to load
+      if (isLoadingSession) return // Wait for session to load
 
       if (!session) {
         setWishlistItems([]) // Clear wishlist if no session
@@ -38,7 +41,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       }
 
       setIsLoadingWishlist(true)
-  const { data, error } = await supabase
+      const { data, error } = await supabase
         .from("wishlist_items")
         .select(`
           id,
@@ -71,10 +74,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       toast.info("Please sign in to add items to your wishlist.")
       return
     }
-    if (!supabase) {
-      toast.error("App is still loading. Please try again in a moment.")
-      return
-    }
     if (isProductInWishlist(product.id)) {
       toast.info(`${product.name} is already in your wishlist.`)
       return
@@ -82,7 +81,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     const toastId = toast.loading(`Adding ${product.name} to wishlist...`)
     try {
-  const { error } = await supabase.from("wishlist_items").insert({
+      const { error } = await supabase.from("wishlist_items").insert({
         user_id: session.user.id,
         product_id: product.id,
       })
@@ -95,7 +94,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
       } else {
         // Re-fetch or optimistically update
-  const { data: newItem, error: fetchError } = await supabase
+        const { data: newItem, error: fetchError } = await supabase
           .from("wishlist_items")
           .select(`
             id,
@@ -127,10 +126,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const removeFromWishlist = async (productId: number) => {
     if (!session) {
       toast.error("You must be signed in to manage your wishlist.")
-      return
-    }
-    if (!supabase) {
-      toast.error("App is still loading. Please try again in a moment.")
       return
     }
 
