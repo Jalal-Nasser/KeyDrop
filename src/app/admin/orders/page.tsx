@@ -8,16 +8,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AdminOrderListClient } from "@/components/admin/admin-order-list-client"
-import { Database } from "@/types/supabase"
+import { Database, Tables } from "@/types/supabase" // Import Database and Tables
 
-type ProductInfo = Pick<Database['public']['Tables']['products']['Row'], 'name' | 'is_digital' | 'image'>
+type ProductInfo = Pick<Tables<'products'>, 'name' | 'is_digital' | 'image'>
 
-type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
+type OrderItem = Tables<'order_items'> & {
   products: ProductInfo[] | null // Changed to array
 }
 
-export type OrderWithDetails = Database['public']['Tables']['orders']['Row'] & {
-  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'first_name' | 'last_name'> | null
+export type OrderWithDetails = Tables<'orders'> & { // Extend Tables<'orders'>
+  profiles: Pick<Tables<'profiles'>, 'first_name' | 'last_name'> | null
   order_items: OrderItem[]
 }
 
@@ -33,7 +33,7 @@ export default async function AdminOrdersPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
 
   if (!profile?.is_admin) {
     redirect("/account")
@@ -56,7 +56,7 @@ export default async function AdminOrdersPage() {
         )
       )
     `)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as { data: OrderWithDetails[] | null, error: any }; // Explicitly type data
 
   const orders: OrderWithDetails[] = data || []
 

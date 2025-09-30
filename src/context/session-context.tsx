@@ -10,20 +10,22 @@ import React, {
   useRef,
   useSyncExternalStore
 } from "react"
-import type { Session, User } from "@supabase/supabase-js"
+import type { Session, User, SupabaseClient } from "@supabase/supabase-js" // Import SupabaseClient
 import { supabase } from "@/lib/supabase/client"
+import { Database } from "@/types/supabase" // Import Database type
 
 type SessionContextType = {
   session: Session | null
   user: User | null
   isLoading: boolean
   signOut: () => Promise<void>
+  supabase: SupabaseClient<Database> // Add supabase client here
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
 
 // Create a stable reference for the default context value
-const DEFAULT_CONTEXT: Omit<SessionContextType, 'signOut'> = {
+const DEFAULT_CONTEXT: Omit<SessionContextType, 'signOut' | 'supabase'> = { // Exclude supabase from default
   session: null,
   user: null,
   isLoading: true,
@@ -71,8 +73,8 @@ function useAuthSubscription() {
               user: session?.user ?? null,
               isLoading: false,
             })
-          }
-        })
+          })
+        }
       }
     )
     
@@ -112,6 +114,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       user,
       isLoading,
       signOut: signOutRef.current,
+      supabase, // Provide the supabase client here
     }),
     [session, user, isLoading]
   )

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { generateCouponCode } from "./actions"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 export default async function GenerateCodesPage() {
   const supabase = createSupabaseServerClient()
@@ -18,7 +19,7 @@ export default async function GenerateCodesPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
-    .single()
+    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
 
   if (!profile?.is_admin) {
     redirect("/account")

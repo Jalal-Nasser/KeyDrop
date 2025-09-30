@@ -21,9 +21,8 @@ export default function DebugPage() {
     }
     
     // Get publicEnv from utility
-    getPublicEnv().then(env => {
-      setPublicEnv(env)
-    })
+    const env = getPublicEnv(); // Call directly, it's synchronous
+    setPublicEnv(env);
     
     // Create direct client
     try {

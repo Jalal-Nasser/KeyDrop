@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { getPaypalClient } from '@/lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import { createPayPalOrderSchema } from '@/lib/schemas';
-import { Database } from '@/types/supabase'; // Import Database type
+import { Tables, TablesUpdate } from '@/types/supabase'; // Import Tables and TablesUpdate
 
 export const runtime = "nodejs";
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       .select('total, amounts, status, order_items(product_name, sku, unit_price, quantity, products(name))')
       .eq('id', orderId)
       .eq('user_id', user.id)
-      .single();
+      .single() as { data: (Tables<'orders'> & { order_items: (Tables<'order_items'> & { products: Tables<'products'>[] | null })[] }) | null, error: any }; // Explicitly type order
 
     if (orderError || !order) {
       console.error("Error fetching order for PayPal creation:", orderError);
@@ -82,12 +82,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const payPalOrder = await getPaypalClient().execute(request);
+  const payPalOrder = await getPaypalClient().execute(request);
     
     // Store the PayPal Order ID in our database
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ payment_id: payPalOrder.result.id }) // Using payment_id for paypalOrderId
+      .update({ payment_id: payPalOrder.result.id } as TablesUpdate<'orders'>) // Cast to TablesUpdate<'orders'>
       .eq('id', orderId);
 
     if (updateError) {

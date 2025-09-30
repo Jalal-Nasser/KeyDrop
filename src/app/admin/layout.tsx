@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { AdminLayoutClient } from "@/components/admin/admin-layout-client" // Import the new client component
+import { Tables } from "@/types/supabase" // Import Tables type
 
 export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route segment
 
@@ -22,11 +23,11 @@ export default async function AdminLayout({
   try {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("role") // Select 'role' instead of 'is_admin'
+      .select("is_admin")
       .eq("id", user.id)
-      .single();
+      .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
 
-    if (profileError || profile?.role !== 'admin') { // Check role
+    if (profileError || !profile?.is_admin) {
       console.log("AdminLayout: User is not admin or profile error, showing access denied.");
       return (
         <div className="container mx-auto py-20 text-center">

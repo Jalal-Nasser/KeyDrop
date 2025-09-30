@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { createCoupon, updateCoupon, deleteCoupon } from "@/app/admin/coupons/actions"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 interface CouponFormProps {
   coupon?: {
@@ -44,6 +45,7 @@ interface CouponFormProps {
     discount_percent: number;
     assigned_user_id: string | null;
     is_applied: boolean;
+    profiles?: Pick<Tables<'profiles'>, 'first_name' | 'last_name'>[] | null; // Explicitly type profiles
   };
 }
 

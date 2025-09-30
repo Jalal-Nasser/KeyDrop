@@ -10,6 +10,7 @@ import { CouponForm } from "@/components/admin/coupon-form"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 export const revalidate = 0 // Disable cache to always get fresh data
 
@@ -26,7 +27,7 @@ export default async function AdminCouponsPage() {
       created_at,
       profiles (first_name, last_name)
     `)
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false }) as { data: (Tables<'coupons'> & { profiles: Pick<Tables<'profiles'>, 'first_name' | 'last_name'> | null })[] | null, error: any }; // Explicitly type coupons
 
   if (error) {
     console.error("Error fetching coupons:", error)
@@ -57,7 +58,7 @@ export default async function AdminCouponsPage() {
                 <TableCell>{coupon.discount_percent}%</TableCell>
                 <TableCell>
                   {coupon.assigned_user_id
-                    ? `${coupon.profiles?.[0]?.first_name || ''} ${coupon.profiles?.[0]?.last_name || ''} (${coupon.assigned_user_id.substring(0, 8)}...)`
+                    ? `${coupon.profiles?.first_name || ''} ${coupon.profiles?.last_name || ''} (${coupon.assigned_user_id.substring(0, 8)}...)`
                     : "Public"}
                 </TableCell>
                 <TableCell>
@@ -65,7 +66,7 @@ export default async function AdminCouponsPage() {
                     {coupon.is_applied ? "Applied" : "Active"}
                   </Badge>
                 </TableCell>
-                <TableCell>{format(new Date(coupon.created_at), 'MMM dd, yyyy')}</TableCell>
+                <TableCell>{coupon.created_at ? format(new Date(coupon.created_at), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                 <TableCell>
                   <CouponForm coupon={coupon} />
                 </TableCell>

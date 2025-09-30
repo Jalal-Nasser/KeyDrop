@@ -2,23 +2,35 @@
 
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { revalidatePath } from "next/cache"
-import { sendOrderStatusUpdate, sendOrderConfirmation, sendProductDelivery } from "@/lib/email-actions"
+import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail, sendOrderConfirmation, sendProductDelivery } from "@/lib/email-actions" // Renamed to avoid conflict
 import { createClient } from '@supabase/supabase-js'
-import { Json } from "@/types/supabase"
-import { Database } from "@/types/supabase" // Import Database type
+import { Json, Tables, TablesInsert, TablesUpdate } from "@/types/supabase"
 
-// Define a type for the expected structure of updatedItem
+// Define types that match the Supabase query result structure
+type OrderItemRow = Tables<'order_items'>;
+type OrderItemInsert = TablesInsert<'order_items'>;
+type OrderItemUpdate = TablesUpdate<'order_items'>;
+type OrderRow = Tables<'orders'>;
+type OrderUpdate = TablesUpdate<'orders'>;
+type ProfileRow = Tables<'profiles'>;
+type ProductRow = Tables<'products'>;
+
 interface UpdatedOrderItemResult {
   order_id: string;
   product_name: string | null;
-  products: { name: string, image: string | null }[] | null;
-  orders: { user_id: string; total: number; profiles: { first_name: string | null } | null } | null;
+  products: Pick<ProductRow, 'name' | 'image'>[] | null;
+  orders: Pick<OrderRow, 'user_id' | 'total'> & { profiles: Pick<ProfileRow, 'first_name'> | null } | null;
 }
 
 export async function fulfillOrderItem(orderItemId: string, productKey: string) {
   const supabase = createSupabaseServerClient()
   
-  const supabaseAdmin = createClient<Database>( // Explicitly type createClient
+  // Debug environment variables
+  console.log('Debug Environment Variables:')
+  console.log('URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Present' : 'Missing')
+  console.log('Service Role Key:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `Present (length: ${process.env.SUPABASE_SERVICE_ROLE_KEY.length})` : 'Missing')
+  
+  const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
@@ -27,7 +39,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     // 1. Update the order item with the product key
     const { data: updatedItem, error: itemUpdateError } = await supabase
       .from('order_items')
-      .update({ product_key: productKey })
+      .update({ product_key: productKey } as OrderItemUpdate) // Cast to OrderItemUpdate
       .eq('id', orderItemId)
       .select(`
         order_id,
@@ -43,16 +55,19 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     const { order_id, product_name, products, orders } = updatedItem;
     if (!orders || !orders.profiles) throw new Error('Could not retrieve full order details.');
 
-    // 2. Send the delivery email
-    if (!orders.user_id) throw new Error('Order user ID is null.');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(orders.user_id)
+    // 2. Get user email from Supabase auth
+    console.log('Getting user by ID:', orders.user_id);
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(orders.user_id as string) // Cast to string
+    console.log('User fetch result:', { user: user ? 'Found' : 'Not found', error: userError?.message });
     
-    if (userError || !user || !user.email) {
+    if (userError || !user?.email) {
       throw new Error(`Could not get user email: ${userError?.message || 'No email found'}`)
     }
+    
+    const userEmail = user.email;
 
     await sendProductDelivery({
-      userEmail: user.email,
+      userEmail: userEmail,
       firstName: orders.profiles.first_name || 'Valued Customer',
       orderId: order_id,
       productName: product_name || products?.[0]?.name || 'Unknown Product',
@@ -63,9 +78,10 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     const { data: allItems, error: allItemsError } = await supabase
       .from('order_items')
       .select('product_key, products (image)')
-      .eq('order_id', order_id)
+      .eq('order_id', order_id) as { data: (Pick<OrderItemRow, 'product_key'> & { products: Pick<ProductRow, 'image'>[] | null })[] | null, error: any }; // Explicitly type allItems
 
     if (allItemsError) throw new Error(`Could not check order status: ${allItemsError.message}`)
+    if (!allItems) throw new Error('No order items found for status check.');
 
     const allFulfilled = allItems.every(item => item.product_key !== null)
 
@@ -73,7 +89,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
     if (allFulfilled) {
       const { error: orderUpdateError } = await supabase
         .from('orders')
-        .update({ status: 'completed' }) // Corrected column name to 'status'
+        .update({ status: 'completed' } as OrderUpdate) // Cast to OrderUpdate
         .eq('id', order_id)
 
       if (orderUpdateError) throw new Error(`Failed to update order status: ${orderUpdateError.message}`)
@@ -87,7 +103,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
           notificationType: 'order_completed',
           orderId: order_id,
           cartTotal: orders.total,
-          userEmail: user.email,
+          userEmail: userEmail,
           productImage: firstProductImage
         }
       }).catch(err => console.error("Discord notification for completed order failed:", err));
@@ -109,18 +125,17 @@ export async function updateOrderStatus(orderId: string, status: string) {
       .from('orders')
       .select(`user_id, total, order_items (product_name, products (image))`)
       .eq('id', orderId)
-      .single()
+      .single() as { data: (Pick<OrderRow, 'user_id' | 'total'> & { order_items: (Pick<OrderItemRow, 'product_name'> & { products: Pick<ProductRow, 'image'>[] | null })[] }) | null, error: any };
 
     if (fetchError || !order) {
       throw new Error(`Failed to fetch order for status update: ${fetchError?.message}`)
     }
 
-    const supabaseAdmin = createClient<Database>( // Explicitly type createClient
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    if (!order.user_id) throw new Error('Order user ID is null.');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string) // Cast to string
 
     if (userError || !user || !user.email) {
       throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)
@@ -129,19 +144,19 @@ export async function updateOrderStatus(orderId: string, status: string) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('first_name')
-      .eq('id', order.user_id)
+      .eq('id', order.user_id as string) // Cast to string
       .single();
 
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status }) // Corrected column name to 'status'
+      .update({ status } as OrderUpdate) // Cast to OrderUpdate
       .eq('id', orderId)
 
     if (updateError) {
       throw new Error(updateError.message)
     }
 
-    await sendOrderStatusUpdate({ 
+    await sendOrderStatusUpdateEmail({ // Use renamed function
       orderId, 
       userEmail: user.email, 
       status, 
@@ -191,7 +206,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 }
 
 export async function reSendInvoice(orderId: string) {
-  const supabaseAdmin = createClient<Database>( // Explicitly type createClient
+  const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
@@ -207,8 +222,7 @@ export async function reSendInvoice(orderId: string) {
       throw new Error(`Failed to fetch order details for re-sending invoice: ${orderFetchError?.message}`)
     }
 
-    if (!order.user_id) throw new Error('Order user ID is null.');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string) // Cast to string
 
     if (userError || !user || !user.email) {
       throw new Error(`Failed to fetch user email for user ${order.user_id}: ${userError?.message}`)

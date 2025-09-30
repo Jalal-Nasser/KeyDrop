@@ -14,6 +14,7 @@ import { format } from "date-fns"
 import { OrderStatusUpdater } from "./order-status-updater"
 import { FulfillOrderItemDialog } from "./fulfill-order-item-dialog"
 import { CheckCircle, Mail, Package, ShieldCheck, XCircle } from "lucide-react"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline"
 function getStatusVariant(status: string): BadgeVariant {

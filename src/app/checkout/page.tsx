@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
 import { AuthDialog } from "@/components/auth-dialog"
 import { CountdownTimer } from "@/components/countdown-timer"
-import { Database } from "@/types/supabase"
+import { Database, Tables } from "@/types/supabase" // Import Database and Tables
 import {
   Select,
   SelectContent,
@@ -55,7 +55,7 @@ const checkoutSchema = profileBillingSchema.extend({
 })
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = Tables<'profiles'> // Use Tables type for Profile
 type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>;
 
 const Stepper = ({ step }: { step: number }) => {

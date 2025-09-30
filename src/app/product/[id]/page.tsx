@@ -4,6 +4,7 @@ import { ProductDetailsClient } from "@/components/product-details-client"
 import { createSupabaseServerClient }
  from "@/lib/supabaseServer"
 import { Metadata } from "next"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 interface ProductPageProps {
   params: { id: string }
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     .from("products")
     .select("name, description, seo_title, seo_description, seo_keywords, image")
     .eq("id", productId)
-    .single()
+    .single() as { data: Pick<Tables<'products'>, 'name' | 'description' | 'seo_title' | 'seo_description' | 'seo_keywords' | 'image'> | null, error: any }; // Explicitly type product
 
   if (error || !product) {
     return {

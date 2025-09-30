@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer"
 import { DollarSign, Package, ShoppingCart, Users, Tag } from "lucide-react" // Import Tag icon
 import { format } from "date-fns"
 import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
+import { Tables } from "@/types/supabase" // Import Tables type
 
 export default async function AdminDashboardPage() {
   const supabase = createSupabaseServerClient()
@@ -16,9 +17,9 @@ export default async function AdminDashboardPage() {
   // Fetch order statistics
   const { data: orderStats, error: orderStatsError } = await supabase
     .from("orders")
-    .select("total", { count: "exact" })
+    .select("total", { count: "exact" }) as { data: Pick<Tables<'orders'>, 'total'>[] | null, error: any }; // Explicitly type orderStats
 
-  const totalRevenue = orderStats?.reduce((sum, order) => sum + parseFloat(order.total), 0) || 0
+  const totalRevenue = orderStats?.reduce((sum, order) => sum + order.total, 0) || 0 // Removed parseFloat
   const orderCount = orderStats?.length || 0
 
   // Fetch recent orders

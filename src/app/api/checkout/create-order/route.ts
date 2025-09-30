@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { createOrderSchema } from '@/lib/schemas';
 import { toCents, fromCents, cents, roundMoney } from '@/lib/money'; // Import roundMoney
 import { resolveDiscount } from '@/lib/promo';
-import { Database } from '@/types/supabase'; // Import Database type
+import { TablesInsert, Tables } from '@/types/supabase'; // Import Tables and TablesInsert
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
@@ -109,10 +109,10 @@ export async function POST(req: NextRequest) {
         user_id: user.id,
         status: 'pending',
         total: roundMoney(totalCents / 100), // Store total in dollars
-        amounts: amounts as unknown as Json, // Cast to Json
+        amounts: amounts,
         promo_code: promoCode || null,
-        promo_snapshot: promoSnapshot as unknown as Json, // Cast to Json
-      })
+        promo_snapshot: promoSnapshot,
+      } as TablesInsert<'orders'>) // Cast to TablesInsert<'orders'>
       .select()
       .single();
 
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
 
-    const itemsToInsert: Database['public']['Tables']['order_items']['Insert'][] = orderItemsData.map(item => ({
+    const itemsToInsert = orderItemsData.map(item => ({
       order_id: order.id,
       product_id: item.product_id,
       quantity: item.quantity,
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       sku: item.sku,
       unit_price: item.unit_price,
       line_total: item.line_total,
-    }));
+    } as TablesInsert<'order_items'>)); // Cast to TablesInsert<'order_items'>
 
     const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
     if (itemsError) {

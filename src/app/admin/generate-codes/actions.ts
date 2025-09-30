@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server' // Import the correct server client
+import { createClient } from '@/lib/supabase/actions'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -17,7 +17,7 @@ export async function generateCouponCode(formData: FormData) {
     return { error: 'Discount must be between 1 and 100' }
   }
 
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createClient() // Await the client
   
   // Generate a random coupon code
   const code = generateRandomCode(8)

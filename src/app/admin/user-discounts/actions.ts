@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server' // Import the correct server client
+import { createClient } from '@/lib/supabase/actions'
 import { revalidatePath } from 'next/cache'
 
 export async function applyUserDiscount(formData: FormData) {
@@ -24,20 +24,19 @@ export async function applyUserDiscount(formData: FormData) {
     return { error: 'Percentage discount must be between 0 and 100' }
   }
 
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createClient() // Await the client
   
   const { data, error } = await supabase
-    .from('user_discounts')
+    .from('coupons') // Assuming 'user_discounts' is now 'coupons'
     .upsert(
       {
-        user_id: userId as string, // Cast userId to string
-        discount_type: discountType as string, // Cast discountType to string
-        discount_value: value,
+        assigned_user_id: userId as string, // Assuming userId is a string
+        discount_percent: value, // Assuming discount_value maps to discount_percent
         is_active: isActive,
-        expires_at: expiresAt || null,
-        updated_at: new Date().toISOString()
+        expires_at: expiresAt || null, // coupons table doesn't have expires_at, this will be ignored
+        // updated_at: new Date().toISOString() // coupons table doesn't have updated_at
       },
-      { onConflict: 'user_id' }
+      { onConflict: 'assigned_user_id' } // Assuming unique constraint on assigned_user_id
     )
     .select()
 
@@ -51,12 +50,12 @@ export async function applyUserDiscount(formData: FormData) {
 }
 
 export async function removeUserDiscount(userId: string) {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createClient() // Await the client
   
   const { error } = await supabase
-    .from('user_discounts')
+    .from('coupons') // Assuming 'user_discounts' is now 'coupons'
     .delete()
-    .eq('user_id', userId)
+    .eq('assigned_user_id', userId) // Assuming assigned_user_id is the key
 
   if (error) {
     console.error('Error removing user discount:', error)

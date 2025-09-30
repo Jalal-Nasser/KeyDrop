@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabaseServer'
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase' // Import Database type
-import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions' // Renamed to avoid conflict
+import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions' // Corrected import
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
           products (image)
         )
       `)
-      .eq('status', 'pending') // Corrected column name to 'status'
+      .eq('status', 'pending')
       .lt('created_at', cutoffTime.toISOString())
     
     if (fetchError) {
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
     const orderIds = pendingOrders.map(order => order.id)
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' }) // Corrected column name to 'status'
+      .update({ status: 'cancelled' })
       .in('id', orderIds)
     
     if (updateError) {
@@ -63,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Send notifications for each cancelled order
-    const supabaseAdmin = createClient<Database>( // Explicitly type createClient
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
@@ -71,11 +70,7 @@ export async function POST(req: NextRequest) {
     const notificationPromises = pendingOrders.map(async (order) => {
       try {
         // Get user email
-        if (!order.user_id) {
-          console.error(`Skipping notification for order ${order.id}: user_id is null.`);
-          return;
-        }
-        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id)
+        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string) // Cast to string
         
         if (userError || !user || !user.email) {
           console.error(`Failed to fetch user email for order ${order.id}:`, userError)
@@ -86,11 +81,11 @@ export async function POST(req: NextRequest) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('first_name')
-          .eq('id', order.user_id)
+          .eq('id', order.user_id as string) // Cast to string
           .single()
         
         // Send email notification
-        await sendOrderStatusUpdateEmail({ // Use renamed import
+        await sendOrderStatusUpdateEmail({ // Use renamed function
           orderId: order.id,
           userEmail: user.email,
           status: 'cancelled',
@@ -98,19 +93,17 @@ export async function POST(req: NextRequest) {
           isAutoCancelled: true
         })
         
-        // Determine the product image for the notification (use first available)
-        const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
-
         // Send Discord notification
-        await supabaseAdmin.functions.invoke('discord-order-notification', {
-          body: {
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/discord-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             orderId: order.id,
-            cartTotal: order.total, // Use order.total directly
+            total: order.total,
             orderItems: order.order_items,
             notificationType: 'order_auto_cancelled',
-            userEmail: user.email,
-            productImage: firstProductImage
-          }
+            userEmail: user.email
+          })
         }).catch(err => console.error(`Discord notification for auto-cancelled order ${order.id} failed:`, err))
         
       } catch (error) {
@@ -136,6 +129,3 @@ export async function POST(req: NextRequest) {
     }, { status: 500 })
   }
 }
-
-// Helper function to send order status update email (removed as it's now imported from email-actions)
-// async function sendOrderStatusUpdate(...) { ... }

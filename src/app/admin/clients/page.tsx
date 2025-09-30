@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import Link from "next/link"
+import { Tables } from "@/types/supabase" // Import Tables type
 
 interface Client {
   id: string
@@ -40,7 +41,7 @@ export default async function AdminClientsPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
-    .single()
+    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
 
   if (profileError || !profile?.is_admin) {
     console.error('Admin check failed:', profileError)
@@ -54,7 +55,7 @@ export default async function AdminClientsPage() {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, company_name, created_at')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }) as { data: Client[] | null, error: any }; // Explicitly type data
 
     if (error) throw error
     clients = data || []
