@@ -73,8 +73,8 @@ function useAuthSubscription() {
               user: session?.user ?? null,
               isLoading: false,
             })
-          })
-        }
+          }
+        })
       }
     )
     
