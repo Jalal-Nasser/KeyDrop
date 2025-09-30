@@ -32,8 +32,20 @@ const nextConfig = {
   },
   // Enable React Strict Mode
   reactStrictMode: true,
-  // Enable static export
-  output: 'export',
+  
+  // Enable server components and API routes
+  experimental: {
+    serverActions: true,
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+  },
+  
+  // Disable the static export
+  output: 'standalone',
+  
+  // Handle API routes properly
+  async rewrites() {
+    return [];
+  },
 }
 
-export default nextConfig
+module.exports = nextConfig
