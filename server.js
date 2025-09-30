@@ -15,25 +15,33 @@ console.log('VONAGE_API_KEY (present):', !!process.env.VONAGE_API_KEY);
 console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL || 'NOT SET');
 console.log('--- End Debug ---');
 
-// when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port })
-const handle = app.getRequestHandler()
+// Wrap the entire application startup in a try-catch to log early errors
+try {
+  const app = next({ dev, hostname, port })
+  const handle = app.getRequestHandler()
 
-app.prepare().then(() => {
-  createServer(async (req, res) => {
-    try {
-      await handle(req, res)
-    } catch (err) {
-      console.error('Error handling request', err)
-      res.statusCode = 500
-      res.end('internal server error')
-    }
-  })
-    .once('error', (err) => {
-      console.error(err)
-      process.exit(1)
+  app.prepare().then(() => {
+    createServer(async (req, res) => {
+      try {
+        await handle(req, res)
+      } catch (err) {
+        console.error('Error handling request', err)
+        res.statusCode = 500
+        res.end('internal server error')
+      }
     })
-    .listen(port, () => {
-      console.log(`> Ready on http://${hostname}:${port}`)
-    })
-})
+      .once('error', (err) => {
+        console.error('Server error:', err)
+        process.exit(1)
+      })
+      .listen(port, () => {
+        console.log(`> Ready on http://${hostname}:${port}`)
+      })
+  }).catch(err => {
+    console.error('Next.js app.prepare() failed:', err);
+    process.exit(1);
+  });
+} catch (err) {
+  console.error('Critical error during server initialization:', err);
+  process.exit(1);
+}
