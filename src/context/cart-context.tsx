@@ -15,13 +15,15 @@ interface CartContextType {
   cartCount: number
   cartTotal: number,
   cartSubtotal: number,
-  discountAmount: number
+  discountAmount: number,
+  isLoadingCart: boolean // Added isLoadingCart
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isLoadingCart, setIsLoadingCart] = useState(true) // Initialize loading state
   const router = useRouter() // Initialize useRouter
 
   useEffect(() => {
@@ -41,6 +43,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error)
       setCartItems([])
+    } finally {
+      setIsLoadingCart(false) // Set to false after attempting to load from localStorage
     }
   }, [])
 
@@ -174,6 +178,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         cartTotal,
         cartSubtotal,
         discountAmount,
+        isLoadingCart, // Provide the loading state
       }}
     >
       {children}

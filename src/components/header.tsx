@@ -22,9 +22,9 @@ export function Header({ className }: { className?: string }) {
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
   const navRef = useRef<HTMLElement>(null)
-  const { session, isLoading } = useSession() // Get isLoading
-  const { cartCount, cartTotal } = useCart()
-  const { wishlistCount } = useWishlist() // Use wishlist hook
+  const { session, isLoading: isLoadingSession } = useSession() // Get isLoading
+  const { cartCount, cartTotal, isLoadingCart } = useCart() // Get isLoadingCart
+  const { wishlistCount, isLoadingWishlist } = useWishlist() // Use wishlist hook and get isLoadingWishlist
 
   const baseNavLinks = [
     { href: "/", label: "Home" },
@@ -92,14 +92,18 @@ export function Header({ className }: { className?: string }) {
                 <Link href="/wishlist" className="hidden lg:flex items-center gap-x-1 hover:text-primary relative">
                   <Heart className="w-4 h-4" />
                   <span className="hidden sm:inline">Wishlist</span> {/* Hide text on very small screens */}
-                  {wishlistCount > 0 && (
+                  {isLoadingWishlist ? (
+                    <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white animate-pulse">
+                      ...
+                    </span>
+                  ) : wishlistCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {wishlistCount}
                     </span>
                   )}
                 </Link>
                 <span className="text-border hidden sm:inline">|</span> {/* Hide separator on very small screens */}
-                {isLoading ? ( // Render a loading state for auth section
+                {isLoadingSession ? ( // Render a loading state for auth section
                   <div className="flex items-center gap-x-1">
                     <User className="w-4 h-4 animate-pulse" />
                     <span className="hidden sm:inline animate-pulse">Loading...</span>
@@ -120,9 +124,17 @@ export function Header({ className }: { className?: string }) {
                   <ShoppingCart className="w-4 h-4" />
                   <div className="flex flex-col items-end leading-none"> {/* Stack cart text and total */}
                     <span>Cart</span>
-                    <span className="text-xs">${cartTotal.toFixed(2)}</span>
+                    {isLoadingCart ? (
+                      <span className="text-xs animate-pulse">...</span>
+                    ) : (
+                      <span className="text-xs">${cartTotal.toFixed(2)}</span>
+                    )}
                   </div>
-                  {cartCount > 0 && (
+                  {isLoadingCart ? (
+                    <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white animate-pulse">
+                      ...
+                    </span>
+                  ) : cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {cartCount}
                     </span>

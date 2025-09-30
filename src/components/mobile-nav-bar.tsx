@@ -10,14 +10,14 @@ import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 
 export function MobileNavBar({ className }: { className?: string }) {
   const pathname = usePathname()
-  const { cartCount } = useCart() // Assuming cartCount can be used as a placeholder for wishlist count for now
+  const { cartCount, isLoadingCart } = useCart() // Get isLoadingCart
   const { session, isLoading: isLoadingSession } = useSession() // Use isLoading from useSession
-  const { wishlistCount } = useWishlist() // Use wishlist hook
+  const { wishlistCount, isLoadingWishlist } = useWishlist() // Use wishlist hook and get isLoadingWishlist
 
   const navItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/shop", label: "Shop", icon: ShoppingBag },
-    { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount }, // Use actual wishlist count
+    { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount, isLoading: isLoadingWishlist }, // Use actual wishlist count and loading state
     { href: "/account/orders", label: "Track Order", icon: PackageCheck },
   ]
 
@@ -40,7 +40,11 @@ export function MobileNavBar({ className }: { className?: string }) {
           >
             <item.icon className="w-5 h-5 mb-1" />
             {item.label}
-            {item.label === "Wishlist" && item.count !== undefined && item.count > 0 && (
+            {item.label === "Wishlist" && item.isLoading ? (
+              <span className="absolute -top-1 right-0 bg-gray-300 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs animate-pulse">
+                ...
+              </span>
+            ) : item.label === "Wishlist" && item.count !== undefined && item.count > 0 && (
               <span className="absolute -top-1 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
                 {item.count}
               </span>
