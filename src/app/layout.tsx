@@ -28,6 +28,13 @@ export default function RootLayout({
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
   const gaMeasurementId = 'G-BNKL9RH1XV'; // Your Google Analytics 4 Measurement ID
 
+  // Ensure environment variables are always strings for consistent injection
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://notncpmpmgostfxesrvk.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s';
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+  const facebookPixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || '';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -70,7 +77,7 @@ export default function RootLayout({
         </Script>
         <noscript>
           <img height="1" width="1" style={{display:'none'}} 
-            src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}&ev=PageView&noscript=1`}
+            src={`https://www.facebook.com/tr?id=${facebookPixelId}&ev=PageView&noscript=1`}
           />
         </noscript>
         {/* End Facebook Pixel Code */}
@@ -82,11 +89,11 @@ export default function RootLayout({
         <Script id="public-env" strategy="beforeInteractive">
           {`
             window.__PUBLIC_ENV = {
-              NEXT_PUBLIC_SUPABASE_URL: "${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://notncpmpmgostfxesrvk.supabase.co'}",
-              NEXT_PUBLIC_SUPABASE_ANON_KEY: "${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s'}",
-              NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? `"${process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}"` : 'null'},
-              NEXT_PUBLIC_BASE_URL: ${process.env.NEXT_PUBLIC_BASE_URL ? `"${process.env.NEXT_PUBLIC_BASE_URL}"` : 'null'},
-              NEXT_PUBLIC_FACEBOOK_PIXEL_ID: ${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID ? `"${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID}"` : 'null'}
+              NEXT_PUBLIC_SUPABASE_URL: "${supabaseUrl}",
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: "${supabaseAnonKey}",
+              NEXT_PUBLIC_TURNSTILE_SITE_KEY: "${turnstileSiteKey}",
+              NEXT_PUBLIC_BASE_URL: "${baseUrl}",
+              NEXT_PUBLIC_FACEBOOK_PIXEL_ID: "${facebookPixelId}"
             };
           `}
         </Script>
@@ -114,7 +121,7 @@ export default function RootLayout({
               <HashAuthRedirect />
               <CartProvider>
                 <WishlistProvider>
-                  <Header className="print:hidden" />
+                  <Header className="print:hidden" key="main-header" /> {/* Added key prop */}
                   <main className="flex-grow pb-[60px]">{children}</main>
                   <Footer />
                   <MobileNavBar className="print:hidden" />
