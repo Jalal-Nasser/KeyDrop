@@ -139,13 +139,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               theme="light"
               showLinks={true}
               redirectTo={`${(() => {
-                // Prefer the actual browser origin in production to avoid leaking localhost
-                if (typeof window !== 'undefined' && window.location?.origin) {
-                  return window.location.origin
+                // Prioritize the injected public env variable
+                if (typeof window !== 'undefined' && (window as any).__PUBLIC_ENV?.NEXT_PUBLIC_BASE_URL) {
+                  return (window as any).__PUBLIC_ENV.NEXT_PUBLIC_BASE_URL;
                 }
-                // Fallbacks for non-browser contexts
-                const pub = (typeof window !== 'undefined' ? (window as any).__PUBLIC_ENV : undefined) || {}
-                return pub.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || ''
+                // Fallback to window.location.origin if public env is not available
+                if (typeof window !== 'undefined' && window.location?.origin) {
+                  return window.location.origin;
+                }
+                return ''; // Final fallback to empty string
               })()}/auth/callback`}
             />
           )}

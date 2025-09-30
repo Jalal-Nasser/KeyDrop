@@ -3,7 +3,7 @@ import { Database } from "@/types/supabase-fixed"
 
 // Hard-coded fallback if EVERYTHING else fails (use as last resort)
 const FALLBACK_URL = "https://notncpmpmgostfxesrvk.supabase.co"
-const FALLBACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
+const FALLBACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
 
 let _supabase: SupabaseClient<Database> | null = null
 let _failedCreateCount = 0
@@ -57,17 +57,19 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
       }
     }
 
-    // Get env from various sources
-    const clientEnv = isBrowser() ? getClientEnv() : { url: "", key: "" }
-    const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || 
-                      (process.env.SUPABASE_URL as string) || 
-                      clientEnv.url || 
-                      FALLBACK_URL
-                      
-    const supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || 
-                      (process.env.SUPABASE_ANON_KEY as string) || 
-                      clientEnv.key || 
-                      FALLBACK_KEY
+    let supabaseUrl: string;
+    let supabaseKey: string;
+
+    if (isBrowser()) {
+      const clientEnv = getClientEnv();
+      supabaseUrl = clientEnv.url || FALLBACK_URL;
+      supabaseKey = clientEnv.key || FALLBACK_KEY;
+    } else {
+      // This branch should ideally not be hit for getSupabaseBrowserClient,
+      // but as a safeguard, use process.env if somehow called server-side.
+      supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || (process.env.SUPABASE_URL as string) || FALLBACK_URL;
+      supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || (process.env.SUPABASE_ANON_KEY as string) || FALLBACK_KEY;
+    }
 
     // Verify we have values before creating client
     if (!supabaseUrl || !supabaseKey) {
