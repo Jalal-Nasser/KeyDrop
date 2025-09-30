@@ -1,126 +1,62 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Image from "next/image"
-import { useSession } from "@/context/session-context"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { toast } from "sonner"
-import md5 from "crypto-js/md5"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import Link from "next/link"
-import { sendProfileUpdateConfirmation, sendRegistrationConfirmation } from "@/lib/email-actions"
 import { useRouter } from "next/navigation"
-import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/account/actions"
-import { CountrySelect } from "@/components/country-select"
-
-const profileSchema = z.object({
-  first_name: z.string().trim().min(1, "First name is required"),
-  last_name: z.string().trim().min(1, "Last name is required"),
-  company_name: z.string().optional(),
-  vat_number: z.string().optional(),
-  address_line_1: z.string().trim().min(1, "Address is required"),
-  address_line_2: z.string().optional(),
-  city: z.string().trim().min(1, "City is required"),
-  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
-  postal_code: z.string().trim().min(1, "Postal code is required"),
-  country: z.string().trim().length(2, "Country is required"),
-})
-
-type ProfileFormValues = z.infer<typeof profileSchema>
+import { useSession } from "@/context/session-context"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 export default function AccountPage() {
-  const { session, supabase } = useSession()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const { session } = useSession()
   const router = useRouter()
-  const [signingOut, setSigningOut] = useState(false)
-
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      company_name: "",
-      vat_number: "",
-      address_line_1: "",
-      address_line_2: "",
-      city: "",
-      state_province_region: "",
-      postal_code: "",
-      country: "",
-    },
-  })
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (session) {
-        const { data, error } = await getCurrentUserProfile()
-
-        if (error) {
-          toast.error(`Could not fetch your profile information: ${error}`)
-        } else if (data) {
-          const cleanedData = Object.fromEntries(
-            Object.entries(data).map(([key, value]) => [key, value === null ? "" : value])
-          ) as ProfileFormValues;
-          form.reset(cleanedData);
-          setIsAdmin(data.is_admin || false);
-        } else {
-          if (session.user.email && session.user.user_metadata.first_name) {
-             sendRegistrationConfirmation({
-               userEmail: session.user.email,
-               firstName: session.user.user_metadata.first_name,
-             });
-          }
-        }
+    const checkAdmin = async () => {
+      if (!session?.user?.id) return
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (!error && profile?.is_admin) {
+        setIsAdmin(true)
       }
+      setLoading(false)
     }
-    fetchProfile()
-  }, [session, form])
-
-  const onSubmit = async (values: ProfileFormValues) => {
-    if (!session?.user?.email) return
-
-    const { error } = await updateCurrentUserProfile(values)
-
-    if (error) {
-      toast.error(`Failed to update profile: ${error.message}`)
+    
+    if (session) {
+      checkAdmin()
     } else {
-      toast.success("Profile updated successfully!")
-      await sendProfileUpdateConfirmation({
-        userEmail: session.user.email,
-        firstName: values.first_name || 'Valued Customer',
-      })
+      setLoading(false)
     }
-  }
+  }, [session])
 
-  const getGravatarUrl = (email: string) => {
-    const hash = md5(email.trim().toLowerCase());
-    return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=64`;
-  };
+  if (loading) {
+    return <div className="container mx-auto p-4 py-12">Loading...</div>
+  }
 
   if (!session) {
     return (
       <div className="flex justify-center items-center py-12 px-4">
         <Card className="w-full max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You must be signed in to view this page.
-            </CardDescription>
-          </CardHeader>
+          <CardTitle className="p-6 pb-2">Access Denied</CardTitle>
+          <CardDescription className="px-6 pb-6">
+            You must be signed in to view this page.
+          </CardDescription>
           <CardContent>
-            <p>Please sign in using the button in the header to access your account details.</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Please sign in using the button in the header to access your account details.
+            </p>
+            <Button asChild>
+              <Link href="/login">Sign In</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -130,110 +66,58 @@ export default function AccountPage() {
   return (
     <div className="container mx-auto p-4 py-12">
       <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Image 
-              src={getGravatarUrl(session.user.email || "")}
-              alt="Profile Avatar"
-              width={64}
-              height={64}
-              className="rounded-full border"
-            />
-            <div>
-              <CardTitle>Your Account</CardTitle>
-              <CardDescription>
-                Manage your profile and order history.
-              </CardDescription>
+        <CardContent className="p-6 space-y-6">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold">Your Account</h2>
+            <p className="text-sm text-muted-foreground">
+              Welcome back, {session.user.email}
+            </p>
+          </div>
+          
+          <div className="grid gap-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Account Details</h3>
+              <div className="grid gap-2">
+                <p className="text-sm">
+                  <span className="font-medium">Email:</span> {session.user.email}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Quick Links</h3>
+              <div className="grid gap-2">
+                <Button asChild variant="outline" className="w-full sm:w-auto justify-start">
+                  <Link href="/account/orders">View Order History</Link>
+                </Button>
+                {isAdmin && (
+                  <Button asChild variant="outline" className="w-full sm:w-auto justify-start">
+                    <Link href="/admin">Admin Panel</Link>
+                  </Button>
+                )}
+                <Button
+                  variant="destructive"
+                  className="w-full sm:w-auto justify-start"
+                  onClick={async () => {
+                    if (!supabase) return;
+                    setLoading(true);
+                    try {
+                      await supabase.auth.signOut();
+                      router.push('/');
+                      router.refresh();
+                    } catch (error) {
+                      console.error('Error signing out:', error);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  Sign Out
+                </Button>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="first_name" render={({ field }) => (
-                  <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="last_name" render={({ field }) => (
-                  <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="company_name" render={({ field }) => (
-                  <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="vat_number" render={({ field }) => (
-                  <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <FormField control={form.control} name="address_line_1" render={({ field }) => (
-                <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="address_line_2" render={({ field }) => (
-                <FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="city" render={({ field }) => (
-                  <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="state_province_region" render={({ field }) => (
-                  <FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="postal_code" render={({ field }) => (
-                  <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="country" render={({ field }) => (
-                  <FormItem><FormLabel>Country</FormLabel><FormControl><CountrySelect value={field.value || ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-                <Button type="submit" className="w-full sm:w-auto">Update Profile</Button>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                   {isAdmin && (
-                    <Button asChild className="w-full sm:w-auto">
-                      <Link href="/admin">Admin Panel</Link>
-                    </Button>
-                  )}
-                   <Button asChild variant="outline" className="w-full sm:w-auto">
-                    <Link href="/account/orders">View Order History</Link>
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={signingOut}
-                    onClick={async () => {
-                      if (!supabase) return
-                      setSigningOut(true)
-                      try {
-                        // Prefer local sign-out to avoid 403s from global revoke on some setups
-                        const { error } = await supabase.auth.signOut({ scope: 'local' as any })
-                        if (error) throw error
-                      } catch (err: any) {
-                        // Fallback: hard clear local session artifacts
-                        try {
-                          if (typeof window !== 'undefined') {
-                            Object.keys(localStorage)
-                              .filter((k) => k.startsWith('sb-') || k.includes('supabase'))
-                              .forEach((k) => localStorage.removeItem(k))
-                          }
-                        } catch {}
-                      } finally {
-                        setSigningOut(false)
-                        // Redirect home and force a refresh to reset UI state
-                        router.push('/')
-                        router.refresh()
-                      }
-                    }}
-                    variant="secondary"
-                    className="w-full sm:w-auto"
-                  >
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </Form>
         </CardContent>
       </Card>
     </div>

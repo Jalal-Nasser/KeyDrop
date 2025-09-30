@@ -1,17 +1,16 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createServerClient } from '@/lib/supabase/server';
 
-interface Order {
-  id: string;
-  status: string;
-  created_at: string;
-  // Add other order properties as needed
+import type { Database } from '@/types/supabase';
+
+type Order = Database['public']['Tables']['orders']['Row'] & {
+  order_items?: Array<Database['public']['Tables']['order_items']['Row']>;
 }
 
 export async function cancelExpiredOrders() {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createServerClient();
     
     // Get orders that are older than 10 minutes and still in 'pending' status
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
@@ -19,7 +18,7 @@ export async function cancelExpiredOrders() {
     const { data: expiredOrders, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('status', 'pending')
+      .eq('payment_status', 'pending')
       .lt('created_at', tenMinutesAgo);
 
     if (error) {
@@ -29,11 +28,11 @@ export async function cancelExpiredOrders() {
 
     // Update status of expired orders to 'cancelled'
     if (expiredOrders && expiredOrders.length > 0) {
-      const orderIds = expiredOrders.map((order: Order) => order.id);
+      const orderIds = expiredOrders.map((order) => order.id);
       
       const { error: updateError } = await supabase
         .from('orders')
-        .update({ status: 'cancelled' })
+        .update({ payment_status: 'cancelled' })
         .in('id', orderIds);
         
       if (updateError) {

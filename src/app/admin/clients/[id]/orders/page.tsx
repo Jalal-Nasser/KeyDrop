@@ -1,4 +1,7 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+"use server"
+
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import {
   Card,
@@ -16,24 +19,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
 import Link from "next/link"
-
-interface Order {
-  id: string
-  created_at: string
-  status: string
-  total: number
-  // Add other order fields as needed
-}
 
 export default async function ClientOrdersPage({
   params,
 }: {
   params: { id: string }
 }) {
-  const clientId = params.id
-  const supabase = createSupabaseServerClient()
+  const supabase = createServerComponentClient({ cookies })
   
   // Verify admin status
   const { data: { session } } = await supabase.auth.getSession()
@@ -43,127 +36,89 @@ export default async function ClientOrdersPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_admin')
+    .select('role')
     .eq('id', session.user.id)
     .single()
 
-  if (!profile?.is_admin) {
+  if (profile?.role !== 'admin') {
     redirect("/account")
   }
 
-  // Fetch client details with error handling
+  // Fetch client details
   const { data: client, error: clientError } = await supabase
     .from('profiles')
     .select('first_name, last_name, email')
-    .eq('id', clientId)
+    .eq('id', params.id)
     .single()
 
-  if (clientError || !client) {
+  if (clientError) {
     console.error('Error fetching client:', clientError)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <h2 className="text-2xl font-bold mb-4">Client Not Found</h2>
-        <p className="text-muted-foreground mb-6">The requested client could not be found.</p>
-        <Button asChild>
-          <Link href="/admin/clients">
-            Back to Clients
-          </Link>
-        </Button>
-      </div>
-    )
+    notFound()
   }
 
-  // Fetch client's orders with error handling
+  // Fetch orders for the client
   const { data: orders, error: ordersError } = await supabase
     .from('orders')
-    .select('*')
-    .eq('user_id', clientId)
+    .select(`
+      *,
+      order_items(*)
+    `)
+    .eq('user_id', params.id)
     .order('created_at', { ascending: false })
-    
+
   if (ordersError) {
     console.error('Error fetching orders:', ordersError)
     return (
-      <div className="container py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">
-              {client.first_name} {client.last_name}'s Orders
-            </h1>
-            <p className="text-muted-foreground">
-              {client.email}
-            </p>
-          </div>
-          <Button asChild variant="outline">
-            <Link href="/admin/clients">
-              Back to Clients
-            </Link>
-          </Button>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Error Loading Orders</CardTitle>
-            <CardDescription>
-              There was an error loading the order history. Please try again later.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="container mx-auto p-6">
+        <div className="text-red-500">Error loading orders. Please try again later.</div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {client.first_name} {client.last_name}'s Orders
-          </h1>
-          <p className="text-muted-foreground">
-            {client.email}
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/admin/clients">
-            Back to Clients
-          </Link>
-        </Button>
+    <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">
+          Orders for {client.first_name} {client.last_name}
+        </h1>
+        <p className="text-muted-foreground">{client.email}</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Order History</CardTitle>
           <CardDescription>
-            View and manage {client.first_name}'s order history
+            View and manage orders for this client
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {orders?.length ? (
+          {orders && orders.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Order ID</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order: Order) => (
+                {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
                       {order.id.substring(0, 8)}...
                     </TableCell>
                     <TableCell>
-                      {format(new Date(order.created_at), 'MMM d, yyyy')}
+                      {new Date(order.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                        {order.status}
+                        {order.payment_status}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${(order.total / 100).toFixed(2)}
+                      {(order.total / 100).toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <Button asChild variant="ghost" size="sm">

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { toCents, cents, fromCents } from './money';
-import { Database } from '@/types/supabase-wrapper';
+import { Database } from '@/types/supabase';
 
 interface Promotion {
   id: string;
@@ -66,11 +66,11 @@ export async function resolveDiscount(
     throw new Error('Invalid or inactive promo code.');
   }
 
-  // Type assertion to match the Promotion interface's fields
+  // Type assertion to match the Promotion interface's 'type' and 'applies_to' fields
   const typedPromotion: Promotion = {
     ...promotion,
     type: promotion.type as 'percent' | 'fixed',
-    applies_to: (promotion.applies_to as 'all' | 'product_ids' | null),
+    applies_to: promotion.applies_to as 'all' | 'product_ids' | null,
   };
 
   // Validate time window

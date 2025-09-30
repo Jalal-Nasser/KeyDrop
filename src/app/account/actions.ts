@@ -4,7 +4,13 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import type { Database } from "@/types/supabase-wrapper"
+
+// Helper function to create Supabase client
+const createSupabaseServerClient = () => {
+  return createServerComponentClient<Database>({ cookies: () => cookies() })
+}
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -78,69 +84,76 @@ export async function getCurrentUserProfile() {
 
 export async function getAllUserProfilesForAdmin() {
   const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
-
-  if (!session) {
-    return { data: null, error: "User not authenticated." }
-  }
-
+  
   try {
-    // Verify admin status
-    const { data: adminProfile, error: adminError } = await supabase
+    // Get the current user's session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (sessionError || !session?.user?.id) {
+      return { data: null, error: "Authentication required" }
+    }
+
+    // Get the current user's profile to check admin status
+    const { data: adminProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('role')
       .eq('id', session.user.id)
       .single()
 
-    if (adminError || !adminProfile?.is_admin) {
+    if (profileError || !adminProfile || adminProfile.role !== 'admin') {
       return { data: null, error: "Unauthorized: Admin access required." }
     }
 
-    // Get all users with their email from auth.users
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('id, email, created_at')
-      .order('created_at', { ascending: false });
+    // Get all users using the admin API
+    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
 
-    if (usersError) throw usersError;
+    if (usersError) throw usersError
+    if (!users) return { data: [], error: null }
 
-    // Get profile info for these users
-    const userIds = users.map(user => user.id);
+    // Define User type from auth
+    type AuthUser = {
+      id: string;
+      email?: string;
+      created_at: string;
+    };
+
+    // Get additional profile info for these users
+    const userIds = (users as AuthUser[]).map(user => user.id)
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, is_admin')
-      .in('id', userIds);
+      .select('id, first_name, last_name, role')
+      .in('id', userIds)
 
-    if (profilesError) throw profilesError;
+    if (profilesError) throw profilesError
 
     // Define profile type
-    type UserProfile = {
+    type Profile = {
       id: string;
       first_name?: string | null;
       last_name?: string | null;
-      is_admin?: boolean | null;
+      role?: string | null;
     };
 
     // Combine the data
-    const userData = users.map(user => {
-      const profile = (profiles as UserProfile[]).find(p => p.id === user.id) || {} as UserProfile;
+    const userData = (users as AuthUser[]).map(user => {
+      const profile = (profiles as Profile[]).find(p => p.id === user.id) || {} as Profile
       return {
         id: user.id,
         email: user.email || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        is_admin: profile.is_admin || false,
+        role: profile.role || 'user',
         created_at: user.created_at
-      };
-    });
+      }
+    })
 
-    return { data: userData, error: null };
+    return { data: userData, error: null }
   } catch (error) {
-    console.error("Error in getAllUserProfilesForAdmin:", error);
+    console.error("Error in getAllUserProfilesForAdmin:", error)
     return { 
       data: null, 
       error: error instanceof Error ? error.message : "Failed to fetch users" 
-    };
+    }
   }
 }
 

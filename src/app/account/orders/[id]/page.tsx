@@ -6,43 +6,29 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { getCountryName } from "@/lib/countries"
 import { Json } from "@/types/supabase"
-
 interface Order {
   id: string;
   created_at: string;
   total: number;
-  status: string;
-  payment_gateway: string | null;
-  payment_id: string | null;
-  amounts: Json | null;
-  promo_code: string | null;
-  promo_snapshot: Json | null;
-  order_items: OrderItem[];
+  payment_status: string;
+  payment_intent_id: string | null;
+  subtotal: number;
+  tax: number;
   profiles: {
     first_name: string | null;
     last_name: string | null;
-    company_name: string | null;
-    vat_number: string | null;
-    address_line_1: string | null;
-    address_line_2: string | null;
-    city: string | null;
-    state_province_region: string | null;
-    postal_code: string | null;
-    country: string | null;
-  }[] | null;
-}
-
-interface OrderItem {
-  id: string;
-  product_id: number;
-  quantity: number;
-  price_at_purchase: number;
-  product_name: string | null;
-  sku: string | null;
-  unit_price: number | null;
-  line_total: number | null;
+    email: string | null;
+  } | null;
+  order_items: Array<{
+    id: string;
+    product_id: number;
+    quantity: number;
+    price: number;
+    product_name: string;
+    sku: string | null;
+    line_total: number | null;
+  }>;
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -51,20 +37,26 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
   const { data: order, error } = await supabase
     .from('orders')
     .select(`
-      id, created_at, total, status, payment_gateway, payment_id, amounts, promo_code, promo_snapshot,
-      order_items (id, product_id, quantity, price_at_purchase, product_name, sku, unit_price, line_total),
-      profiles (first_name, last_name, company_name, vat_number, address_line_1, address_line_2, city, state_province_region, postal_code, country)
+      id, created_at, total, payment_status, payment_intent_id, subtotal, tax,
+      order_items (id, product_id, quantity, price, product_name, sku, line_total),
+      profiles (first_name, last_name, email)
     `)
     .eq('id', params.id)
     .single()
 
   if (error || !order) {
-    console.error("Error fetching order details:", error)
-    notFound()
+    console.error("Error fetching order details:", error);
+    notFound();
   }
 
-  const profile = order.profiles?.[0];
-  const amounts = order.amounts as { subtotal: string, discount: string, tax: string, total: string, currency: string } || { subtotal: order.total.toFixed(2), discount: "0.00", tax: "0.00", total: order.total.toFixed(2), currency: "USD" };
+  const profile = order.profiles;
+  const amounts = {
+    subtotal: order.subtotal.toFixed(2),
+    discount: "0.00",
+    tax: order.tax.toFixed(2),
+    total: order.total.toFixed(2),
+    currency: "USD"
+  };
 
   return (
     <div className="container mx-auto p-4 py-12">
@@ -79,21 +71,14 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
               <p><strong>Order ID:</strong> {order.id}</p>
               <p><strong>Date:</strong> {format(new Date(order.created_at), 'PPP p')}</p>
-              <p><strong>Status:</strong> <span className="font-medium capitalize">{order.status}</span></p>
-              <p><strong>Payment Gateway:</strong> {order.payment_gateway || 'N/A'}</p>
-              {order.payment_id && <p><strong>Payment ID:</strong> {order.payment_id}</p>}
-              {order.promo_code && <p><strong>Promo Code:</strong> {order.promo_code}</p>}
+              <p><strong>Status:</strong> <span className="font-medium capitalize">{order.payment_status}</span></p>
+              {order.payment_intent_id && <p><strong>Payment ID:</strong> {order.payment_intent_id}</p>}
             </div>
             {profile && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">Billing Details</h3>
+                <h3 className="text-lg font-semibold mb-2">Customer Details</h3>
                 <p>{profile.first_name} {profile.last_name}</p>
-                {profile.company_name && <p>{profile.company_name}</p>}
-                <p>{profile.address_line_1}</p>
-                {profile.address_line_2 && <p>{profile.address_line_2}</p>}
-                <p>{profile.city}, {profile.state_province_region} {profile.postal_code}</p>
-                <p>{getCountryName(profile.country)}</p>
-                {profile.vat_number && <p>VAT: {profile.vat_number}</p>}
+                {profile.email && <p>{profile.email}</p>}
               </div>
             )}
           </div>
@@ -106,26 +91,31 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
                   <TableHead className="text-right">Unit Price</TableHead>
                   <TableHead className="text-right">Line Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.order_items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.product_name || `Product ${item.product_id}`}</TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">${(item.unit_price || item.price_at_purchase).toFixed(2)}</TableCell>
-                    <TableCell className="text-right">${(item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
+                {Array.isArray(order.order_items) && order.order_items.map((item: any) => {
+                  const price = typeof item.price === 'number' ? item.price : 0;
+                  const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+                  const lineTotal = typeof item.line_total === 'number' ? item.line_total : price * quantity;
+                  const productName = item.product_name || `Product ${item.product_id || ''}`;
+                  
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{productName}</TableCell>
+                      <TableCell className="text-right">{quantity}</TableCell>
+                      <TableCell className="text-right">${price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">${lineTotal.toFixed(2)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <div className="flex justify-end mt-4 text-lg font-semibold">
               <div className="w-full max-w-xs space-y-2">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span>
                   <span>${parseFloat(amounts.subtotal).toFixed(2)}</span>
                 </div>
                 {parseFloat(amounts.discount) > 0 && (

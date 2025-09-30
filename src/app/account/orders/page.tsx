@@ -23,14 +23,23 @@ import { Database } from "@/types/supabase"
 
 type OrderItem = Database['public']['Tables']['order_items']['Row']
 
-type Order = Database['public']['Tables']['orders']['Row'] & {
-  order_items: OrderItem[]
+type Order = {
+  id: string;
+  user_id: string | null;
+  payment_status: string;
+  total: number;
+  created_at: string;
+  order_items: OrderItem[];
+  email: string;
+  subtotal: number;
+  tax: number;
+  payment_intent_id: string | null;
 }
 
 export default async function AccountOrdersPage() {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
-
+  
   if (!session) {
     redirect("/login")
   }
@@ -38,9 +47,24 @@ export default async function AccountOrdersPage() {
   const { data, error } = await supabase
     .from('orders')
     .select(`
-      *,
+      id,
+      user_id,
+      payment_status,
+      total,
+      created_at,
+      email,
+      subtotal,
+      tax,
+      payment_intent_id,
       order_items!inner(
-        id, product_id, quantity, price_at_purchase, product_name, unit_price, line_total
+        id,
+        order_id,
+        product_id,
+        quantity,
+        price,
+        product_name,
+        line_total,
+        created_at
       )
     `)
     .eq('user_id', session.user.id)
@@ -49,7 +73,6 @@ export default async function AccountOrdersPage() {
   const orders: Order[] = data || []
 
   if (error) {
-    console.error("Error fetching orders:", error)
     return <div>Error loading orders.</div>
   }
 
@@ -88,11 +111,11 @@ export default async function AccountOrdersPage() {
                   <TableCell>${order.total.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={
-                      order.status === 'completed' ? 'default' : 
-                      order.status === 'received' ? 'secondary' :
-                      order.status === 'cancelled' ? 'destructive' : 'secondary'
+                      order.payment_status === 'paid' ? 'default' : 
+                      order.payment_status === 'pending' ? 'secondary' :
+                      order.payment_status === 'failed' ? 'destructive' : 'secondary'
                     }>
-                      {order.status}
+                      {order.payment_status}
                     </Badge>
                   </TableCell>
                   <TableCell>

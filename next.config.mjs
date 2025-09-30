@@ -1,51 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  // Disable TypeScript type checking during build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  // Disable ESLint during build
   eslint: {
     ignoreDuringBuilds: true,
   },
-  typescript: {
-    ignoreBuildErrors: true,
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'www.gravatar.com',
-        port: '',
-        pathname: '/avatar/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'notncpmpmgostfxesrvk.supabase.co',
         port: '',
-        pathname: '/storage/v1/object/public/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'notncpmpmgostfxesrvk.supabase.in',
-        port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/storage/v1/object/public/product-images/**',
       },
     ],
-    // Disable image optimization in development
-    unoptimized: process.env.NODE_ENV === 'development',
-  },
-  // Enable React Strict Mode
-  reactStrictMode: true,
-  
-  // Enable server components and API routes
-  experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
-  
-  // Disable the static export
-  output: 'standalone',
-  
-  // Handle API routes properly
-  async rewrites() {
-    return [];
   },
 }
 
-module.exports = nextConfig
+export default nextConfig
