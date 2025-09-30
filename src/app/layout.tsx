@@ -33,7 +33,7 @@ export default function RootLayout({
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s';
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-  const facebookPixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || '';
+  // Removed facebookPixelId variable
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -55,32 +55,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
         <meta name="theme-color" content="#000000" />
         <meta name="facebook-domain-verification" content="8j5x9d3y7z2v1c4r6t8b0n9m2l3p5o7i" />
-        {/* Facebook Pixel Code - Will read from window.__PUBLIC_ENV */}
-        <Script id="facebook-pixel" strategy="afterInteractive">
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            
-            // Access pixel ID from window.__PUBLIC_ENV for consistency
-            const fbPixelId = window.__PUBLIC_ENV.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
-            if (fbPixelId) {
-              fbq('init', fbPixelId);
-              fbq('track', 'PageView');
-            }
-          `}
-        </Script>
-        <noscript>
-          <img height="1" width="1" style={{display:'none'}} 
-            src={`https://www.facebook.com/tr?id=${facebookPixelId}&ev=PageView&noscript=1`}
-          />
-        </noscript>
-        {/* End Facebook Pixel Code */}
+        {/* Removed Facebook Pixel Code */}
       </head>
 
       <body className={inter.className}>
@@ -92,8 +67,8 @@ export default function RootLayout({
               NEXT_PUBLIC_SUPABASE_URL: "${supabaseUrl}",
               NEXT_PUBLIC_SUPABASE_ANON_KEY: "${supabaseAnonKey}",
               NEXT_PUBLIC_TURNSTILE_SITE_KEY: "${turnstileSiteKey}",
-              NEXT_PUBLIC_BASE_URL: "${baseUrl}",
-              NEXT_PUBLIC_FACEBOOK_PIXEL_ID: "${facebookPixelId}"
+              NEXT_PUBLIC_BASE_URL: "${baseUrl}"
+              // Removed NEXT_PUBLIC_FACEBOOK_PIXEL_ID
             };
           `}
         </Script>
