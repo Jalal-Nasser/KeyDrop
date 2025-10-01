@@ -17,6 +17,13 @@ export default function WeeklyProducts({ title }: { title: string }) {
       setLoading(true)
       setError(null)
       
+      // Add a null check for supabase here
+      if (!supabase) {
+        setError("Supabase client not initialized. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       try {
         // First try to get most sold products
         const { data: mostSoldData, error: mostSoldError } = await supabase
