@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { ProductGrid } from "@/components/product-grid"
 import { Product } from "@/types/product"
 import { Loader2 } from "lucide-react"
-import supabase from "@/lib/supabase-client"
+import { useSupabase } from "@/hooks/useSupabase" // Import the client-only hook
 
 // This component contains the logic that uses useSearchParams
 function ShopContent() {
@@ -13,11 +13,20 @@ function ShopContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
+  const supabase = useSupabase() // Get the Supabase client using the client-only hook
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true)
       setError(null)
+      
+      // Add a null check for supabase here, as it's initialized asynchronously
+      if (!supabase) {
+        setError("Supabase client not initialized. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       const searchQuery = searchParams.get("search")
 
       let query = supabase.from("products").select("*")
@@ -38,7 +47,7 @@ function ShopContent() {
     }
 
     fetchProducts()
-  }, [searchParams, supabase])
+  }, [searchParams, supabase]) // `supabase` is now a dependency from the hook
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
