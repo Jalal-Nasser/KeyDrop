@@ -55,6 +55,7 @@ export function ProductQuickView({ product }: ProductQuickViewProps) {
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-contain"
+          unoptimized={true}
         />
       </div>
       <div className="space-y-4">

@@ -130,6 +130,7 @@ export default function InvoicePage() {
                     fill 
                     sizes="32px" 
                     style={{ objectFit: "contain" }} 
+                    unoptimized={true}
                   />
                 </div>
                 <h1 className="text-3xl font-bold" style={{ color: "#1e73be" }}>Dropskey</h1>

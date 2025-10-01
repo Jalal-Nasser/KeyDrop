@@ -62,6 +62,7 @@ export function Header({ className }: { className?: string }) {
                   fill // Use fill to make it responsive within the parent div
                   sizes="40px"
                   style={{ objectFit: "contain" }} // Ensure the image fits without cropping
+                  unoptimized={true}
                 />
               </div>
               <div>
@@ -218,7 +219,7 @@ export function Header({ className }: { className?: string }) {
         </div>
       )}
       <AuthDialog open={isAuthSheetOpen} onOpenChange={setIsAuthSheetOpen} />
-      <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
+      <CartSheet open={isCartSheetOpen} onOpenChange={setIsAuthSheetOpen} />
     </header>
   )
 }

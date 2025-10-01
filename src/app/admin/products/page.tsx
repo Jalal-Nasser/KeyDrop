@@ -10,6 +10,7 @@ import { ProductForm } from "@/components/admin/product-form"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
 import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import Image from "next/image" // Import Image
 
 export default async function ProductsPage() {
   const supabase = createSupabaseServerClient()
@@ -33,6 +34,7 @@ export default async function ProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>Image</TableHead> {/* Added Image column */}
               <TableHead>SKU</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Price</TableHead>
@@ -45,7 +47,20 @@ export default async function ProductsPage() {
           <TableBody>
             {(products as Product[])?.map((product) => (
               <TableRow key={product.id}>
-                <TableCell>{product.id.toString()}</TableCell> {/* Fixed: Convert number to string */}
+                <TableCell>{product.id.toString()}</TableCell>
+                <TableCell>
+                  {product.image && (
+                    <div className="relative w-12 h-12">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        style={{ objectFit: "contain" }}
+                        unoptimized={true}
+                      />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{product.sku || "N/A"}</TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>${parseFloat(product.price.toString()).toFixed(2)}</TableCell>

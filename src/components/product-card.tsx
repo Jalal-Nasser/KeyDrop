@@ -69,6 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           style={{ objectFit: "contain" }}
           priority // Added priority prop
+          unoptimized={true}
         />
       </Link>
       <CardContent className="flex-grow p-4 text-center">

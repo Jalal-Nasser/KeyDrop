@@ -336,6 +336,7 @@ export function ProductForm({ product }: ProductFormProps) {
                     fill
                     sizes="128px"
                     style={{ objectFit: "contain" }}
+                    unoptimized={true}
                   />
                 </div>
               )}

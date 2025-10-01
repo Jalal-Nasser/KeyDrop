@@ -43,6 +43,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         fill
                         sizes="64px"
                         className="object-contain p-1"
+                        unoptimized={true}
                       />
                     </div>
                     <div className="flex-1">

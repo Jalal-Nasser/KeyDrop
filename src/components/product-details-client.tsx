@@ -45,6 +45,7 @@
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-contain"
               priority // Added priority prop
+              unoptimized={true}
             />
           </div>
           <div className="space-y-6">

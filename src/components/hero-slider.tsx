@@ -33,6 +33,7 @@ export function HeroSlider() {
 					sizes="100vw"
 					style={{ objectFit: "contain" }}
 					priority
+					unoptimized={true}
 				/>
 
 				{/* Overlay for text and arrows */}

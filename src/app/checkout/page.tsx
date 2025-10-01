@@ -247,7 +247,7 @@ export default function CheckoutPage() {
                       <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                         <div className="flex items-center gap-4">
                           <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-card flex-shrink-0">
-                            <Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" />
+                            <Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" unoptimized={true} />
                           </div>
                           <div>
                             <p className="font-medium">{item.name}</p>
@@ -473,7 +473,7 @@ export default function CheckoutPage() {
                   {cartItems.map(item => (
                     <div key={item.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                       <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-card"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" /></div>
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-card"><Image src={getImagePath(item.image)} alt={item.name} fill sizes="64px" className="object-contain p-1" unoptimized={true} /></div>
                         <div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">Qty: {item.quantity}</p></div>
                       </div>
                       <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
