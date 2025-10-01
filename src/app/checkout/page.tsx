@@ -114,9 +114,9 @@ export default function CheckoutPage() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      first_name: "", last_name: "", company_name: null, vat_number: null,
-      address_line_1: "", address_line_2: null, city: "",
-      state_province_region: "", postal_code: "", country: "",
+      first_name: "", last_name: "", company_name: "", vat_number: "", // Changed null to ""
+      address_line_1: "", address_line_2: "", city: "", // Changed null to ""
+      state_province_region: "", postal_code: "", country: "", // Changed null to ""
       agreedToTerms: false,
     },
   })
@@ -130,55 +130,59 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const fetchProfileAndUsers = async () => {
-      if (session) {
-        setIsLoadingProfile(true)
-        const { data, error } = await getCurrentUserProfile()
-
-        if (data) {
-          setProfile(data)
-          setSelectedClientId(data.id)
-          form.reset({
-            first_name: data.first_name || "", // Ensure empty string for required fields
-            last_name: data.last_name || "",
-            company_name: data.company_name || null,
-            vat_number: data.vat_number || null,
-            address_line_1: data.address_line_1 || "",
-            address_line_2: data.address_line_2 || null,
-            city: data.city || "",
-            state_province_region: data.state_province_region || "",
-            postal_code: data.postal_code || "",
-            country: data.country || "",
-            agreedToTerms: form.getValues().agreedToTerms,
-          });
-
-          // Validate the fetched profile immediately
-          const validationResult = profileBillingSchema.safeParse(data);
-          if (!validationResult.success) {
-            toast.error("Please complete your profile details to proceed with checkout.");
-            setIsRedirecting(true);
-            router.push("/account");
-            return;
-          }
-
-          if (data.is_admin) {
-            setIsLoadingUsers(true)
-            const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
-            
-            if (usersError) {
-              toast.error(`Failed to load users for client selection: ${usersError}`)
-            } else {
-              setUsers(allUsers || [])
-            }
-            setIsLoadingUsers(false)
-          }
-        }
-        if (error) {
-          toast.error(`Could not fetch your profile information: ${error}`)
-        }
-        setIsLoadingProfile(false)
-      } else {
-        setIsLoadingProfile(false)
+      if (!session) {
+        setIsLoadingProfile(false);
+        return; // Exit early if no session
       }
+
+      setIsLoadingProfile(true)
+      const { data, error } = await getCurrentUserProfile()
+
+      if (error || !data) {
+        toast.error(`Could not fetch your profile information: ${error || "Profile not found"}`)
+        setIsLoadingProfile(false);
+        setIsRedirecting(true); // Set redirecting state
+        router.push("/account");
+        return; // Exit early
+      }
+
+      setProfile(data)
+      setSelectedClientId(data.id)
+      form.reset({
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        company_name: data.company_name || "", // Ensure empty string
+        vat_number: data.vat_number || "",     // Ensure empty string
+        address_line_1: data.address_line_1 || "",
+        address_line_2: data.address_line_2 || "", // Ensure empty string
+        city: data.city || "",
+        state_province_region: data.state_province_region || "",
+        postal_code: data.postal_code || "",
+        country: data.country || "",
+        agreedToTerms: form.getValues().agreedToTerms,
+      });
+
+      // Validate the fetched profile immediately
+      const validationResult = profileBillingSchema.safeParse(data);
+      if (!validationResult.success) {
+        toast.error("Please complete your profile details to proceed with checkout.");
+        setIsRedirecting(true); // Set redirecting state
+        router.push("/account");
+        return; // Exit early
+      }
+
+      if (data.is_admin) {
+        setIsLoadingUsers(true)
+        const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
+        
+        if (usersError) {
+          toast.error(`Failed to load users for client selection: ${usersError}`)
+        } else {
+          setUsers(allUsers || [])
+        }
+        setIsLoadingUsers(false)
+      }
+      setIsLoadingProfile(false)
     }
     fetchProfileAndUsers()
   }, [session, form, router])
