@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic'; // Added to force dynamic rendering
+
 export async function GET() {
   try {
     const supabase = createRouteHandlerClient({ cookies });

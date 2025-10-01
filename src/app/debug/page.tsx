@@ -8,8 +8,8 @@ import { getPublicEnv } from "@/lib/public-env"
 
 export default function DebugPage() {
   const { session, supabase, isLoading } = useSession()
-  const [directClient, setDirectClient] = useState<any>(null)
-  const [legacyClient, setLegacyClient] = useState<any>(null)
+  const [directClientStatus, setDirectClientStatus] = useState<any>(null)
+  const [legacyClientStatus, setLegacyClientStatus] = useState<any>(null)
   const [publicEnv, setPublicEnv] = useState<any>(null)
   const [healthcheck, setHealthcheck] = useState<{[key: string]: any}>({})
   const [windowEnv, setWindowEnv] = useState<any>(null)
@@ -27,10 +27,9 @@ export default function DebugPage() {
     // Create direct client
     try {
       const direct = createDirectSupabaseClient()
-      setDirectClient({
+      setDirectClientStatus({
         initialized: !!direct,
-        // Can't access supabaseUrl directly as it's protected
-        url: "Initialized successfully",
+        status: "Initialized successfully",
       })
       
       // Test health
@@ -42,16 +41,15 @@ export default function DebugPage() {
           setHealthcheck(prev => ({...prev, direct: {error: err.message}}))
         })
     } catch (e) {
-      setDirectClient({ error: (e as Error).message })
+      setDirectClientStatus({ error: (e as Error).message })
     }
     
     // Create legacy client
     try {
       const legacy = getSupabaseBrowserClient()
-      setLegacyClient({
+      setLegacyClientStatus({
         initialized: !!legacy,
-        // Can't access supabaseUrl directly as it's protected
-        url: "Initialized successfully",
+        status: "Initialized successfully",
       })
       
       // Test health
@@ -63,7 +61,7 @@ export default function DebugPage() {
           setHealthcheck(prev => ({...prev, legacy: {error: err.message}}))
         })
     } catch (e) {
-      setLegacyClient({ error: (e as Error).message })
+      setLegacyClientStatus({ error: (e as Error).message })
     }
     
     // Test session client
@@ -89,7 +87,7 @@ export default function DebugPage() {
             <p><strong>Is Loading:</strong> {isLoading ? 'Yes' : 'No'}</p>
             <p><strong>Session:</strong> {session ? 'Authenticated' : 'Not authenticated'}</p>
             <p><strong>Supabase Client:</strong> {supabase ? 'Initialized' : 'Not initialized'}</p>
-            <p><strong>URL:</strong> {supabase ? "Initialized successfully" : 'N/A'}</p>
+            <p><strong>Status:</strong> {supabase ? "Initialized successfully" : 'N/A'}</p>
             <p><strong>Health Check:</strong> {healthcheck.session ? 
               JSON.stringify(healthcheck.session, null, 2) : 'Pending...'}</p>
           </div>
@@ -98,8 +96,8 @@ export default function DebugPage() {
         <div className="bg-card p-4 rounded-lg border">
           <h2 className="text-xl font-semibold mb-2">Direct Client</h2>
           <div className="space-y-2">
-            <p><strong>Status:</strong> {directClient ? 'Created' : 'Not created'}</p>
-            <p><strong>Details:</strong> {directClient ? JSON.stringify(directClient, null, 2) : 'N/A'}</p>
+            <p><strong>Status:</strong> {directClientStatus ? 'Created' : 'Not created'}</p>
+            <p><strong>Details:</strong> {directClientStatus ? JSON.stringify(directClientStatus, null, 2) : 'N/A'}</p>
             <p><strong>Health Check:</strong> {healthcheck.direct ? 
               JSON.stringify(healthcheck.direct, null, 2) : 'Pending...'}</p>
           </div>
@@ -108,15 +106,15 @@ export default function DebugPage() {
         <div className="bg-card p-4 rounded-lg border">
           <h2 className="text-xl font-semibold mb-2">Legacy Client</h2>
           <div className="space-y-2">
-            <p><strong>Status:</strong> {legacyClient ? 'Created' : 'Not created'}</p>
-            <p><strong>Details:</strong> {legacyClient ? JSON.stringify(legacyClient, null, 2) : 'N/A'}</p>
+            <p><strong>Status:</strong> {legacyClientStatus ? 'Created' : 'Not created'}</p>
+            <p><strong>Details:</strong> {legacyClientStatus ? JSON.stringify(legacyClientStatus, null, 2) : 'N/A'}</p>
             <p><strong>Health Check:</strong> {healthcheck.legacy ? 
               JSON.stringify(healthcheck.legacy, null, 2) : 'Pending...'}</p>
           </div>
         </div>
         
         <div className="bg-card p-4 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-2">Environment Variables</h2>
+          <h2 className="text-xl font-semibold mb-2">Public Environment Variables</h2>
           <div className="space-y-2">
             <p><strong>window.__PUBLIC_ENV:</strong></p>
             <pre className="bg-muted p-2 rounded text-sm overflow-auto">

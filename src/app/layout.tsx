@@ -29,8 +29,9 @@ export default function RootLayout({
   const gaMeasurementId = 'G-BNKL9RH1XV'; // Your Google Analytics 4 Measurement ID
 
   // Ensure environment variables are always strings for consistent injection
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://notncpmpmgostfxesrvk.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s';
+  // Removed hardcoded fallback for supabaseAnonKey
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
   // Removed facebookPixelId variable

@@ -1,9 +1,8 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
 import { Database } from "@/types/supabase-fixed"
 
-// Hard-coded fallback if EVERYTHING else fails (use as last resort)
-const FALLBACK_URL = "https://notncpmpmgostfxesrvk.supabase.co"
-const FALLBACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeXhlc3J2ayIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUxNTM1MjIxLCJleHAiOjIwNjcxMTEyMjF9.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s"
+// Removed hard-coded fallback values.
+// These should only come from environment variables.
 
 let _supabase: SupabaseClient<Database> | null = null
 let _failedCreateCount = 0
@@ -38,23 +37,8 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   try {
     // Try to prevent too many client creation attempts
     if (_failedCreateCount > 2) {
-      console.warn("Too many failed Supabase client creation attempts - using direct fallback")
-      try {
-        _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY, {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
-          }
-        })
-        return _supabase
-      } catch (err) {
-        console.error("Even direct client creation failed, creating minimal client", err)
-        // Absolute last resort with no options - most resilient approach possible
-        const { createClient } = require('@supabase/supabase-js')
-        _supabase = createClient(FALLBACK_URL, FALLBACK_KEY) as SupabaseClient<Database>
-        return _supabase
-      }
+      console.warn("Too many failed Supabase client creation attempts - cannot initialize client.")
+      throw new Error("Supabase client initialization failed too many times.")
     }
 
     let supabaseUrl: string;
@@ -62,21 +46,20 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
 
     if (isBrowser()) {
       const clientEnv = getClientEnv();
-      supabaseUrl = clientEnv.url || FALLBACK_URL;
-      supabaseKey = clientEnv.key || FALLBACK_KEY;
+      supabaseUrl = clientEnv.url;
+      supabaseKey = clientEnv.key;
     } else {
       // This branch should ideally not be hit for getSupabaseBrowserClient,
       // but as a safeguard, use process.env if somehow called server-side.
-      supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || (process.env.SUPABASE_URL as string) || FALLBACK_URL;
-      supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || (process.env.SUPABASE_ANON_KEY as string) || FALLBACK_KEY;
+      supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || '';
+      supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || '';
     }
 
     // Verify we have values before creating client
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase URL or key")
+      throw new Error("Missing Supabase URL or key from environment variables.")
     }
     
-    // Always use the direct client for consistency
     _supabase = createClient<Database>(supabaseUrl, supabaseKey, {
       auth: {
         persistSession: true,
@@ -90,8 +73,27 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
     console.error("Error creating Supabase client:", e)
     _failedCreateCount++
     
-    // Final fallback to hardcoded values
-    _supabase = createClient<Database>(FALLBACK_URL, FALLBACK_KEY)
-    return _supabase
+    // If client creation fails, return a dummy client to prevent further errors
+    const dummyClient: any = { 
+      auth: { 
+        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ 
+          data: { subscription: { unsubscribe: () => {} } } 
+        }),
+        signOut: () => Promise.resolve({ error: null })
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: null, error: new Error('Dummy client: Supabase not initialized') })
+          })
+        })
+      }),
+      functions: {
+        invoke: () => Promise.resolve({ data: null, error: new Error('Dummy client: Supabase functions not available') })
+      }
+    };
+    _supabase = dummyClient as SupabaseClient<Database>;
+    return _supabase;
   }
 }

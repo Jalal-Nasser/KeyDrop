@@ -1,9 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase-wrapper';
 
-// Fallback values as absolute last resort - these WILL work if everything else fails
-const FALLBACK_URL = "https://notncpmpmgostfxesrvk.supabase.co";
-const FALLBACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vdG5jcG1wbWdvc3RmeGVzcnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzUyMjEsImV4cCI6MjA2NzExMTIyMX0.I5_c7ZC3bab-q1q_sg9-bVVpTb15wBbNw5vPie-P77s";
+// Removed hardcoded fallback values.
+// These should only come from environment variables.
 
 // Global cache for the client - only create it once
 let _cachedClient: SupabaseClient<Database> | null = null;
@@ -24,8 +23,8 @@ export function createDirectSupabaseClient(): SupabaseClient<Database> {
 
   try {
     // Try to get values from various sources with ultimate fallback
-    let url = FALLBACK_URL;
-    let key = FALLBACK_KEY;
+    let url = ''; // Initialize as empty
+    let key = ''; // Initialize as empty
     
     try {
       // Try process.env first (server-side)
@@ -72,6 +71,11 @@ export function createDirectSupabaseClient(): SupabaseClient<Database> {
       }
     } catch (e) {
       console.warn('Error getting credentials:', e);
+    }
+
+    // If no valid URL or key found, throw an error
+    if (!url || !key) {
+      throw new Error('Supabase URL or key is not configured in environment variables.');
     }
 
     // Create a promise that will resolve with the client
@@ -134,7 +138,10 @@ export function createDirectSupabaseClient(): SupabaseClient<Database> {
             single: () => Promise.resolve({ data: null, error: new Error('Dummy client') })
           })
         })
-      })
+      }),
+      functions: {
+        invoke: () => Promise.resolve({ data: null, error: new Error('Dummy client: Supabase functions not available') })
+      }
     };
     
     _cachedClient = dummyClient;
