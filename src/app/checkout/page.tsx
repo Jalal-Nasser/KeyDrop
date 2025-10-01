@@ -138,7 +138,7 @@ export default function CheckoutPage() {
           setProfile(data)
           setSelectedClientId(data.id)
           form.reset({
-            first_name: data.first_name || "",
+            first_name: data.first_name || "", // Ensure empty string for required fields
             last_name: data.last_name || "",
             company_name: data.company_name || null,
             vat_number: data.vat_number || null,
