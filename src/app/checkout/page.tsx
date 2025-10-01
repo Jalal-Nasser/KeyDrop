@@ -114,9 +114,9 @@ export default function CheckoutPage() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      first_name: "", last_name: "", company_name: "", vat_number: "", // Changed null to ""
-      address_line_1: "", address_line_2: "", city: "", // Changed null to ""
-      state_province_region: "", postal_code: "", country: "", // Changed null to ""
+      first_name: "", last_name: "", company_name: "", vat_number: "",
+      address_line_1: "", address_line_2: "", city: "",
+      state_province_region: "", postal_code: "", country: "",
       agreedToTerms: false,
     },
   })
@@ -146,15 +146,29 @@ export default function CheckoutPage() {
         return; // Exit early
       }
 
-      setProfile(data)
-      setSelectedClientId(data.id)
+      // Validate the fetched profile data against the schema
+      const validationResult = profileBillingSchema.safeParse(data);
+
+      if (!validationResult.success) {
+        // If validation fails, redirect the user to complete their profile
+        toast.error("Please complete your profile details to proceed with checkout.");
+        setIsRedirecting(true);
+        router.push("/account");
+        return; // Exit early
+      }
+
+      // If validation succeeds, use the original data (full Profile) to set state
+      // and the validated data (billing subset) to reset the form.
+      setProfile(data); // Use original 'data' which is of type Profile
+      setSelectedClientId(data.id); // 'id' exists on original 'data'
+
       form.reset({
         first_name: data.first_name || "",
         last_name: data.last_name || "",
-        company_name: data.company_name || "", // Ensure empty string
-        vat_number: data.vat_number || "",     // Ensure empty string
+        company_name: data.company_name || "",
+        vat_number: data.vat_number || "",
         address_line_1: data.address_line_1 || "",
-        address_line_2: data.address_line_2 || "", // Ensure empty string
+        address_line_2: data.address_line_2 || "",
         city: data.city || "",
         state_province_region: data.state_province_region || "",
         postal_code: data.postal_code || "",
@@ -162,16 +176,7 @@ export default function CheckoutPage() {
         agreedToTerms: form.getValues().agreedToTerms,
       });
 
-      // Validate the fetched profile immediately
-      const validationResult = profileBillingSchema.safeParse(data);
-      if (!validationResult.success) {
-        toast.error("Please complete your profile details to proceed with checkout.");
-        setIsRedirecting(true); // Set redirecting state
-        router.push("/account");
-        return; // Exit early
-      }
-
-      if (data.is_admin) {
+      if (data.is_admin) { // 'is_admin' exists on original 'data'
         setIsLoadingUsers(true)
         const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
         
