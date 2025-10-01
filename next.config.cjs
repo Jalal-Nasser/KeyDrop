@@ -36,6 +36,8 @@ const nextConfig = {
     CRON_SECRET_TOKEN: process.env.CRON_SECRET_TOKEN,
   },
   images: {
+    // Keep unoptimized: true as you found it necessary for images to display
+    unoptimized: true, 
     remotePatterns: [
       {
         protocol: 'https',
