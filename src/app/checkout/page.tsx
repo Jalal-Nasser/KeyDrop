@@ -148,7 +148,7 @@ export default function CheckoutPage() {
             agreedToTerms: form.getValues().agreedToTerms,
           });
 
-          if (data.is_admin) {
+          if (data.is_admin) { // Check for is_admin
             setIsLoadingUsers(true)
             const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
             

@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogDescription, // Ensure this is imported
 } from "@/components/ui/dialog"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
@@ -115,7 +115,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Sign In / Sign Up</DialogTitle>
           <DialogDescription>
-            Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed for registration.
+            Enter your email and password to sign in or create an account. Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed for registration.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-6">

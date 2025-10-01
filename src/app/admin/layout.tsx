@@ -27,7 +27,7 @@ export default async function AdminLayout({
       .eq("id", user.id)
       .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
 
-    if (profileError || !profile?.is_admin) {
+    if (profileError || !profile?.is_admin) { // Check for is_admin
       console.log("AdminLayout: User is not admin or profile error, showing access denied.");
       return (
         <div className="container mx-auto py-20 text-center">

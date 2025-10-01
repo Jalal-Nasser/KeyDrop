@@ -96,11 +96,11 @@ export async function getAllUserProfilesForAdmin() {
     // Get the current user's profile to check admin status
     const { data: adminProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('is_admin') // Changed from 'role' to 'is_admin'
       .eq('id', session.user.id)
       .single()
 
-    if (profileError || !adminProfile || adminProfile.role !== 'admin') {
+    if (profileError || !adminProfile || !adminProfile.is_admin) { // Check is_admin boolean
       return { data: null, error: "Unauthorized: Admin access required." }
     }
 
@@ -121,7 +121,7 @@ export async function getAllUserProfilesForAdmin() {
     const userIds = (users as AuthUser[]).map(user => user.id)
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, role')
+      .select('id, first_name, last_name, is_admin') // Changed from 'role' to 'is_admin'
       .in('id', userIds)
 
     if (profilesError) throw profilesError
@@ -131,7 +131,7 @@ export async function getAllUserProfilesForAdmin() {
       id: string;
       first_name?: string | null;
       last_name?: string | null;
-      role?: string | null;
+      is_admin?: boolean | null; // Changed from 'role' to 'is_admin'
     };
 
     // Combine the data
@@ -142,7 +142,7 @@ export async function getAllUserProfilesForAdmin() {
         email: user.email || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        role: profile.role || 'user',
+        is_admin: profile.is_admin || false, // Changed from 'role' to 'is_admin'
         created_at: user.created_at
       }
     })

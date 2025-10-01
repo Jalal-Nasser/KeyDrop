@@ -32,12 +32,14 @@ const nextConfig = {
     VONAGE_PRIVATE_KEY: process.env.VONAGE_PRIVATE_KEY,
     VONAGE_WHATSAPP_NUMBER: process.env.VONAGE_WHATSAPP_NUMBER,
     VONAGE_ADMIN_WHATSAPP: process.env.VONAGE_ADMIN_WHATSAPP,
-    VONAGE_USE_SANDBOX: process.env.VONAGE_USE_SANDBOX,
     DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL,
     CRON_SECRET_TOKEN: process.env.CRON_SECRET_TOKEN,
   },
   images: {
-    domains: ['notncpmpmgostfxesrvk.supabase.co'], // Only the hostname, no path
+    // Temporarily disable image optimization for external images
+    // If images load directly, the issue is with Next.js optimization.
+    // If they still don't load, the issue is upstream (Supabase access, CDN, etc.).
+    unoptimized: true, 
   },
   // Add serverComponentsExternalPackages to prevent server-only packages from being bundled into client code
   experimental: {

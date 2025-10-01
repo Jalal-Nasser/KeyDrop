@@ -22,11 +22,11 @@ export async function GET() {
     // Verify the user is an admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('is_admin') // Changed from 'is_admin' to 'is_admin'
       .eq('id', session.user.id)
       .single();
 
-    if (profileError || !profile?.is_admin) {
+    if (profileError || !profile?.is_admin) { // Check is_admin boolean
       return NextResponse.json(
         { error: 'Not authorized' },
         { status: 403 }
