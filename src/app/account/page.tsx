@@ -7,53 +7,83 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { ProfileForm } from "@/components/profile-form" // Import the new ProfileForm
+import { getCurrentUserProfile } from "@/app/account/actions" // Import getCurrentUserProfile
+import { Loader2 } from "lucide-react"
+import { z } from "zod"
+import { Tables } from "@/types/supabase" // Import Tables
+
+type Profile = Tables<'profiles'>;
+
+// Define the schema for profile validation (same as in profile-form.tsx)
+const profileSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  company_name: z.string().optional(),
+  vat_number: z.string().optional(),
+  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_2: z.string().optional(),
+  city: z.string().trim().min(1, "City is required"),
+  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().length(2, "Country is required"),
+});
 
 export default function AccountPage() {
   const { session } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const supabase = createClientComponentClient()
 
-  useEffect(() => {
-    console.log("AccountPage: useEffect triggered. Session:", session);
-    const checkAdmin = async () => {
-      if (!session?.user?.id) {
-        console.log("AccountPage: No session user ID, cannot check admin status.");
-        setLoading(false);
-        return;
-      }
-      
-      console.log("AccountPage: Checking admin status for user ID:", session.user.id);
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single()
-      
-      if (!error && profile?.is_admin) {
-        console.log("AccountPage: User is admin.");
-        setIsAdmin(true)
-      } else if (error) {
-        console.error("AccountPage: Error fetching admin status:", error)
-      } else {
-        console.log("AccountPage: User is not admin.");
-      }
-      setLoading(false)
+  const fetchProfile = async () => {
+    if (!session?.user?.id) {
+      setLoading(false);
+      return;
     }
-    
-    if (session) {
-      checkAdmin()
+    const { data: profileData, error: profileError } = await getCurrentUserProfile();
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      setUserProfile(null);
     } else {
-      console.log("AccountPage: No active session.");
-      setLoading(false)
+      setUserProfile(profileData);
     }
-  }, [session, supabase])
 
-  console.log("AccountPage: Render. Loading:", loading, "Session:", session ? "present" : "null", "IsAdmin:", isAdmin);
+    const { data: adminProfile, error: adminError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (!adminError && adminProfile?.is_admin) {
+      setIsAdmin(true);
+    } else if (adminError) {
+      console.error("Error fetching admin status:", adminError);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (session) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
+
+  const handleProfileUpdated = () => {
+    // Re-fetch profile to update the displayed data and re-evaluate completeness
+    fetchProfile();
+  };
 
   if (loading) {
-    return <div className="container mx-auto p-4 py-12">Loading...</div>
+    return (
+      <div className="container mx-auto p-4 py-12 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading account details...</p>
+      </div>
+    );
   }
 
   if (!session) {
@@ -77,6 +107,9 @@ export default function AccountPage() {
     )
   }
 
+  // Check if profile is complete
+  const isProfileComplete = userProfile ? profileSchema.safeParse(userProfile).success : false;
+
   return (
     <div className="container mx-auto p-4 py-12">
       <Card className="max-w-2xl mx-auto">
@@ -88,16 +121,16 @@ export default function AccountPage() {
             </p>
           </div>
           
-          <div className="grid gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Account Details</h3>
-              <div className="grid gap-2">
-                <p className="text-sm">
-                  <span className="font-medium">Email:</span> {session.user.email}
-                </p>
-              </div>
+          {!isProfileComplete && (
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+              <p className="font-bold">Profile Incomplete!</p>
+              <p>Please complete your profile details below to proceed with purchases.</p>
             </div>
-            
+          )}
+
+          <ProfileForm initialProfile={userProfile} onProfileUpdated={handleProfileUpdated} />
+          
+          <div className="grid gap-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Quick Links</h3>
               <div className="grid gap-2">

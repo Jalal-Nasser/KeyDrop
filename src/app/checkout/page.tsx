@@ -188,31 +188,14 @@ export default function CheckoutPage() {
       )
     }
 
-    const validationResult = profileBillingSchema.safeParse(form.getValues());
+    const validationResult = profileBillingSchema.safeParse(profile); // Validate the fetched profile
     if (!validationResult.success) {
-      const errorFields = Object.keys(validationResult.error.flatten().fieldErrors)
-        .map(f => f.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
-
-      return (
-        <div className="container mx-auto py-20 bg-background">
-          <Card className="max-w-lg mx-auto shadow-lg rounded-lg">
-            <CardHeader>
-              <CardTitle>Complete Your Profile to Continue</CardTitle>
-              <CardDescription>
-                Your billing information is incomplete. The following fields are missing or invalid:
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside text-sm text-destructive space-y-1 my-4">
-                {errorFields.map(field => <li key={field}>{field}</li>)}
-              </ul>
-              <Button asChild>
-                <Link href="/account">Go to Your Account to Update</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
+      // Redirect to account page if profile is incomplete
+      useEffect(() => {
+        toast.error("Please complete your profile details to proceed with checkout.");
+        router.push("/account");
+      }, [router]);
+      return null; // Render nothing while redirecting
     }
 
     return (
