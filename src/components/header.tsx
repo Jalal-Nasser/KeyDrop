@@ -9,7 +9,6 @@ import { StoreNotice } from "@/components/store-notice"
 import { useSession } from "@/context/session-context"
 import { AuthDialog } from "@/components/auth-dialog" // Changed from AuthSheet
 import { useCart } from "@/context/cart-context"
-import { CartSheet } from "@/components/cart-sheet"
 import { cn } from "@/lib/utils" // Import cn for conditional classes
 import { useWishlist } from "@/context/wishlist-context" // Import useWishlist
 import { ModeToggle } from "@/components/mode-toggle" // Import ModeToggle
@@ -17,7 +16,7 @@ import { ModeToggle } from "@/components/mode-toggle" // Import ModeToggle
 export function Header({ className }: { className?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
-  const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
+  // Removed isCartSheetOpen state
   const pathname = usePathname()
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
@@ -121,7 +120,8 @@ export function Header({ className }: { className?: string }) {
                   </button>
                 )}
                 <span className="text-border">|</span>
-                <button onClick={() => setIsCartSheetOpen(true)} className="flex items-center gap-x-1 hover:text-primary relative">
+                {/* Changed button to Link to /cart */}
+                <Link href="/cart" className="flex items-center gap-x-1 hover:text-primary relative">
                   <ShoppingCart className="w-4 h-4" />
                   <div className="flex flex-col items-end leading-none"> {/* Stack cart text and total */}
                     <span>Cart</span>
@@ -140,7 +140,7 @@ export function Header({ className }: { className?: string }) {
                       {cartCount}
                     </span>
                   )}
-                </button>
+                </Link>
                 <ModeToggle /> {/* Add the ModeToggle component here */}
               </div>
             </div>
@@ -219,7 +219,7 @@ export function Header({ className }: { className?: string }) {
         </div>
       )}
       <AuthDialog open={isAuthSheetOpen} onOpenChange={setIsAuthSheetOpen} />
-      <CartSheet open={isCartSheetOpen} onOpenChange={setIsAuthSheetOpen} />
+      {/* Removed CartSheet component */}
     </header>
   )
 }
