@@ -36,10 +36,14 @@ const nextConfig = {
     CRON_SECRET_TOKEN: process.env.CRON_SECRET_TOKEN,
   },
   images: {
-    // Temporarily disable image optimization for external images
-    // If images load directly, the issue is with Next.js optimization.
-    // If they still don't load, the issue is upstream (Supabase access, CDN, etc.).
-    unoptimized: true, 
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'notncpmpmgostfxesrvk.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   // Add serverComponentsExternalPackages to prevent server-only packages from being bundled into client code
   experimental: {
