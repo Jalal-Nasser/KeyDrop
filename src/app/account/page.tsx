@@ -16,9 +16,15 @@ export default function AccountPage() {
   const supabase = createClientComponentClient()
 
   useEffect(() => {
+    console.log("AccountPage: useEffect triggered. Session:", session);
     const checkAdmin = async () => {
-      if (!session?.user?.id) return
+      if (!session?.user?.id) {
+        console.log("AccountPage: No session user ID, cannot check admin status.");
+        setLoading(false);
+        return;
+      }
       
+      console.log("AccountPage: Checking admin status for user ID:", session.user.id);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_admin')
@@ -26,7 +32,12 @@ export default function AccountPage() {
         .single()
       
       if (!error && profile?.is_admin) {
+        console.log("AccountPage: User is admin.");
         setIsAdmin(true)
+      } else if (error) {
+        console.error("AccountPage: Error fetching admin status:", error)
+      } else {
+        console.log("AccountPage: User is not admin.");
       }
       setLoading(false)
     }
@@ -34,9 +45,12 @@ export default function AccountPage() {
     if (session) {
       checkAdmin()
     } else {
+      console.log("AccountPage: No active session.");
       setLoading(false)
     }
-  }, [session])
+  }, [session, supabase])
+
+  console.log("AccountPage: Render. Loading:", loading, "Session:", session ? "present" : "null", "IsAdmin:", isAdmin);
 
   if (loading) {
     return <div className="container mx-auto p-4 py-12">Loading...</div>
