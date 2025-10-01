@@ -1,64 +1,39 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
 import { Database } from "@/types/supabase-fixed"
 
-// Removed hard-coded fallback values.
-// These should only come from environment variables.
-
 let _supabase: SupabaseClient<Database> | null = null
 let _failedCreateCount = 0
 
 // Sync method to get public env on client
 function getClientEnv(): { url: string, key: string } {
-  try {
-    if (typeof window !== 'undefined') {
-      const pub = (window as any).__PUBLIC_ENV || {}
-      const url = pub.NEXT_PUBLIC_SUPABASE_URL
-      const key = pub.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      
-      if (url && key) {
-        return { url, key }
-      }
-    }
-  } catch (e) {
-    console.warn("Error accessing window.__PUBLIC_ENV:", e)
+  if (typeof window === 'undefined') {
+    // This client is for the browser. If called server-side, it's an error.
+    throw new Error("Supabase browser client cannot be initialized on the server during build/prerender.")
   }
   
-  return { url: "", key: "" }
-}
-
-// Detect if we're in browser environment
-function isBrowser(): boolean {
-  return typeof window !== 'undefined'
+  const pub = (window as any).__PUBLIC_ENV || {}
+  const url = pub.NEXT_PUBLIC_SUPABASE_URL
+  const key = pub.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (!url || !key) {
+    throw new Error("Missing Supabase URL or key from window.__PUBLIC_ENV. Ensure environment variables are injected correctly.")
+  }
+  
+  return { url, key }
 }
 
 export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   if (_supabase) return _supabase
   
   try {
-    // Try to prevent too many client creation attempts
     if (_failedCreateCount > 2) {
       console.warn("Too many failed Supabase client creation attempts - cannot initialize client.")
       throw new Error("Supabase client initialization failed too many times.")
     }
 
-    let supabaseUrl: string;
-    let supabaseKey: string;
-
-    if (isBrowser()) {
-      const clientEnv = getClientEnv();
-      supabaseUrl = clientEnv.url;
-      supabaseKey = clientEnv.key;
-    } else {
-      // This branch should ideally not be hit for getSupabaseBrowserClient,
-      // but as a safeguard, use process.env if somehow called server-side.
-      supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL as string) || '';
-      supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string) || '';
-    }
-
-    // Verify we have values before creating client
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase URL or key from environment variables.")
-    }
+    const clientEnv = getClientEnv(); // This will throw if not in browser or env missing
+    const supabaseUrl = clientEnv.url;
+    const supabaseKey = clientEnv.key;
     
     _supabase = createClient<Database>(supabaseUrl, supabaseKey, {
       auth: {
@@ -69,11 +44,11 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
     })
     
     return _supabase
-  } catch (e) {
+  } catch (e: any) {
     console.error("Error creating Supabase client:", e)
     _failedCreateCount++
     
-    // If client creation fails, return a dummy client to prevent further errors
+    // Return a dummy client to prevent further errors in client-side code
     const dummyClient: any = { 
       auth: { 
         getSession: () => Promise.resolve({ data: { session: null }, error: null }),
