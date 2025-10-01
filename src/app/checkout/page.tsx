@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import { useSession } from "@/context/session-context"
-import { useForm } from "react-hook-form" // Corrected import
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Image from "next/image"
@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
 import { AuthDialog } from "@/components/auth-dialog"
 import { CountdownTimer } from "@/components/countdown-timer"
-import { Database, Tables } from "@/types/supabase" // Import Database and Tables
+import { Database, Tables } from "@/types/supabase"
 import {
   Select,
   SelectContent,
@@ -35,50 +35,29 @@ import {
 import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account/actions"
 import { CountrySelect } from "@/components/country-select"
 
+// Define the base schema for billing details with direct validation
 const profileBillingSchema = z.object({
-  first_name: z.string().trim().optional(), // Made optional for initial render
-  last_name: z.string().trim().optional(), // Made optional for initial render
-  company_name: z.string().optional(),
-  vat_number: z.string().optional(),
-  address_line_1: z.string().trim().optional(), // Made optional for initial render
-  address_line_2: z.string().optional(),
-  city: z.string().trim().optional(), // Made optional for initial render
-  state_province_region: z.string().trim().optional(), // Made optional for initial render
-  postal_code: z.string().trim().optional(), // Made optional for initial render
-  country: z.string().trim().optional(), // Made optional for initial render
-}).superRefine((data, ctx) => {
-  // Add required checks for submission
-  if (!data.first_name || data.first_name.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "First name is required", path: ["first_name"] });
-  }
-  if (!data.last_name || data.last_name.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Last name is required", path: ["last_name"] });
-  }
-  if (!data.address_line_1 || data.address_line_1.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Address is required", path: ["address_line_1"] });
-  }
-  if (!data.city || data.city.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "City is required", path: ["city"] });
-  }
-  if (!data.state_province_region || data.state_province_region.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "State/Province/Region is required", path: ["state_province_region"] });
-  }
-  if (!data.postal_code || data.postal_code.trim().length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Postal code is required", path: ["postal_code"] });
-  }
-  if (!data.country || data.country.trim().length !== 2) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Country is required", path: ["country"] });
-  }
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  company_name: z.string().optional().nullable(),
+  vat_number: z.string().optional().nullable(),
+  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_2: z.string().optional().nullable(),
+  city: z.string().trim().min(1, "City is required"),
+  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().length(2, "Country is required"),
 });
 
+// Extend the profileBillingSchema with checkout-specific fields
 const checkoutSchema = profileBillingSchema.extend({
   agreedToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
-})
+});
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>
-type Profile = Tables<'profiles'> // Use Tables type for Profile
+type Profile = Tables<'profiles'>
 type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>;
 
 const Stepper = ({ step }: { step: number }) => {
@@ -123,7 +102,7 @@ export default function CheckoutPage() {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
   const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(new Date().toISOString())
   const [isExpired, setIsExpired] = useState(false)
-  const [isRedirecting, setIsRedirecting] = useState(false); // New state for redirection
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     if (isExpired) {
@@ -135,8 +114,8 @@ export default function CheckoutPage() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      first_name: "", last_name: "", company_name: "", vat_number: "",
-      address_line_1: "", address_line_2: "", city: "",
+      first_name: "", last_name: "", company_name: null, vat_number: null,
+      address_line_1: "", address_line_2: null, city: "",
       state_province_region: "", postal_code: "", country: "",
       agreedToTerms: false,
     },
@@ -161,10 +140,10 @@ export default function CheckoutPage() {
           form.reset({
             first_name: data.first_name || "",
             last_name: data.last_name || "",
-            company_name: data.company_name || "",
-            vat_number: data.vat_number || "",
+            company_name: data.company_name || null,
+            vat_number: data.vat_number || null,
             address_line_1: data.address_line_1 || "",
-            address_line_2: data.address_line_2 || "",
+            address_line_2: data.address_line_2 || null,
             city: data.city || "",
             state_province_region: data.state_province_region || "",
             postal_code: data.postal_code || "",
@@ -176,12 +155,12 @@ export default function CheckoutPage() {
           const validationResult = profileBillingSchema.safeParse(data);
           if (!validationResult.success) {
             toast.error("Please complete your profile details to proceed with checkout.");
-            setIsRedirecting(true); // Set redirecting state
+            setIsRedirecting(true);
             router.push("/account");
-            return; // Stop further execution in this useEffect
+            return;
           }
 
-          if (data.is_admin) { // Check for is_admin
+          if (data.is_admin) {
             setIsLoadingUsers(true)
             const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
             
@@ -211,7 +190,6 @@ export default function CheckoutPage() {
     return <div className="container mx-auto text-center py-20 bg-background"><p>Your cart is empty.</p></div>
   }
 
-  // Render loading state if redirecting
   if (isRedirecting) {
     return (
       <div className="container mx-auto flex justify-center items-center py-20 bg-background">
@@ -221,10 +199,8 @@ export default function CheckoutPage() {
     );
   }
 
-  // Determine if the billing form fields are valid (excluding agreedToTerms)
-  const isBillingFormValid = form.formState.isValid;
   const isAgreedToTerms = form.watch('agreedToTerms');
-  const isPaymentButtonEnabled = isBillingFormValid && isAgreedToTerms;
+  const isPaymentButtonEnabled = form.formState.isValid && isAgreedToTerms;
 
   if (session) {
     if (isLoadingProfile) {
@@ -235,9 +211,6 @@ export default function CheckoutPage() {
         </div>
       )
     }
-
-    // The profile validation and redirect is now handled in useEffect,
-    // so if we reach here, the profile is considered complete.
 
     return (
       <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
@@ -384,13 +357,11 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
             
-            {/* Payment Countdown Timer */}
             {orderCreatedAt && (
               <div className="mb-4">
                 <CountdownTimer 
                   initialMinutes={10}
                   onExpire={() => {
-                    // Refresh the page when time expires
                     window.location.reload()
                   }}
                 />
@@ -446,11 +417,11 @@ export default function CheckoutPage() {
                       <FormField control={form.control} name="last_name" render={({ field }) => (<FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="company_name" render={({ field }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="vat_number" render={({ field }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="company_name" render={({ field }) => (<FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="vat_number" render={({ field }) => (<FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                     <FormField control={form.control} name="address_line_1" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="address_line_2" render={({ field }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address_line_2" render={({ field }) => (<FormItem><FormLabel>Apartment, suite, etc. (Optional)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="state_province_region" render={({ field }) => (<FormItem><FormLabel>State / Province</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -535,13 +506,11 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
             
-            {/* Payment Countdown Timer */}
             {orderCreatedAt && (
               <div className="mb-4">
                 <CountdownTimer 
                   initialMinutes={10}
                   onExpire={() => {
-                    // Refresh the page when time expires
                     window.location.reload()
                   }}
                 />
