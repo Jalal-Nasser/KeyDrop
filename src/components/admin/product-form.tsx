@@ -182,7 +182,7 @@ export function ProductForm({ product }: ProductFormProps) {
         
         const fileExtension = selectedImageFile.name.split('.').pop();
         const fileName = `${uuidv4()}.${fileExtension}`;
-        const filePath = `public/${fileName}`;
+        const filePath = fileName; // <--- CORRECTED: Removed 'public/' prefix
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('product-images')
