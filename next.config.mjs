@@ -23,6 +23,13 @@ const nextConfig = {
       },
     ],
   },
+  // Add serverComponentsExternalPackages to prevent server-only packages from being bundled into client code
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@paypal/checkout-server-sdk',
+      '@vonage/server-sdk',
+    ],
+  },
 }
 
 export default nextConfig

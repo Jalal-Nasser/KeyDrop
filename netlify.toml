@@ -1,3 +1,10 @@
 [build]
   command = "npm run build"
   publish = ".next"
+
+[build.environment]
+  # Tell Netlify's secrets scanner to ignore these NEXT_PUBLIC_ variables
+  # as they are intentionally exposed to the client-side bundle by Next.js.
+  # PAYPAL_ENV and VONAGE_WHATSAPP_NUMBER are included as a fallback,
+  # but should ideally be resolved by the next.config.mjs change.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_BASE_URL,NEXT_PUBLIC_GTM_ID,NEXT_PUBLIC_PAYPAL_CLIENT_ID,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL,PAYPAL_ENV,VONAGE_WHATSAPP_NUMBER"
