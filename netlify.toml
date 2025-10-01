@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
-  publish = ".next" # Changed from "out" to ".next"
-  functions = "netlify/functions" # Specify functions directory if you have Netlify Functions
+  publish = ".next"
+  # Removed: functions = "netlify/functions" # This project uses Supabase Edge Functions, not Netlify Functions
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
