@@ -4,13 +4,10 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { Database } from "@/types/supabase-wrapper"
 
-// Helper function to create Supabase client
-const createSupabaseServerClient = () => {
-  return createServerComponentClient<Database>({ cookies: () => cookies() })
-}
+// Removed the local createSupabaseServerClient wrapper function here.
+// Each action will now directly create its client.
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -26,12 +23,20 @@ const profileSchema = z.object({
 })
 
 export async function updateCurrentUserProfile(profileData: unknown) {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  console.log("updateCurrentUserProfile: Action started.");
+  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    console.error("updateCurrentUserProfile: Error getting session:", sessionError);
+    return { error: { message: "Error retrieving session." } }
+  }
 
   if (!session) {
+    console.warn("updateCurrentUserProfile: No session found. User not authenticated.");
     return { error: { message: "User not authenticated." } }
   }
+  console.log("updateCurrentUserProfile: Session found for user:", session.user.id);
 
   const validation = profileSchema.safeParse(profileData)
   if (!validation.success) {
@@ -61,12 +66,20 @@ export async function updateCurrentUserProfile(profileData: unknown) {
 }
 
 export async function getCurrentUserProfile() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  console.log("getCurrentUserProfile: Action started.");
+  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    console.error("getCurrentUserProfile: Error getting session:", sessionError);
+    return { data: null, error: "Error retrieving session." }
+  }
 
   if (!session) {
+    console.warn("getCurrentUserProfile: No session found. User not authenticated.");
     return { data: null, error: "User not authenticated." }
   }
+  console.log("getCurrentUserProfile: Session found for user:", session.user.id);
 
   const { data: profiles, error } = await supabase
     .from("profiles")
@@ -83,32 +96,43 @@ export async function getCurrentUserProfile() {
 }
 
 export async function getAllUserProfilesForAdmin() {
-  const supabase = createSupabaseServerClient()
-  
-  try {
-    // Get the current user's session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    if (sessionError || !session?.user?.id) {
-      return { data: null, error: "Authentication required" }
-    }
+  console.log("getAllUserProfilesForAdmin: Action started.");
+  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
+  if (sessionError || !session?.user?.id) {
+    console.warn("getAllUserProfilesForAdmin: No session found or session error. Authentication required.");
+    return { data: null, error: "Authentication required" }
+  }
+  console.log("getAllUserProfilesForAdmin: Session found for user:", session.user.id);
+
+  try {
     // Get the current user's profile to check admin status
     const { data: adminProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_admin') // Changed from 'role' to 'is_admin'
+      .select('is_admin')
       .eq('id', session.user.id)
       .single()
 
-    if (profileError || !adminProfile || !adminProfile.is_admin) { // Check is_admin boolean
+    if (profileError || !adminProfile || !adminProfile.is_admin) {
       return { data: null, error: "Unauthorized: Admin access required." }
     }
 
     // Get all users using the admin API
-    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
+    // Note: createServerActionClient does not have admin.listUsers directly.
+    // We need to use the admin client from src/lib/supabase/admin.ts for this.
+    // Let's ensure that the admin client is correctly imported and used here.
+    const supabaseAdmin = createServerActionClient<Database>({ cookies: () => cookies() }); // This is still the regular client.
+    // For admin.listUsers, we need the service role key.
+    // The createClient from '@supabase/supabase-js' with service role key is needed.
+    // Let's use the createClient from src/lib/supabase/actions.ts which is already configured for admin.
+    const { createClient: createAdminSupabaseClient } = await import('@/lib/supabase/actions');
+    const adminSupabase = await createAdminSupabaseClient(); // This is the admin client
+
+    const { data: authUsers, error: usersError } = await adminSupabase.auth.admin.listUsers()
 
     if (usersError) throw usersError
-    if (!users) return { data: [], error: null }
+    if (!authUsers || authUsers.users.length === 0) return { data: [], error: null }
 
     // Define User type from auth
     type AuthUser = {
@@ -118,10 +142,10 @@ export async function getAllUserProfilesForAdmin() {
     };
 
     // Get additional profile info for these users
-    const userIds = (users as AuthUser[]).map(user => user.id)
+    const userIds = (authUsers.users as AuthUser[]).map(user => user.id)
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, is_admin') // Changed from 'role' to 'is_admin'
+      .select('id, first_name, last_name, is_admin')
       .in('id', userIds)
 
     if (profilesError) throw profilesError
@@ -131,18 +155,18 @@ export async function getAllUserProfilesForAdmin() {
       id: string;
       first_name?: string | null;
       last_name?: string | null;
-      is_admin?: boolean | null; // Changed from 'role' to 'is_admin'
+      is_admin?: boolean | null;
     };
 
     // Combine the data
-    const userData = (users as AuthUser[]).map(user => {
+    const userData = (authUsers.users as AuthUser[]).map(user => {
       const profile = (profiles as Profile[]).find(p => p.id === user.id) || {} as Profile
       return {
         id: user.id,
         email: user.email || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        is_admin: profile.is_admin || false, // Changed from 'role' to 'is_admin'
+        is_admin: profile.is_admin || false,
         created_at: user.created_at
       }
     })
@@ -158,7 +182,8 @@ export async function getAllUserProfilesForAdmin() {
 }
 
 export async function createUserProfile(userId: string, email: string) {
-  const supabase = createSupabaseServerClient()
+  console.log("createUserProfile: Action started.");
+  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
   
   // Check if profile already exists
   const { data: existingProfile } = await supabase
@@ -168,6 +193,7 @@ export async function createUserProfile(userId: string, email: string) {
     .single()
 
   if (existingProfile) {
+    console.log("createUserProfile: Profile already exists for user:", userId);
     return { success: true, message: 'Profile already exists' }
   }
 
@@ -188,6 +214,6 @@ export async function createUserProfile(userId: string, email: string) {
     console.error('Error creating user profile:', error)
     return { success: false, error: error.message }
   }
-
+  console.log("createUserProfile: Profile created successfully for user:", userId);
   return { success: true }
 }
