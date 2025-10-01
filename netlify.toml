@@ -1,15 +1,25 @@
 [build]
   command = "npm run build"
-  publish = "out" # plugin handles this, but fallback is nice
-
-[build.environment]
-  NODE_VERSION = "18.17.1"
+  publish = ".next" # Changed from "out" to ".next"
+  functions = "netlify/functions" # Specify functions directory if you have Netlify Functions
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [[plugins]]
   package = "@netlify/plugin-emails"
+  inputs = {
+    included_files = ["./emails/**"]
+  }
 
-[functions]
-  directory = "netlify/functions"
+# Headers for static assets (optional, but good practice)
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    "Cache-Control" = "public, max-age=31536000, immutable"
+
+# Redirects (optional)
+# [[redirects]]
+#   from = "/old-path"
+#   to = "/new-path"
+#   status = 301
