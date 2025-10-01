@@ -48,13 +48,12 @@ const profileBillingSchema = z.object({
   country: z.string().trim().length(2, "Country is required"),
 });
 
-const checkoutSchema = profileBillingSchema.extend({
-  agreedToTerms: z.boolean().refine(val => val === true, {
-    message: "You must agree to the terms and conditions.",
-  }),
-})
+// Removed agreedToTerms from the main schema to prevent immediate validation error
+const checkoutSchema = profileBillingSchema;
 
-type CheckoutFormValues = z.infer<typeof checkoutSchema>
+type CheckoutFormValues = z.infer<typeof checkoutSchema> & {
+  agreedToTerms: boolean; // Add it back as a separate type for form values
+};
 type Profile = Tables<'profiles'> // Use Tables type for Profile
 type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>;
 
@@ -115,7 +114,7 @@ export default function CheckoutPage() {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
       state_province_region: "", postal_code: "", country: "",
-      agreedToTerms: false,
+      agreedToTerms: false, // Keep default value for the checkbox
     },
   })
 
@@ -197,6 +196,11 @@ export default function CheckoutPage() {
       </div>
     );
   }
+
+  // Determine if the billing form fields are valid (excluding agreedToTerms)
+  const isBillingFormValid = form.formState.isValid;
+  const isAgreedToTerms = form.watch('agreedToTerms');
+  const isPaymentButtonEnabled = isBillingFormValid && isAgreedToTerms;
 
   if (session) {
     if (isLoadingProfile) {
@@ -299,7 +303,7 @@ export default function CheckoutPage() {
                           </FormItem>
                         )}
                       />
-                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={form.formState.isValid} onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)} />
+                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={isPaymentButtonEnabled} onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)} />
                       {profile?.is_admin && (
                         <>
                           <div className="relative my-6">
@@ -346,7 +350,7 @@ export default function CheckoutPage() {
                               cartTotal={finalCartTotal}
                               cartItems={cartItems}
                               targetUserId={selectedClientId}
-                              isFormValid={form.formState.isValid}
+                              isFormValid={isPaymentButtonEnabled}
                             />
                           </div>
                         </>
@@ -500,7 +504,7 @@ export default function CheckoutPage() {
                     cartTotal={finalCartTotal} 
                     cartItems={cartItems} 
                     billingDetails={form.watch()} 
-                    isFormValid={form.formState.isValid}
+                    isFormValid={isPaymentButtonEnabled}
                     onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)}
                   />
                 )}
