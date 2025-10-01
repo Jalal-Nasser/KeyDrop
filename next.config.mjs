@@ -37,14 +37,7 @@ const nextConfig = {
     CRON_SECRET_TOKEN: process.env.CRON_SECRET_TOKEN,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'notncpmpmgostfxesrvk.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/public/**', // Changed to a broad wildcard
-      },
-    ],
+    domains: ['notncpmpmgostfxesrvk.supabase.co'], // Using the simpler domains array
   },
   // Add serverComponentsExternalPackages to prevent server-only packages from being bundled into client code
   experimental: {
