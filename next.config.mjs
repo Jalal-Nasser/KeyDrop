@@ -37,7 +37,7 @@ const nextConfig = {
     CRON_SECRET_TOKEN: process.env.CRON_SECRET_TOKEN,
   },
   images: {
-    domains: ['notncpmpmgostfxesrvk.supabase.co'], // Using the simpler domains array
+    domains: ['notncpmpmgostfxesrvk.supabase.co'], // Only the hostname, no path
   },
   // Add serverComponentsExternalPackages to prevent server-only packages from being bundled into client code
   experimental: {
