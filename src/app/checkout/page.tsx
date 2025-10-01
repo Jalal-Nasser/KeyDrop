@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import { useSession } from "@/context/session-context"
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form" // Corrected import
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Image from "next/image"
