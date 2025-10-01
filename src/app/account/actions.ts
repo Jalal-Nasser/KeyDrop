@@ -5,9 +5,7 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import type { Database } from "@/types/supabase-wrapper"
-
-// Removed the local createSupabaseServerClient wrapper function here.
-// Each action will now directly create its client.
+import { createAdminClient } from "@/lib/supabase/server" // Import the admin client
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -118,16 +116,8 @@ export async function getAllUserProfilesForAdmin() {
       return { data: null, error: "Unauthorized: Admin access required." }
     }
 
-    // Get all users using the admin API
-    // Note: createServerActionClient does not have admin.listUsers directly.
-    // We need to use the admin client from src/lib/supabase/admin.ts for this.
-    // Let's ensure that the admin client is correctly imported and used here.
-    const supabaseAdmin = createServerActionClient<Database>({ cookies: () => cookies() }); // This is still the regular client.
-    // For admin.listUsers, we need the service role key.
-    // The createClient from '@supabase/supabase-js' with service role key is needed.
-    // Let's use the createClient from src/lib/supabase/actions.ts which is already configured for admin.
-    const { createClient: createAdminSupabaseClient } = await import('@/lib/supabase/actions');
-    const adminSupabase = await createAdminSupabaseClient(); // This is the admin client
+    // Use the admin client for listing all users
+    const adminSupabase = await createAdminClient();
 
     const { data: authUsers, error: usersError } = await adminSupabase.auth.admin.listUsers()
 

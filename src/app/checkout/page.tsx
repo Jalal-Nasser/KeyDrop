@@ -36,24 +36,48 @@ import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account
 import { CountrySelect } from "@/components/country-select"
 
 const profileBillingSchema = z.object({
-  first_name: z.string().trim().min(1, "First name is required"),
-  last_name: z.string().trim().min(1, "Last name is required"),
+  first_name: z.string().trim().optional(), // Made optional for initial render
+  last_name: z.string().trim().optional(), // Made optional for initial render
   company_name: z.string().optional(),
   vat_number: z.string().optional(),
-  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_1: z.string().trim().optional(), // Made optional for initial render
   address_line_2: z.string().optional(),
-  city: z.string().trim().min(1, "City is required"),
-  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
-  postal_code: z.string().trim().min(1, "Postal code is required"),
-  country: z.string().trim().length(2, "Country is required"),
+  city: z.string().trim().optional(), // Made optional for initial render
+  state_province_region: z.string().trim().optional(), // Made optional for initial render
+  postal_code: z.string().trim().optional(), // Made optional for initial render
+  country: z.string().trim().optional(), // Made optional for initial render
+}).superRefine((data, ctx) => {
+  // Add required checks for submission
+  if (!data.first_name || data.first_name.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "First name is required", path: ["first_name"] });
+  }
+  if (!data.last_name || data.last_name.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Last name is required", path: ["last_name"] });
+  }
+  if (!data.address_line_1 || data.address_line_1.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Address is required", path: ["address_line_1"] });
+  }
+  if (!data.city || data.city.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "City is required", path: ["city"] });
+  }
+  if (!data.state_province_region || data.state_province_region.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "State/Province/Region is required", path: ["state_province_region"] });
+  }
+  if (!data.postal_code || data.postal_code.trim().length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Postal code is required", path: ["postal_code"] });
+  }
+  if (!data.country || data.country.trim().length !== 2) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Country is required", path: ["country"] });
+  }
 });
 
-// Removed agreedToTerms from the main schema to prevent immediate validation error
-const checkoutSchema = profileBillingSchema;
+const checkoutSchema = profileBillingSchema.extend({
+  agreedToTerms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions.",
+  }),
+})
 
-type CheckoutFormValues = z.infer<typeof checkoutSchema> & {
-  agreedToTerms: boolean; // Add it back as a separate type for form values
-};
+type CheckoutFormValues = z.infer<typeof checkoutSchema>
 type Profile = Tables<'profiles'> // Use Tables type for Profile
 type ClientProfileOption = Pick<Profile, 'id' | 'first_name' | 'last_name'>;
 
@@ -114,7 +138,7 @@ export default function CheckoutPage() {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
       state_province_region: "", postal_code: "", country: "",
-      agreedToTerms: false, // Keep default value for the checkbox
+      agreedToTerms: false,
     },
   })
 
