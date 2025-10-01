@@ -100,6 +100,7 @@ export default function CheckoutPage() {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
   const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(new Date().toISOString())
   const [isExpired, setIsExpired] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false); // New state for redirection
 
   useEffect(() => {
     if (isExpired) {
@@ -148,6 +149,15 @@ export default function CheckoutPage() {
             agreedToTerms: form.getValues().agreedToTerms,
           });
 
+          // Validate the fetched profile immediately
+          const validationResult = profileBillingSchema.safeParse(data);
+          if (!validationResult.success) {
+            toast.error("Please complete your profile details to proceed with checkout.");
+            setIsRedirecting(true); // Set redirecting state
+            router.push("/account");
+            return; // Stop further execution in this useEffect
+          }
+
           if (data.is_admin) { // Check for is_admin
             setIsLoadingUsers(true)
             const { data: allUsers, error: usersError } = await getAllUserProfilesForAdmin()
@@ -169,13 +179,23 @@ export default function CheckoutPage() {
       }
     }
     fetchProfileAndUsers()
-  }, [session, form])
+  }, [session, form, router])
 
   const processingFee = cartTotal * 0.15
   const finalCartTotal = cartTotal + processingFee
   
   if (cartCount === 0) {
     return <div className="container mx-auto text-center py-20 bg-background"><p>Your cart is empty.</p></div>
+  }
+
+  // Render loading state if redirecting
+  if (isRedirecting) {
+    return (
+      <div className="container mx-auto flex justify-center items-center py-20 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Redirecting to account page...</p>
+      </div>
+    );
   }
 
   if (session) {
@@ -188,15 +208,8 @@ export default function CheckoutPage() {
       )
     }
 
-    const validationResult = profileBillingSchema.safeParse(profile); // Validate the fetched profile
-    if (!validationResult.success) {
-      // Redirect to account page if profile is incomplete
-      useEffect(() => {
-        toast.error("Please complete your profile details to proceed with checkout.");
-        router.push("/account");
-      }, [router]);
-      return null; // Render nothing while redirecting
-    }
+    // The profile validation and redirect is now handled in useEffect,
+    // so if we reach here, the profile is considered complete.
 
     return (
       <div className="bg-background min-h-[calc(100vh-var(--header-height)-var(--footer-height))]">
