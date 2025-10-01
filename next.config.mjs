@@ -42,7 +42,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'notncpmpmgostfxesrvk.supabase.co',
         port: '',
-        pathname: '/storage/v1/object/public/product**', // Updated to be more permissive
+        pathname: '/storage/v1/object/public/**', // Changed to a broad wildcard
       },
     ],
   },
