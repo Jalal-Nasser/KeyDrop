@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation"
 import { Product } from "@/types/product"
 import { ProductDetailsClient } from "@/components/product-details-client"
-import { createSupabaseServerClient }
- from "@/lib/supabaseServer"
+import { createServerClient } from "@/lib/supabase/server" // Updated import
 import { Metadata } from "next"
 import { Tables } from "@/types/supabase" // Import Tables type
 
@@ -12,7 +11,7 @@ interface ProductPageProps {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const productId = parseInt(params.id)
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   const { data: product, error } = await supabase
     .from("products")
@@ -41,7 +40,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const productId = parseInt(params.id)
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   const { data: product, error } = await supabase
     .from("products")

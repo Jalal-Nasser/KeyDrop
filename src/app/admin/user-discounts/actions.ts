@@ -1,7 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/actions'
+import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { TablesInsert, TablesUpdate } from '@/types/supabase' // Import TablesInsert and TablesUpdate
+import { v4 as uuidv4 } from 'uuid'; // Import uuid for generating codes
 
 export async function applyUserDiscount(formData: FormData) {
   const userId = formData.get('userId')
@@ -24,20 +26,23 @@ export async function applyUserDiscount(formData: FormData) {
     return { error: 'Percentage discount must be between 0 and 100' }
   }
 
-  const supabase = await createClient() // Await the client
+  const supabase = await createServerClient()
   
+  // Generate a unique code for user-specific discounts if not already present
+  // This is a simplified approach; in a real app, you might check for existing codes
+  const generatedCode = `USER-${uuidv4().substring(0, 8).toUpperCase()}`;
+
+  const upsertData: TablesInsert<'coupons'> = {
+    assigned_user_id: userId as string,
+    discount_percent: value,
+    is_applied: isActive,
+    code: generatedCode, // Provide a code for the upsert
+    // expires_at is not in the coupons table, so it's omitted
+  };
+
   const { data, error } = await supabase
-    .from('coupons') // Assuming 'user_discounts' is now 'coupons'
-    .upsert(
-      {
-        assigned_user_id: userId as string, // Assuming userId is a string
-        discount_percent: value, // Assuming discount_value maps to discount_percent
-        is_active: isActive,
-        expires_at: expiresAt || null, // coupons table doesn't have expires_at, this will be ignored
-        // updated_at: new Date().toISOString() // coupons table doesn't have updated_at
-      },
-      { onConflict: 'assigned_user_id' } // Assuming unique constraint on assigned_user_id
-    )
+    .from('coupons')
+    .upsert(upsertData, { onConflict: 'assigned_user_id' })
     .select()
 
   if (error) {
@@ -50,12 +55,12 @@ export async function applyUserDiscount(formData: FormData) {
 }
 
 export async function removeUserDiscount(userId: string) {
-  const supabase = await createClient() // Await the client
+  const supabase = await createServerClient()
   
   const { error } = await supabase
-    .from('coupons') // Assuming 'user_discounts' is now 'coupons'
+    .from('coupons')
     .delete()
-    .eq('assigned_user_id', userId) // Assuming assigned_user_id is the key
+    .eq('assigned_user_id', userId)
 
   if (error) {
     console.error('Error removing user discount:', error)

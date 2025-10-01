@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@/lib/supabase/server' // Updated import
 import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing tokens' }, { status: 400 })
     }
 
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createServerClient() // Await the client
     const { error } = await supabase.auth.setSession({ access_token, refresh_token })
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 401 })

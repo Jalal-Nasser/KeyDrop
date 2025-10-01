@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import {
@@ -12,13 +12,14 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { format } from "date-fns" // Import format
 
 export default async function ClientPage({
   params,
 }: {
   params: { id: string }
 }) {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = await createServerClient()
   
   // Verify admin status
   const { data: { session } } = await supabase.auth.getSession()
@@ -71,8 +72,9 @@ export default async function ClientPage({
             <div className="grid gap-4">
               <div>
                 <h3 className="font-medium">Contact Information</h3>
+                {/* Removed client.phone as it does not exist in the schema */}
                 <p className="text-sm text-muted-foreground">
-                  {client.phone || 'No phone number provided'}
+                  {client.email || 'No email provided'}
                 </p>
               </div>
               <div>
@@ -84,7 +86,7 @@ export default async function ClientPage({
               <div>
                 <h3 className="font-medium">Member Since</h3>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(client.created_at).toLocaleDateString()}
+                  {client.created_at ? format(new Date(client.created_at), 'PPP') : 'N/A'}
                 </p>
               </div>
             </div>

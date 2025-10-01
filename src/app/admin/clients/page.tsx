@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createServerClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import {
   Card,
@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Tables } from "@/types/supabase" // Import Tables type
+import { Tables } from "@/types/supabase"
 
 interface Client {
   id: string
@@ -29,8 +29,8 @@ interface Client {
 }
 
 export default async function AdminClientsPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const supabase = await createServerClient()
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
   if (!session) {
     redirect("/login")
@@ -41,7 +41,7 @@ export default async function AdminClientsPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
-    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
+    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any };
 
   if (profileError || !profile?.is_admin) {
     console.error('Admin check failed:', profileError)
@@ -55,7 +55,7 @@ export default async function AdminClientsPage() {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, company_name, created_at')
-      .order('created_at', { ascending: false }) as { data: Client[] | null, error: any }; // Explicitly type data
+      .order('created_at', { ascending: false }) as { data: Client[] | null, error: any };
 
     if (error) throw error
     clients = data || []

@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createServerClient } from "@/lib/supabase/server" // Updated import
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -32,7 +32,7 @@ interface Order {
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   const { data: order, error } = await supabase
     .from('orders')

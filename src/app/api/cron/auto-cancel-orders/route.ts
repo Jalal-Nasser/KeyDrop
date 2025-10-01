@@ -1,56 +1,131 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase/server' // Updated import
+import { createClient } from '@supabase/supabase-js'
+import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions' // Corrected import
 
 export const dynamic = 'force-dynamic'
 
-// This endpoint can be called by external cron services
-// Example: Vercel Cron, GitHub Actions, or a simple cron job
-export async function GET(req: NextRequest) {
+// Configuration: Auto-cancel orders after 10 minutes of being pending
+const AUTO_CANCEL_TIMEOUT_MINUTES = 10
+
+export async function POST(req: NextRequest) {
   try {
-    // Verify the request is from an authorized source (optional security)
-    const authHeader = req.headers.get('authorization')
-    const expectedToken = process.env.CRON_SECRET_TOKEN
+    const supabase = await createServerClient() // Await the client
     
-    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Get current time and calculate cutoff time
+    const now = new Date()
+    const cutoffTime = new Date(now.getTime() - (AUTO_CANCEL_TIMEOUT_MINUTES * 60 * 1000))
+    
+    console.log(`Auto-cancelling orders older than ${AUTO_CANCEL_TIMEOUT_MINUTES} minutes (before ${cutoffTime.toISOString()})`)
+    
+    // Find orders that are pending and older than the timeout
+    const { data: pendingOrders, error: fetchError } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        user_id,
+        total,
+        created_at,
+        order_items (
+          product_name,
+          products (image)
+        )
+      `)
+      .eq('status', 'pending')
+      .lt('created_at', cutoffTime.toISOString())
+    
+    if (fetchError) {
+      console.error('Error fetching pending orders:', fetchError)
+      return NextResponse.json({ error: 'Failed to fetch pending orders' }, { status: 500 })
     }
     
-    // Call the auto-cancel API
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/admin/auto-cancel-orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    if (!pendingOrders || pendingOrders.length === 0) {
+      console.log('No orders to auto-cancel')
+      return NextResponse.json({ 
+        message: 'No orders to auto-cancel',
+        cancelledCount: 0 
+      })
+    }
+    
+    console.log(`Found ${pendingOrders.length} orders to auto-cancel`)
+    
+    // Update orders to cancelled status
+    const orderIds = pendingOrders.map(order => order.id)
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled' }) // Removed explicit cast, now types should align
+      .in('id', orderIds)
+    
+    if (updateError) {
+      console.error('Error updating orders to cancelled:', updateError)
+      return NextResponse.json({ error: 'Failed to cancel orders' }, { status: 500 })
+    }
+    
+    // Send notifications for each cancelled order
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    const notificationPromises = pendingOrders.map(async (order) => {
+      try {
+        // Get user email
+        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string) // Cast to string
+        
+        if (userError || !user || !user.email) {
+          console.error(`Failed to fetch user email for order ${order.id}:`, userError)
+          return
+        }
+        
+        // Get user profile for first name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', order.user_id as string) // Cast to string
+          .single()
+        
+        // Send email notification
+        await sendOrderStatusUpdateEmail({ // Use renamed function
+          orderId: order.id,
+          userEmail: user.email,
+          status: 'cancelled',
+          firstName: profile?.first_name || 'Valued Customer',
+          isAutoCancelled: true
+        })
+        
+        // Send Discord notification
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/discord-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: order.id,
+            total: order.total,
+            orderItems: order.order_items,
+            notificationType: 'order_auto_cancelled',
+            userEmail: user.email
+          })
+        }).catch(err => console.error(`Discord notification for auto-cancelled order ${order.id} failed:`, err))
+        
+      } catch (error) {
+        console.error(`Error processing notification for order ${order.id}:`, error)
+      }
     })
     
-    const result = await response.json()
+    // Wait for all notifications to complete (don't fail if notifications fail)
+    await Promise.allSettled(notificationPromises)
     
-    if (!response.ok) {
-      console.error('Auto-cancel API failed:', result)
-      return NextResponse.json({ 
-        error: 'Auto-cancel process failed',
-        details: result 
-      }, { status: 500 })
-    }
+    console.log(`Successfully auto-cancelled ${pendingOrders.length} orders`)
     
-    console.log('Cron job completed successfully:', result)
     return NextResponse.json({
-      success: true,
-      message: 'Auto-cancel cron job completed',
-      ...result
+      message: `Successfully auto-cancelled ${pendingOrders.length} orders`,
+      cancelledCount: pendingOrders.length,
+      cancelledOrderIds: orderIds
     })
     
   } catch (error) {
-    console.error('Cron job error:', error)
+    console.error('Auto-cancel orders error:', error)
     return NextResponse.json({ 
-      error: 'Cron job failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Internal server error during auto-cancel process' 
     }, { status: 500 })
   }
 }
-
-// Also support POST for flexibility
-export async function POST(req: NextRequest) {
-  return GET(req)
-}
-

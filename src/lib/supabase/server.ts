@@ -18,19 +18,11 @@ let adminClient: AdminClient | null = null;
  * This is safe to use in Server Components, Server Actions, and Route Handlers
  */
 export async function createServerClient() {
-  if (serverClient) {
-    return serverClient;
-  }
-
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
-  }
-
-  serverClient = createServerComponentClient<Database>({ 
+  // Always create a new client for each request to ensure fresh cookies
+  // This is the recommended pattern for `createServerComponentClient`
+  return createServerComponentClient<Database>({ 
     cookies: () => cookies() 
   });
-  
-  return serverClient;
 }
 
 /**
@@ -63,9 +55,4 @@ export async function createAdminClient() {
   );
   
   return adminClient;
-}
-
-// For backward compatibility
-export async function getSupabaseServerClient() {
-  return createServerClient();
 }

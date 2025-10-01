@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabaseServer'
+import { createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions' // Corrected import
+import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions'
+import { Tables } from '@/types/supabase' // Import Tables type
 
 export const dynamic = 'force-dynamic'
 
 // Configuration: Auto-cancel orders after 10 minutes of being pending
 const AUTO_CANCEL_TIMEOUT_MINUTES = 10
 
+// Define a type for the order data fetched in this route
+type AutoCancelOrder = Tables<'orders'> & {
+  order_items: (Pick<Tables<'order_items'>, 'product_name'> & { products: Pick<Tables<'products'>, 'image'>[] | null })[];
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = await createServerClient()
     
     // Get current time and calculate cutoff time
     const now = new Date()
@@ -32,7 +38,7 @@ export async function POST(req: NextRequest) {
         )
       `)
       .eq('status', 'pending')
-      .lt('created_at', cutoffTime.toISOString())
+      .lt('created_at', cutoffTime.toISOString()) as { data: AutoCancelOrder[] | null, error: any };
     
     if (fetchError) {
       console.error('Error fetching pending orders:', fetchError)
@@ -50,10 +56,10 @@ export async function POST(req: NextRequest) {
     console.log(`Found ${pendingOrders.length} orders to auto-cancel`)
     
     // Update orders to cancelled status
-    const orderIds = pendingOrders.map(order => order.id)
+    const orderIds = pendingOrders.map((order: AutoCancelOrder) => order.id)
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' }) // Removed explicit cast, now types should align
+      .update({ status: 'cancelled' })
       .in('id', orderIds)
     
     if (updateError) {
@@ -67,10 +73,10 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
     
-    const notificationPromises = pendingOrders.map(async (order) => {
+    const notificationPromises = pendingOrders.map(async (order: AutoCancelOrder) => {
       try {
         // Get user email
-        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string) // Cast to string
+        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id as string)
         
         if (userError || !user || !user.email) {
           console.error(`Failed to fetch user email for order ${order.id}:`, userError)
@@ -81,11 +87,11 @@ export async function POST(req: NextRequest) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('first_name')
-          .eq('id', order.user_id as string) // Cast to string
+          .eq('id', order.user_id as string)
           .single()
         
         // Send email notification
-        await sendOrderStatusUpdateEmail({ // Use renamed function
+        await sendOrderStatusUpdateEmail({
           orderId: order.id,
           userEmail: user.email,
           status: 'cancelled',

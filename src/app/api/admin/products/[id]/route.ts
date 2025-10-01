@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = await createServerClient();
 
   // Check if user is authenticated and is admin
   const { data: { session } } = await supabase.auth.getSession();
@@ -23,7 +23,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const productId = params.id;
+    const productId = parseInt(params.id); // Parse to number
+    if (isNaN(productId)) {
+      return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+    }
     const formData = await req.json();
 
     const { error } = await supabase.from('products').update(formData).eq('id', productId);
@@ -47,7 +50,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = await createServerClient();
 
   // Check if user is authenticated and is admin
   const { data: { session } } = await supabase.auth.getSession();
@@ -66,7 +69,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   try {
-    const productId = params.id;
+    const productId = parseInt(params.id); // Parse to number
+    if (isNaN(productId)) {
+      return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+    }
 
     const { error } = await supabase.from('products').delete().eq('id', productId);
 

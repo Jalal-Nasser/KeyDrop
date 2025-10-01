@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClient } from '@/lib/supabaseServer'
+import { createServerClient } from '@/lib/supabase/server' // Updated import
 import { sendMail } from '@/lib/postmark'
 import { 
   renderInvoiceTemplateToHtml,
@@ -57,7 +57,7 @@ interface FullFetchedOrder {
 }
 
 export async function sendOrderConfirmation(payload: { orderId: string; userEmail: string; }) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   try {
   const { data: fetchedOrder, error: orderError } = await supabase

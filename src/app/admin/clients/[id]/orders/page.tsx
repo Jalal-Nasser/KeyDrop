@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@/lib/supabase/server" // Updated import
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import {
@@ -26,7 +26,7 @@ export default async function ClientOrdersPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = await createServerClient() // Await the client
   
   // Verify admin status
   const { data: { session } } = await supabase.auth.getSession()
@@ -114,7 +114,7 @@ export default async function ClientOrdersPage({
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                        {order.payment_status}
+                        {order.status}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">

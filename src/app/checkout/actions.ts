@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createServerClient } from "@/lib/supabase/server" // Updated import
 import { sendOrderConfirmation } from "@/lib/email-actions"
 import { CartItem } from "@/types/cart"
 import { createClient } from '@supabase/supabase-js'
@@ -15,7 +15,7 @@ interface CreateWalletOrderPayload {
 }
 
 export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: CreateWalletOrderPayload) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   try {
     // Recalculate totals from DB to ensure sale pricing and integrity

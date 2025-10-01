@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createServerClient } from '@/lib/supabase/server'; // Updated import
 import { createOrderSchema } from '@/lib/schemas';
 import { toCents, fromCents, cents, roundMoney } from '@/lib/money'; // Import roundMoney
 import { resolveDiscount } from '@/lib/promo';
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
 
 export async function POST(req: NextRequest) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createServerClient(); // Await the client
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

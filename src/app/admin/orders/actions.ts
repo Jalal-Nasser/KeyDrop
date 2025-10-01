@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClient } from "@/lib/supabaseServer"
+import { createServerClient } from "@/lib/supabase/server" // Updated import
 import { revalidatePath } from "next/cache"
 import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail, sendOrderConfirmation, sendProductDelivery } from "@/lib/email-actions" // Renamed to avoid conflict
 import { createClient } from '@supabase/supabase-js'
@@ -23,7 +23,7 @@ interface UpdatedOrderItemResult {
 }
 
 export async function fulfillOrderItem(orderItemId: string, productKey: string) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
   
   // Debug environment variables
   console.log('Debug Environment Variables:')
@@ -118,7 +118,7 @@ export async function fulfillOrderItem(orderItemId: string, productKey: string) 
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createServerClient() // Await the client
 
   try {
     const { data: order, error: fetchError } = await supabase

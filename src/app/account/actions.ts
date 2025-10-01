@@ -5,7 +5,7 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import type { Database } from "@/types/supabase-wrapper"
-import { createAdminClient } from "@/lib/supabase/server" // Import the admin client
+import { createAdminClient, createServerClient } from "@/lib/supabase/server" // Updated import
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -22,7 +22,7 @@ const profileSchema = z.object({
 
 export async function updateCurrentUserProfile(profileData: unknown) {
   console.log("updateCurrentUserProfile: Action started.");
-  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const supabase = await createServerClient(); // Await the client
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
   if (sessionError) {
@@ -65,7 +65,7 @@ export async function updateCurrentUserProfile(profileData: unknown) {
 
 export async function getCurrentUserProfile() {
   console.log("getCurrentUserProfile: Action started.");
-  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const supabase = await createServerClient(); // Await the client
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
   if (sessionError) {
@@ -95,7 +95,7 @@ export async function getCurrentUserProfile() {
 
 export async function getAllUserProfilesForAdmin() {
   console.log("getAllUserProfilesForAdmin: Action started.");
-  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const supabase = await createServerClient(); // Await the client
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
   if (sessionError || !session?.user?.id) {
@@ -173,7 +173,7 @@ export async function getAllUserProfilesForAdmin() {
 
 export async function createUserProfile(userId: string, email: string) {
   console.log("createUserProfile: Action started.");
-  const supabase = createServerActionClient<Database>({ cookies: () => cookies() });
+  const supabase = await createServerClient(); // Await the client
   
   // Check if profile already exists
   const { data: existingProfile } = await supabase
