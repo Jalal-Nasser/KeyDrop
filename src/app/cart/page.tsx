@@ -110,6 +110,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any; onUpdateQua
               fill 
               sizes="(max-width: 768px) 100vw, 280px"
               className="object-contain p-2 hover:scale-105 transition-transform duration-300"
+              unoptimized={true}
             />
             {isOnSale && (
               <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
