@@ -2,7 +2,6 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js"
 import { Database } from "@/types/supabase-fixed"
 
 let _supabase: SupabaseClient<Database> | null = null
-let _failedCreateCount = 0
 
 // Sync method to get public env on client
 function getClientEnv(): { url: string, key: string } {
@@ -26,11 +25,6 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   if (_supabase) return _supabase
   
   try {
-    if (_failedCreateCount > 2) {
-      console.warn("Too many failed Supabase client creation attempts - cannot initialize client.")
-      throw new Error("Supabase client initialization failed too many times.")
-    }
-
     const clientEnv = getClientEnv(); // This will throw if not in browser or env missing
     const supabaseUrl = clientEnv.url;
     const supabaseKey = clientEnv.key;
@@ -46,7 +40,6 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
     return _supabase
   } catch (e: any) {
     console.error("Error creating Supabase client:", e)
-    _failedCreateCount++
     
     // Return a dummy client to prevent further errors in client-side code
     const dummyClient: any = { 

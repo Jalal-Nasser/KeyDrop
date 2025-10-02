@@ -1,5 +1,5 @@
 'use client';
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import dynamicImport from 'next/dynamic';
@@ -29,12 +29,10 @@ export default function RootLayout({
   const gaMeasurementId = 'G-BNKL9RH1XV'; // Your Google Analytics 4 Measurement ID
 
   // Ensure environment variables are always strings for consistent injection
-  // Removed hardcoded fallback for supabaseAnonKey
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-  // Removed facebookPixelId variable
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -56,7 +54,6 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
         <meta name="theme-color" content="#000000" />
         <meta name="facebook-domain-verification" content="8j5x9d3y7z2v1c4r6t8b0n9m2l3p5o7i" />
-        {/* Removed Facebook Pixel Code */}
       </head>
 
       <body className={inter.className}>
@@ -69,7 +66,6 @@ export default function RootLayout({
               NEXT_PUBLIC_SUPABASE_ANON_KEY: "${supabaseAnonKey}",
               NEXT_PUBLIC_TURNSTILE_SITE_KEY: "${turnstileSiteKey}",
               NEXT_PUBLIC_BASE_URL: "${baseUrl}"
-              // Removed NEXT_PUBLIC_FACEBOOK_PIXEL_ID
             };
           `}
         </Script>
@@ -97,7 +93,7 @@ export default function RootLayout({
               <HashAuthRedirect />
               <CartProvider>
                 <WishlistProvider>
-                  <Header className="print:hidden" key="main-header" /> {/* Added key prop */}
+                  <Header className="print:hidden" key="main-header" />
                   <main className="flex-grow pb-[60px]">{children}</main>
                   <Footer />
                   <MobileNavBar className="print:hidden" />
