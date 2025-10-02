@@ -25,7 +25,7 @@ interface Order {
 type Timeframe = "daily" | "monthly" | "yearly"
 
 export function IncomeChart() {
-  const { supabase } = useSession()
+  const { supabase } = useSession() // Get supabase from context
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -55,7 +55,7 @@ export function IncomeChart() {
     }
 
     fetchOrders()
-  }, [supabase])
+  }, [supabase]) // Add supabase to dependencies
 
   const aggregateData = (data: Order[], timeframe: Timeframe) => {
     const aggregated: { [key: string]: number } = {}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "@/context/session-context"
-import { getSupabaseBrowserClient } from "@/integrations/supabase/client"
+import { supabase as browserSupabaseClient } from "@/lib/supabaseClient" // Import the new centralized client
 import { createDirectSupabaseClient } from "@/lib/supabase-safe-client"
 import { getPublicEnv } from "@/lib/public-env"
 
@@ -24,7 +24,7 @@ export default function DebugPage() {
     const env = getPublicEnv(); // Call directly, it's synchronous
     setPublicEnv(env);
     
-    // Create direct client
+    // Create direct client (this is a special debug client, keep as is)
     try {
       const direct = createDirectSupabaseClient()
       setDirectClientStatus({
@@ -44,16 +44,15 @@ export default function DebugPage() {
       setDirectClientStatus({ error: (e as Error).message })
     }
     
-    // Create legacy client
+    // Use the new centralized browser client
     try {
-      const legacy = getSupabaseBrowserClient()
-      setLegacyClientStatus({
-        initialized: !!legacy,
+      setLegacyClientStatus({ // Renaming this to reflect it's now the standard browser client
+        initialized: !!browserSupabaseClient,
         status: "Initialized successfully",
       })
       
       // Test health
-      legacy?.functions.invoke('healthcheck')
+      browserSupabaseClient?.functions.invoke('healthcheck')
         .then((result: any) => {
           setHealthcheck(prev => ({...prev, legacy: result}))
         })
@@ -64,7 +63,7 @@ export default function DebugPage() {
       setLegacyClientStatus({ error: (e as Error).message })
     }
     
-    // Test session client
+    // Test session client (which is also the centralized browser client)
     if (supabase) {
       supabase?.functions.invoke('healthcheck')
         .then((result: any) => {
@@ -94,7 +93,7 @@ export default function DebugPage() {
         </div>
         
         <div className="bg-card p-4 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-2">Direct Client</h2>
+          <h2 className="text-xl font-semibold mb-2">Direct Client (Debug)</h2>
           <div className="space-y-2">
             <p><strong>Status:</strong> {directClientStatus ? 'Created' : 'Not created'}</p>
             <p><strong>Details:</strong> {directClientStatus ? JSON.stringify(directClientStatus, null, 2) : 'N/A'}</p>
@@ -104,7 +103,7 @@ export default function DebugPage() {
         </div>
         
         <div className="bg-card p-4 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-2">Legacy Client</h2>
+          <h2 className="text-xl font-semibold mb-2">Standard Browser Client</h2>
           <div className="space-y-2">
             <p><strong>Status:</strong> {legacyClientStatus ? 'Created' : 'Not created'}</p>
             <p><strong>Details:</strong> {legacyClientStatus ? JSON.stringify(legacyClientStatus, null, 2) : 'N/A'}</p>

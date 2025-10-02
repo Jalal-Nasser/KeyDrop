@@ -7,7 +7,7 @@ import { useSession } from "@/context/session-context"
 import Link from "next/link"
 
 export function InvoiceActions() {
-  const { session, supabase } = useSession()
+  const { session, supabase } = useSession() // Get supabase from context
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function InvoiceActions() {
       }
     }
     checkAdminStatus()
-  }, [session, supabase])
+  }, [session, supabase]) // Add supabase to dependencies
 
   const handlePrint = () => {
     window.print()

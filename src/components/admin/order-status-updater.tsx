@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { updateOrderStatus } from "@/app/admin/orders/actions"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { useSession } from "@/context/session-context" // Import useSession
 
 interface OrderStatusUpdaterProps {
   orderId: string
@@ -14,9 +15,12 @@ interface OrderStatusUpdaterProps {
 export function OrderStatusUpdater({ orderId, currentStatus }: OrderStatusUpdaterProps) {
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState(currentStatus)
+  const { supabase } = useSession() // Get supabase from context
 
   const handleStatusChange = (newStatus: string) => {
     startTransition(async () => {
+      // This action is a server action, so it doesn't directly use the client-side supabase instance.
+      // The server action itself will create a server client.
       const result = await updateOrderStatus(orderId, newStatus)
       if (result.success) {
         toast.success(result.message)

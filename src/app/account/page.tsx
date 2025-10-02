@@ -6,12 +6,11 @@ import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { ProfileForm } from "@/components/profile-form" // Import the new ProfileForm
-import { getCurrentUserProfile } from "@/app/account/actions" // Import getCurrentUserProfile
+import { ProfileForm } from "@/components/profile-form"
+import { getCurrentUserProfile } from "@/app/account/actions"
 import { Loader2 } from "lucide-react"
 import { z } from "zod"
-import { Tables } from "@/types/supabase" // Import Tables
+import { Tables } from "@/types/supabase"
 
 type Profile = Tables<'profiles'>;
 
@@ -30,12 +29,11 @@ const profileSchema = z.object({
 });
 
 export default function AccountPage() {
-  const { session } = useSession()
+  const { session, supabase } = useSession() // Get supabase from context
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
-  const supabase = createClientComponentClient()
 
   const fetchProfile = async () => {
     if (!session?.user?.id) {
@@ -50,16 +48,19 @@ export default function AccountPage() {
       setUserProfile(profileData);
     }
 
-    const { data: adminProfile, error: adminError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .single();
-    
-    if (!adminError && adminProfile?.is_admin) {
-      setIsAdmin(true);
-    } else if (adminError) {
-      console.error("Error fetching admin status:", adminError);
+    // Use the supabase client from context
+    if (supabase) {
+      const { data: adminProfile, error: adminError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (!adminError && adminProfile?.is_admin) {
+        setIsAdmin(true);
+      } else if (adminError) {
+        console.error("Error fetching admin status:", adminError);
+      }
     }
     setLoading(false);
   };
@@ -70,7 +71,7 @@ export default function AccountPage() {
     } else {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, supabase]); // Add supabase to dependencies
 
   const handleProfileUpdated = () => {
     // Re-fetch profile to update the displayed data and re-evaluate completeness

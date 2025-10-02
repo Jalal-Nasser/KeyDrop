@@ -33,7 +33,7 @@ function isAllowedEmail(email: string) {
   return allowedDomains.includes(domain);
 }
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
-  const { supabase, session } = useSession()
+  const { supabase, session } = useSession() // Get supabase from context
   const [emailError, setEmailError] = useState<string | null>(null)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
 

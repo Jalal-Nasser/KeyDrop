@@ -1,8 +1,6 @@
 "use client";
 
-import { getSupabaseBrowserClient } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 
-// Create a single supabase client for the browser
-const supabase = getSupabaseBrowserClient();
-
+// Re-export the single supabase client for the browser
 export default supabase;

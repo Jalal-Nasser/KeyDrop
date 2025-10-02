@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CountrySelect } from "@/components/country-select"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/account/actions"
 import { Tables } from "@/types/supabase"
+import { useSession } from "@/context/session-context" // Import useSession
 
 // Define the schema for profile validation
 const profileSchema = z.object({
@@ -46,6 +47,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { supabase } = useSession(); // Get supabase from context
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),

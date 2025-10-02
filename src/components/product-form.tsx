@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Product } from "@/types/product"
 import { createProduct, updateProduct, deleteProduct } from "@/app/admin/products/actions"
 import { toast } from "sonner"
-import { RichTextEditor } from "./rich-text-editor"
+import { RichTextEditor } from "@/components/admin/rich-text-editor" // Corrected import path
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSession } from "@/context/session-context" // Import useSession
 import { v4 as uuidv4 } from 'uuid';

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import supabase from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useSession } from '@/context/session-context'; // Import useSession
 
 type UserProfile = {
   id: string;
@@ -18,6 +18,7 @@ type UserProfile = {
 
 export default function UserDiscountsPage() {
   const router = useRouter();
+  const { supabase } = useSession(); // Get supabase from context
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,14 +29,21 @@ export default function UserDiscountsPage() {
         setIsLoading(true);
         setError(null);
         
-        const response = await fetch('/api/admin/users');
-        const data = await response.json();
+        if (!supabase) {
+          throw new Error("Supabase client not initialized.");
+        }
+
+        // Fetch profiles directly using the client from context
+        const { data, error: fetchError } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email, created_at")
+          .order("created_at", { ascending: false });
         
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch users');
+        if (fetchError) {
+          throw new Error(fetchError.message || 'Failed to fetch users');
         }
         
-        setUserProfiles(data.users || []);
+        setUserProfiles(data || []);
       } catch (error) {
         console.error('Error fetching users:', error);
         setError(error instanceof Error ? error.message : 'Failed to load users');
@@ -45,7 +53,7 @@ export default function UserDiscountsPage() {
     };
 
     fetchUsers();
-  }, []);
+  }, [supabase]); // Add supabase to dependencies
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,6 +62,8 @@ export default function UserDiscountsPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
+      // This action is a server action, so it doesn't directly use the client-side supabase instance.
+      // The server action itself will create a server client.
       const response = await fetch('/api/admin/apply-discount', {
         method: 'POST',
         body: formData,

@@ -1,12 +1,12 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Database, Json } from "@/types/supabase-fixed"; // Import Json
+import { useSession } from "@/context/session-context"; // Import useSession
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'] & {
   product_name: string;
@@ -40,7 +40,7 @@ export default function InvoicePage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient<Database>();
+  const { supabase } = useSession(); // Get supabase from context
   const params = useParams();
   const router = useRouter();
   
@@ -49,6 +49,11 @@ export default function InvoicePage() {
 
   useEffect(() => {
     const fetchOrder = async () => {
+      if (!supabase) {
+        setError("Supabase client not initialized.");
+        setLoading(false);
+        return;
+      }
       try {
         const { data, error } = await supabase
           .from('orders')
@@ -95,7 +100,7 @@ export default function InvoicePage() {
     };
 
     fetchOrder();
-  }, [params.id, supabase]);
+  }, [params.id, supabase]); // Add supabase to dependencies
 
   if (loading) {
     return (

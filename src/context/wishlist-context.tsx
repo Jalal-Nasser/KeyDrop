@@ -25,7 +25,7 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const { session, supabase, isLoading: isLoadingSession } = useSession()
+  const { session, supabase, isLoading: isLoadingSession } = useSession() // Get supabase from context
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(true)
 
@@ -66,7 +66,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
 
     fetchWishlist()
-  }, [session, supabase, isLoadingSession])
+  }, [session, supabase, isLoadingSession]) // Add supabase to dependencies
 
   const addToWishlist = async (product: Product) => {
     if (!session) {

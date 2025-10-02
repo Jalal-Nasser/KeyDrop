@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { fulfillOrderItem } from "@/app/admin/orders/actions"
 import { Loader2 } from "lucide-react"
+import { useSession } from "@/context/session-context" // Import useSession
 
 interface FulfillOrderItemDialogProps {
   orderItemId: string
@@ -27,6 +28,7 @@ export function FulfillOrderItemDialog({ orderItemId, productName, children }: F
   const [isOpen, setIsOpen] = useState(false)
   const [productKey, setProductKey] = useState("")
   const [isPending, startTransition] = useTransition()
+  const { supabase } = useSession() // Get supabase from context
 
   const handleSubmit = () => {
     if (!productKey.trim()) {
@@ -35,6 +37,8 @@ export function FulfillOrderItemDialog({ orderItemId, productName, children }: F
     }
 
     startTransition(async () => {
+      // This action is a server action, so it doesn't directly use the client-side supabase instance.
+      // The server action itself will create a server client.
       const result = await fulfillOrderItem(orderItemId, productKey.trim())
       if (result.success) {
         toast.success(result.message)

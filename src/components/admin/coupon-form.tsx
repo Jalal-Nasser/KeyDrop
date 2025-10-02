@@ -62,7 +62,7 @@ const couponSchema = z.object({
 type CouponFormValues = z.infer<typeof couponSchema>
 
 export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
-  const { supabase } = useSession()
+  const { supabase } = useSession() // Get supabase from context
   const [isOpen, setOpen] = useState(false)
   const [users, setUsers] = useState<{ id: string; first_name: string | null; last_name: string | null }[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
@@ -101,7 +101,7 @@ export function CouponForm({ coupon }: CouponFormProps): JSX.Element {
     };
 
     if (isOpen) loadUsers();
-  }, [isOpen, supabase]);
+  }, [isOpen, supabase]); // Add supabase to dependencies
 
   const onSubmit = async (values: CouponFormValues) => {
     console.log("CouponForm onSubmit triggered with values:", values); // New client-side log

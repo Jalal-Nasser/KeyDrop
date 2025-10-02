@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { 
   createContext, 
@@ -9,7 +9,7 @@ import React, {
   useRef
 } from "react"
 import type { Session, User, SupabaseClient } from "@supabase/supabase-js"
-import { getSupabaseBrowserClient } from "@/integrations/supabase/client" // Import the client getter
+import { supabase } from "@/lib/supabaseClient" // Import the new centralized client
 import { Database } from "@/types/supabase-fixed"
 
 type SessionContextType = {
@@ -17,7 +17,7 @@ type SessionContextType = {
   user: User | null
   isLoading: boolean
   signOut: () => Promise<void>
-  supabase: SupabaseClient<Database> | null // Allow null for initial state
+  supabase: SupabaseClient<Database> // Now directly providing the single instance
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
@@ -28,34 +28,17 @@ const DEFAULT_CONTEXT: Omit<SessionContextType, 'signOut' | 'supabase'> = {
   isLoading: true,
 }
 
-function useAuthSubscription() {
+export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState(DEFAULT_CONTEXT)
   const isMounted = useRef(true)
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null)
-  const [browserSupabase, setBrowserSupabase] = useState<SupabaseClient<Database> | null>(null);
 
   useEffect(() => {
     isMounted.current = true
     
-    // Initialize browserSupabase client on the client side
-    try {
-      const client = getSupabaseBrowserClient();
-      setBrowserSupabase(client);
-    } catch (e) {
-      console.error("Failed to initialize Supabase browser client in SessionContext:", e);
-      // If client initialization fails, ensure loading state is resolved
-      if (isMounted.current) {
-        setState(prev => ({ ...prev, isLoading: false }));
-      }
-      return; // Stop further execution if client is not available
-    }
-
-    // Only proceed if browserSupabase is successfully initialized
-    if (!browserSupabase) return;
-
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await browserSupabase.auth.getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
         if (error) throw error
         
         if (isMounted.current) {
@@ -73,7 +56,7 @@ function useAuthSubscription() {
       }
     }
 
-    const { data: { subscription } } = browserSupabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         requestAnimationFrame(() => {
           if (isMounted.current) {
@@ -95,30 +78,11 @@ function useAuthSubscription() {
       isMounted.current = false
       subscriptionRef.current?.unsubscribe()
     }
-  }, [browserSupabase]) // Dependency on browserSupabase to re-run effect when client is ready
-
-  return state
-}
-
-export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const { session, user, isLoading } = useAuthSubscription()
-  const [providerSupabaseClient, setProviderSupabaseClient] = useState<SupabaseClient<Database> | null>(null);
-
-  useEffect(() => {
-    try {
-      setProviderSupabaseClient(getSupabaseBrowserClient());
-    } catch (e) {
-      console.error("Failed to initialize Supabase client in SessionProvider:", e);
-    }
-  }, []);
+  }, []) // No dependencies needed here, as `supabase` is a stable import
 
   const signOutRef = useRef<SessionContextType['signOut']>(async () => {
-    if (!providerSupabaseClient) {
-      console.error("Supabase client not available for signOut.");
-      throw new Error("Supabase client not available.");
-    }
     try {
-      const { error } = await providerSupabaseClient.auth.signOut()
+      const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {
       console.error('Error signing out:', error)
@@ -128,13 +92,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const contextValue = useMemo<SessionContextType>(
     () => ({
-      session,
-      user,
-      isLoading,
+      session: state.session,
+      user: state.user,
+      isLoading: state.isLoading,
       signOut: signOutRef.current,
-      supabase: providerSupabaseClient, // Provide the supabase client here
+      supabase: supabase, // Directly provide the imported supabase client
     }),
-    [session, user, isLoading, providerSupabaseClient]
+    [state.session, state.user, state.isLoading]
   )
 
   return (

@@ -10,7 +10,7 @@ export default function WeeklyProducts({ title }: { title: string }) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = useSupabase()
+  const supabase = useSupabase() // Use the centralized Supabase client
 
   useEffect(() => {
     const fetchProducts = async () => {

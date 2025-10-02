@@ -93,7 +93,7 @@ const Stepper = ({ step }: { step: number }) => {
 export default function CheckoutPage() {
   const router = useRouter()
   const { cartItems, cartTotal, cartCount } = useCart()
-  const { session } = useSession()
+  const { session } = useSession() // Get session from context
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<ClientProfileOption[]>([])
