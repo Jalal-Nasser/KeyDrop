@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient"; // Import the new centralized client
+import { supabase } from "@/app/lib/supabase-browser"; // Import the new centralized client
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase-fixed";
 
