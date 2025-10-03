@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js'; // Keep for admin client
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase-fixed';
@@ -15,9 +15,9 @@ let adminClient: ReturnType<typeof createClient<Database>> | null = null;
  */
 export async function createSupabaseServerClientComponent() {
   // Always create a new client for each request to ensure fresh cookies
-  // This is the recommended pattern for `createServerComponentClient`
-  return createServerComponentClient<Database>({ 
-    cookies: () => cookies() 
+  // This is the recommended pattern for `createServerActionClient`
+  return createServerActionClient<Database>({
+    cookies: () => cookies()
   });
 }
 

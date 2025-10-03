@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent, createAdminClient, getSession } from "@/lib/supabase/server" // Updated import
 import { sendOrderConfirmation } from "@/lib/email-actions"
 import { CartItem } from "@/types/cart"
 import { createClient } from '@supabase/supabase-js'
@@ -19,10 +19,25 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
 
   console.log('createWalletOrder: Attempting to create order for targetUserId:', targetUserId); // Added log
 
+  // Get current user session
+  const session = await getSession();
+  if (!session || !session.user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .single()
+
+  const isAdmin = profile?.is_admin || false
+  const dbClient = isAdmin ? await createAdminClient() : supabase
+
   try {
     // Recalculate totals from DB to ensure sale pricing and integrity
     const productIds = cartItems.map(i => i.id)
-    const { data: products, error: productsError } = await supabase
+    const { data: products, error: productsError } = await dbClient
       .from('products')
       .select('id, name, price, is_on_sale, sale_price, image')
       .in('id', productIds)
@@ -56,7 +71,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     const finalTotal = recalculatedSubtotal + processingFee
 
     // 1. Create the order for the target user with 'pending' status
-    const { data: orderData, error: orderError } = await supabase
+    const { data: orderData, error: orderError } = await dbClient
       .from("orders")
       .insert({
         user_id: targetUserId,
@@ -64,7 +79,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
         status: "pending", // Changed from "completed"
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,
-      }) // Removed explicit cast, now types should align
+      } as TablesInsert<'orders'>) // Removed explicit cast, now types should align
       .select()
       .single()
 
@@ -82,7 +97,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
       line_total: oi.line_total,
     })) // Removed explicit cast, now types should align
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await dbClient
       .from("order_items")
       .insert(orderItemsPrepared)
 
@@ -93,14 +108,14 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(targetUserId)
+    const { data: { user: targetUser }, error: targetUserError } = await supabaseAdmin.auth.admin.getUserById(targetUserId)
 
-    if (userError || !user || !user.email) {
-      throw new Error(`Failed to fetch user email for user ${targetUserId}: ${userError?.message}`)
+    if (targetUserError || !targetUser || !targetUser.email) {
+      throw new Error(`Failed to fetch user email for user ${targetUserId}: ${targetUserError?.message}`)
     }
 
     // 4. Send confirmation email to the client
-    await sendOrderConfirmation({ orderId: orderId, userEmail: user.email })
+    await sendOrderConfirmation({ orderId: orderId, userEmail: targetUser.email })
     
     // 5. Send Discord notification via Edge Function
     const { data: discordData, error: discordError } = await supabaseAdmin.functions.invoke('discord-order-notification', {
@@ -108,7 +123,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
         notificationType: 'new_order',
         orderId: orderId,
         cartTotal: cartTotal,
-        userEmail: user.email,
+        userEmail: targetUser.email,
         cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity, image: item.image })) // Include product image
       }
     })
@@ -121,22 +136,22 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     }
 
     // 6. Fetch profile for customer's real name (if available)
-    const { data: profile } = await supabase
+    const { data: targetProfile } = await supabase
       .from('profiles')
       .select('first_name, last_name')
       .eq('id', targetUserId)
       .maybeSingle()
 
-    const customerName = profile ? [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() || null : null
+    const customerName = targetProfile ? [targetProfile.first_name, targetProfile.last_name].filter(Boolean).join(' ').trim() || null : null
 
     // 7. Notify admin on WhatsApp (best-effort; non-blocking)
     const firstItem = cartItems[0];
     notifyAdminNewOrder({
       orderId,
       total: finalTotal,
-      userEmail: user.email,
+      userEmail: targetUser.email,
       channel: 'wallet',
-      customerName: customerName ?? ((user as any)?.user_metadata?.full_name as string | undefined) ?? user.email ?? undefined,
+      customerName: customerName ?? ((targetUser as any)?.user_metadata?.full_name as string | undefined) ?? targetUser.email ?? undefined,
       productName: firstItem?.name ?? undefined,
       productImage: firstItem?.image ?? undefined
     }).catch(err => console.error('Admin WhatsApp notification failed:', err))

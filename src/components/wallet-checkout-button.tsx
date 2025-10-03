@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
+import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Loader2, Wallet } from "lucide-react"
@@ -19,6 +20,7 @@ interface WalletCheckoutButtonProps {
 export function WalletCheckoutButton({ cartItems, cartTotal, targetUserId, isFormValid }: WalletCheckoutButtonProps) {
   const router = useRouter()
   const { clearCart } = useCart()
+  const { session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleWalletCheckout = async () => {
@@ -26,11 +28,13 @@ export function WalletCheckoutButton({ cartItems, cartTotal, targetUserId, isFor
       toast.error("You must agree to the terms and conditions to proceed.");
       return;
     }
-    
+
     if (!targetUserId) {
       toast.error("A target user must be selected for this transaction.")
       return
     }
+
+    console.log("Wallet checkout: session?.user?.id:", session?.user?.id)
 
     setIsLoading(true)
     const toastId = toast.loading("Processing wallet order...")
