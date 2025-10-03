@@ -36,10 +36,9 @@ export function Header({ className }: { className?: string }) {
 
   // Conditionally add "Account" or "Login" link
   const navLinks = [...baseNavLinks];
+  // The "Login" link is now handled by a button that opens AuthDialog, so it's removed from navLinks
   if (session) {
     navLinks.push({ href: "/account", label: "Account" });
-  } else {
-    navLinks.push({ href: "/login", label: "Login" });
   }
 
   const handleMouseEnter = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -222,6 +221,18 @@ export function Header({ className }: { className?: string }) {
                   {link.label}
                 </Link>
               ))}
+              {/* Add Sign In button for mobile menu if not authenticated */}
+              {!session && (
+                <button
+                  onClick={() => {
+                    setIsAuthSheetOpen(true);
+                    setIsMenuOpen(false); // Close mobile menu when opening auth dialog
+                  }}
+                  className="block w-full text-left px-3 py-2 text-white font-medium rounded hover:bg-[#28a745]"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         )}
