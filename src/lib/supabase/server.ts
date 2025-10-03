@@ -83,9 +83,14 @@ export const getCurrentUser = async (cookieStore?: ReturnType<typeof cookies>) =
 };
 
 export const getCurrentUserProfile = async (cookieStore?: ReturnType<typeof cookies>) => {
+  console.log('getCurrentUserProfile: Attempting to fetch user and profile...');
   try {
     const user = await getCurrentUser(cookieStore);
-    if (!user) return { data: null, error: 'User not authenticated' };
+    if (!user) {
+      console.log('getCurrentUserProfile: User not authenticated.');
+      return { data: null, error: 'User not authenticated' };
+    }
+    console.log('getCurrentUserProfile: User authenticated, ID:', user.id, 'Email:', user.email);
     
     const supabase = await createSupabaseServerClientComponent(); // Use the consistent client
     const { data: profile, error } = await supabase
@@ -96,6 +101,7 @@ export const getCurrentUserProfile = async (cookieStore?: ReturnType<typeof cook
 
     if (error) {
       if (error.code === 'PGRST116') { // No rows returned
+        console.log('getCurrentUserProfile: No profile found for user, attempting to create one.');
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert([
@@ -109,20 +115,20 @@ export const getCurrentUserProfile = async (cookieStore?: ReturnType<typeof cook
           .single();
 
         if (createError) {
-          console.error('Error creating profile:', createError);
+          console.error('getCurrentUserProfile: Error creating profile:', createError);
           return { data: null, error: 'Failed to create profile' };
         }
-        
+        console.log('getCurrentUserProfile: New profile created:', newProfile);
         return { data: newProfile, error: null };
       }
       
-      console.error('Error fetching profile:', error);
+      console.error('getCurrentUserProfile: Error fetching profile:', error);
       return { data: null, error: error.message };
     }
-    
+    console.log('getCurrentUserProfile: Profile fetched successfully:', profile);
     return { data: profile, error: null };
   } catch (error) {
-    console.error('Error in getCurrentUserProfile:', error);
+    console.error('getCurrentUserProfile: Unexpected error:', error);
     return { 
       data: null, 
       error: error instanceof Error ? error.message : 'An unexpected error occurred'

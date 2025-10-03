@@ -11,28 +11,10 @@ const createSupabaseClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // Removed custom 'cookies' object to let createBrowserClient handle it by default
   return createBrowserClient<Database>(
     supabaseUrl,
-    supabaseKey,
-    {
-      cookies: {
-        getAll() {
-          if (typeof document === 'undefined') return [];
-          return document.cookie.split('; ').map(cookie => {
-            const [name, ...value] = cookie.split('=');
-            return { name, value: value.join('=') };
-          });
-        },
-        setAll(cookiesToSet) {
-          if (typeof document === 'undefined') return;
-          cookiesToSet.forEach(({ name, value, options }) => {
-            document.cookie = `${name}=${value}; ${Object.entries(options || {})
-              .map(([key, val]) => `${key}=${val}`)
-              .join('; ')}`;
-          });
-        },
-      },
-    }
+    supabaseKey
   );
 };
 
