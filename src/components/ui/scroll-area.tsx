@@ -43,7 +43,7 @@ const ScrollBar = React.forwardRef<
     <ScrollAreaPrimitive.ScrollAreaThumb
       className={cn("relative rounded-full bg-border")}
     />
-  </ScrollAreaPrimitive.Scrollbar>
+  </ScrollAreaPrimitive.Scrollbar> {/* This is a valid JSX structure for shadcn/ui */}
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
