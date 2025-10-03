@@ -1,14 +1,14 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/types/supabase-wrapper';
 
 // Type for our singleton
-let supabaseInstance: SupabaseClient<Database> | null = null;
+let supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
 
 /**
  * Get or create the Supabase client instance
  * This ensures we only have one instance throughout the app
  */
-export function getSupabaseClient(): SupabaseClient<Database> {
+export function getSupabaseClient() {
   if (supabaseInstance) {
     return supabaseInstance;
   }
@@ -22,13 +22,17 @@ export function getSupabaseClient(): SupabaseClient<Database> {
     );
   }
 
-  supabaseInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-    },
-  });
+  supabaseInstance = createBrowserClient<Database>(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+      },
+    }
+  );
 
   return supabaseInstance;
 }

@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from "next/headers" // Import cookies
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs" // Import createServerActionClient
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Import createSupabaseServerClientComponent
 import { createAdminClient } from "@/lib/supabase/server" // Keep for admin client
 import { sendOrderConfirmation } from "@/lib/email-actions"
 import { CartItem } from "@/types/cart"
@@ -18,7 +18,7 @@ interface CreateWalletOrderPayload {
 
 export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: CreateWalletOrderPayload) {
   // Directly initialize Supabase client for this server action
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createSupabaseServerClientComponent();
 
   // Debug cookies
   console.log("=== Incoming cookies ===", cookies().getAll());
@@ -65,7 +65,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     // Compute subtotal using sale pricing when applicable
     let recalculatedSubtotal = 0
     const orderItemsToInsert = cartItems.map(item => {
-      const product = products.find(p => p.id === item.id)!
+      const product = products.find((p: any) => p.id === item.id)!
       const unitPrice = product.is_on_sale && product.sale_price != null ? product.sale_price : product.price
       const lineTotal = unitPrice * item.quantity
       recalculatedSubtotal += lineTotal

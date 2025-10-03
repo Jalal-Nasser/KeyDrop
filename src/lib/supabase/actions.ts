@@ -1,8 +1,7 @@
 'use server'
 
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createSupabaseServerClientComponent } from './server'
 
 export async function createClient() {
-  return createServerComponentClient({ cookies })
+  return createSupabaseServerClientComponent()
 }

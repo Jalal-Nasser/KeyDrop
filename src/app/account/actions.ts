@@ -1,14 +1,14 @@
 "use server"
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { z } from "zod"
 import { revalidatePath } from 'next/cache'
-import { 
+import {
   getCurrentUserProfile as getServerUserProfile,
   updateProfile as updateServerProfile,
-  getAllUserProfilesForAdmin as getServerAllUserProfilesForAdmin
-} from '@/lib/supabase-server'
+  getAllUserProfilesForAdmin as getServerAllUserProfilesForAdmin,
+  createSupabaseServerClientComponent
+} from '@/lib/supabase/server'
 
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required"),
@@ -73,7 +73,7 @@ export async function getAllUserProfilesForAdmin() {
 
 export async function createUserProfile(userId: string, email: string) {
   console.log("createUserProfile: Action started.");
-  const supabase = await createServerActionClient({ cookies }); // Await the client
+  const supabase = await createSupabaseServerClientComponent(); // Await the client
   
   // Check if profile already exists
   const { data: existingProfile } = await supabase

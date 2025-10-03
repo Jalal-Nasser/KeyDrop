@@ -19,7 +19,8 @@ async function testVonageConnection() {
     // Test getting account balance
     const balance = await vonage.accounts.getBalance();
     console.log('✅ Vonage connection successful!');
-    console.log('Account balance:', balance.value, balance.currency);
+    // Access the balance value directly from the response
+    console.log('Account balance:', balance);
     
     // Test getting application details if applicationId is provided
     if (process.env.VONAGE_APPLICATION_ID) {

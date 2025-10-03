@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js'; // Keep for admin client
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase-fixed';
@@ -11,14 +11,27 @@ let adminClient: ReturnType<typeof createClient<Database>> | null = null;
 /**
  * Get or create a server-side Supabase client for the current request.
  * This is safe to use in Server Components, Server Actions, and Route Handlers.
- * It uses `createServerComponentClient` from `@supabase/auth-helpers-nextjs`.
  */
 export async function createSupabaseServerClientComponent() {
-  // Always create a new client for each request to ensure fresh cookies
-  // This is the recommended pattern for `createServerActionClient`
-  return createServerActionClient<Database>({
-    cookies: () => cookies()
-  });
+  const cookieStore = cookies();
+  
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: '', ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
 }
 
 /**
