@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
-import { useCart } from '@/hooks/useCart'
-import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/context/cart-context' // Corrected import path
+import { useAuth } from '@/components/auth/AuthProvider' // Corrected import path
 import { toast } from 'sonner'
 import { createWalletOrder } from '@/app/checkout/actions'
 import { useRouter } from 'next/navigation'
-import { supabase } from "@/lib/supabaseClient"; // Ensure this import is present
+import { supabase } from "@/integrations/supabase/client"; // Corrected import path
 
 interface WalletCheckoutButtonProps {
   planId?: string // Optional planId for subscription products

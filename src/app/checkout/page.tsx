@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { Loader2, ShieldCheck, Lock } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
-import { WalletCheckoutButton } from "@/components/wallet-checkout-button"
+import WalletCheckoutButton from "@/components/wallet-checkout-button" // Corrected to default import
 import { AuthDialog } from "@/components/auth-dialog"
 import { CountdownTimer } from "@/components/countdown-timer"
 import { Database, Tables } from "@/types/supabase"
