@@ -20,10 +20,14 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
   // Directly initialize Supabase client for this server action
   const supabase = createServerActionClient({ cookies });
 
+  // Debug cookies
+  console.log("=== Incoming cookies ===", cookies().getAll());
+
   console.log('createWalletOrder: Attempting to create order for targetUserId:', targetUserId); // Added log
 
   // Get current user from the session
   const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log("Supabase getUser:", { user, userError });
 
   console.log("=== Supabase auth.getUser debug ===");
   console.log("userError:", userError);
