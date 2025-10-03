@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { redirect } from "next/navigation"
 import {
   Card,
@@ -22,7 +22,7 @@ export type OrderWithDetails = Tables<'orders'> & { // Extend Tables<'orders'>
 }
 
 export default async function AdminOrdersPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {

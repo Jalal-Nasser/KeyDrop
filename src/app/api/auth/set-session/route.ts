@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing tokens' }, { status: 400 })
     }
 
-    const supabase = await createServerClient()
+    const supabase = await createSupabaseServerClientComponent()
     const { error } = await supabase.auth.setSession({ access_token, refresh_token })
     if (error) {
       console.error("API /api/auth/set-session: Error setting session:", error.message);

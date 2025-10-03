@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = await createServerClient() // Await the client
+    const supabase = await createSupabaseServerClientComponent() // Await the client
 
     // Check if profile already exists
     const { data: existingProfile } = await supabase

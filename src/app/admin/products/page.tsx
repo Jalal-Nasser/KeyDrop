@@ -9,11 +9,11 @@ import {
 import { ProductForm } from "@/components/admin/product-form"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import Image from "next/image" // Import Image
 
 export default async function ProductsPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
   const { data: products, error } = await supabase
     .from("products")
     .select("*")

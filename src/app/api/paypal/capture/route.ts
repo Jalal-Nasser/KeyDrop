@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server'; // Updated import
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'; // Updated import
 import { getPaypalClient } from '@/lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import { capturePayPalOrderSchema } from '@/lib/schemas';
@@ -11,7 +11,7 @@ import { TablesUpdate, Tables } from '@/types/supabase'; // Import TablesUpdate
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerClient(); // Await the client
+  const supabase = await createSupabaseServerClientComponent(); // Await the client
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

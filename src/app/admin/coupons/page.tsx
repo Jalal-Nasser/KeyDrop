@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { CouponForm } from "@/components/admin/coupon-form"
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Tables } from "@/types/supabase" // Import Tables type
@@ -15,7 +15,7 @@ import { Tables } from "@/types/supabase" // Import Tables type
 export const revalidate = 0 // Disable cache to always get fresh data
 
 export default async function AdminCouponsPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
   const { data: coupons, error } = await supabase
     .from("coupons")
     .select(`

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { toast } from 'sonner' // Import toast for client-side feedback
@@ -21,7 +21,7 @@ export async function generateCouponCode(formData: FormData) {
     return;
   }
 
-  const supabase = await createServerClient()
+  const supabase = await createSupabaseServerClientComponent()
   
   // Generate a random coupon code
   const code = generateRandomCode(8)

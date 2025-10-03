@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Corrected import path
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 
@@ -11,7 +11,7 @@ interface StoreNoticeData {
 }
 
 export async function getStoreNotice() {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createSupabaseServerClientComponent(); // Await the client
   const { data, error } = await supabase
     .from("store_notices")
     .select("*")
@@ -28,7 +28,7 @@ export async function getStoreNotice() {
 }
 
 export async function updateOrCreateStoreNotice(formData: StoreNoticeData) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = await createSupabaseServerClientComponent(); // Await the client
   let result;
 
   if (formData.id) {

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createServerClient();
+  const supabase = await createSupabaseServerClientComponent();
 
   // Check if user is authenticated and is admin
   const { data: { session } } = await supabase.auth.getSession();
@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createServerClient();
+  const supabase = await createSupabaseServerClientComponent();
 
   // Check if user is authenticated and is admin
   const { data: { session } } = await supabase.auth.getSession();

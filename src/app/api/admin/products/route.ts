@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server'; // Updated import
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'; // Updated import
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerClient(); // Await the client
+  const supabase = await createSupabaseServerClientComponent(); // Await the client
 
   // Check if user is authenticated and is admin
   const { data: { session } } = await supabase.auth.getSession();

@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server"
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import {
   Card,
@@ -29,7 +29,7 @@ interface Client {
 }
 
 export default async function AdminClientsPage() {
-  const supabase = await createServerClient()
+  const supabase = await createSupabaseServerClientComponent()
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
   if (!session) {

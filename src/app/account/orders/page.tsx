@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import {
@@ -39,7 +39,7 @@ type Order = {
 }
 
 export default async function AccountOrdersPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session) {

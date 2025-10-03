@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { TablesInsert, TablesUpdate } from '@/types/supabase' // Import TablesInsert and TablesUpdate
 import { v4 as uuidv4 } from 'uuid'; // Import uuid for generating codes
@@ -26,7 +26,7 @@ export async function applyUserDiscount(formData: FormData) {
     return { error: 'Percentage discount must be between 0 and 100' }
   }
 
-  const supabase = await createServerClient()
+  const supabase = await createSupabaseServerClientComponent()
   
   // Generate a unique code for user-specific discounts if not already present
   // This is a simplified approach; in a real app, you might check for existing codes
@@ -55,7 +55,7 @@ export async function applyUserDiscount(formData: FormData) {
 }
 
 export async function removeUserDiscount(userId: string) {
-  const supabase = await createServerClient()
+  const supabase = await createSupabaseServerClientComponent()
   
   const { error } = await supabase
     .from('coupons')

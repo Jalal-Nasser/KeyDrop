@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { DollarSign, Package, ShoppingCart, Users, Tag } from "lucide-react" // Import Tag icon
 import { format } from "date-fns"
 import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
 import { Tables } from "@/types/supabase" // Import Tables type
 
 export default async function AdminDashboardPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
 
   // Fetch product count
   const { count: productCount, error: productCountError } = await supabase

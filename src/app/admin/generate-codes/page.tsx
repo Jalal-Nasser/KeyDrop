@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,7 +8,7 @@ import { generateCouponCode } from "./actions"
 import { Tables } from "@/types/supabase" // Import Tables type
 
 export default async function GenerateCodesPage() {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {

@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'; // Updated import
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'; // Updated import
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'; // Added to force dynamic rendering
 
 export async function GET() {
   try {
-    const supabase = await createServerClient(); // Await the client
+    const supabase = await createSupabaseServerClientComponent(); // Await the client
     
     // Get the current user's session
     const { data: { session } } = await supabase.auth.getSession();

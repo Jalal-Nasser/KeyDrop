@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { createServerClient } from "@/lib/supabase/server" // Updated import
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
 import { AdminLayoutClient } from "@/components/admin/admin-layout-client" // Import the new client component
 import { Tables } from "@/types/supabase" // Import Tables type
 
@@ -10,7 +10,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createServerClient() // Await the client
+  const supabase = await createSupabaseServerClientComponent() // Await the client
 
   // 1. Check session and redirect if not authenticated
   const { data: { user }, error: sessionError } = await supabase.auth.getUser();

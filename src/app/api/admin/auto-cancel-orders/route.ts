@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendOrderStatusUpdate as sendOrderStatusUpdateEmail } from '@/lib/email-actions'
 import { Tables } from '@/types/supabase' // Import Tables type
@@ -16,7 +16,7 @@ type AutoCancelOrder = Tables<'orders'> & {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createServerClient()
+    const supabase = await createSupabaseServerClientComponent()
     
     // Get current time and calculate cutoff time
     const now = new Date()

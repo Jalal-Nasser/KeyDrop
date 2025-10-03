@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import {
@@ -19,7 +19,7 @@ export default async function ClientPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = await createServerClient()
+  const supabase = await createSupabaseServerClientComponent()
   
   // Verify admin status
   const { data: { session } } = await supabase.auth.getSession()
