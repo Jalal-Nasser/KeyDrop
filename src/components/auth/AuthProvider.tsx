@@ -3,7 +3,7 @@
 import { Session, User, AuthChangeEvent } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
-import { supabase } from '@/app/lib/supabase-browser'
+import { supabase } from '@/integrations/supabase/client' // Use the new centralized client
 
 type AuthContextType = {
   session: Session | null

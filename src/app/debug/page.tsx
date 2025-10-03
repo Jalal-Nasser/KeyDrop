@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "@/context/session-context"
-import { supabase as browserSupabaseClient } from "@/app/lib/supabase-browser" // Import the new centralized client
+import { supabase as browserSupabaseClient } from "@/integrations/supabase/client" // Import the new centralized client
 import { createDirectSupabaseClient } from "@/lib/supabase-safe-client"
 import { getPublicEnv } from "@/lib/public-env"
 

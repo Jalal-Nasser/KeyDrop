@@ -1,6 +1,7 @@
 'use client'
 
-import React, { 
+import React, 
+{ 
   createContext, 
   useContext, 
   useState, 
@@ -9,7 +10,7 @@ import React, {
   useRef
 } from "react"
 import type { Session, User, SupabaseClient, AuthChangeEvent } from "@supabase/supabase-js"
-import { supabase } from "@/app/lib/supabase-browser" // Use the same client as AuthProvider
+import { supabase } from "@/integrations/supabase/client" // Use the new centralized client
 import { Database } from "@/types/supabase-fixed"
 
 type SessionContextType = {
