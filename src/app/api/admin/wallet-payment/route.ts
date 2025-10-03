@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
+import { sendOrderConfirmation } from '@/lib/email-actions';
+import { createClient } from '@supabase/supabase-js';
+import { notifyAdminNewOrder } from '@/lib/whatsapp';
+import { Tables } from '@/types/supabase'; // Import Tables for base types
+
+// Define types for the specific query result
+type ProductDetailsForNotification = Pick<Tables<'products'>, 'name' | 'image'>;
+
+type OrderItemDetailsForNotification = Pick<Tables<'order_items'>, 'product_name'> & {
+  products: ProductDetailsForNotification[] | null; // This is the crucial part: it's an array
+};
+
+type OrderDetailsForNotification = Pick<Tables<'orders'>, 'total' | 'user_id'> & {
+  order_items: OrderItemDetailsForNotification[];
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,18 +46,131 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Start a database transaction
-    const { data: orderData, error: orderError } = await supabase.rpc('process_wallet_payment', {
-      p_order_id: orderId,
-      p_admin_id: user.id,
-      p_client_id: clientId || null,
-      p_amount: amount,
-      p_current_balance: profile.wallet_balance || 0 // Added nullish coalescing operator
-    });
+    // Process wallet payment directly
+    const newBalance = (profile.wallet_balance || 0) - amount;
+    
+    // Update admin's wallet balance
+    const { error: balanceError } = await supabase
+      .from('profiles')
+      .update({ wallet_balance: newBalance })
+      .eq('id', user.id);
+
+    if (balanceError) {
+      console.error('Error updating wallet balance:', balanceError);
+      throw balanceError;
+    }
+
+    // Update order status to completed
+    const { error: orderStatusError } = await supabase
+      .from('orders')
+      .update({
+        status: 'completed',
+        payment_gateway: 'admin_wallet',
+        payment_id: `admin_wallet_${Date.now()}`
+      })
+      .eq('id', orderId);
+
+    if (orderStatusError) {
+      console.error('Error updating order status:', orderStatusError);
+      throw orderStatusError;
+    }
+
+    // Get order details for notifications
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('total, user_id, order_items(product_name, products(name, image))')
+      .eq('id', orderId)
+      .single() as { data: OrderDetailsForNotification | null, error: any }; // Explicitly cast here
 
     if (orderError) {
-      console.error('Wallet payment transaction error:', orderError);
-      throw orderError;
+      console.error('Error fetching order details for notifications:', orderError);
+      // Continue without notifications rather than failing the payment
+    } else if (order) { // Only proceed if order is not null
+      // Get client's email for notifications
+      let clientEmail = user.email!; // Default to admin email
+      if (clientId && clientId !== user.id) {
+        try {
+          const { data: clientProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', clientId)
+            .single();
+          
+          if (clientProfile) {
+            // Get the client's auth email
+            const supabaseAdmin = createClient(
+              (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+            
+            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(clientId);
+            if (authUser?.user?.email) {
+              clientEmail = authUser.user.email;
+            }
+          }
+        } catch (clientError) {
+          console.error('Error fetching client email:', clientError);
+        }
+      }
+
+      // Send email confirmation to client
+      try {
+        await sendOrderConfirmation({ orderId, userEmail: clientEmail });
+      } catch (emailError) {
+        console.error('Failed to send order confirmation email:', emailError);
+      }
+
+      // Send Discord notification for new order
+      try {
+        const supabaseAdmin = createClient(
+          (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        
+        // Determine the product image/name for the notification (use first available)
+        const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
+        const firstProductName = (order.order_items.find(item => item.product_name)?.product_name)
+          || (order.order_items.find(item => item.products?.[0]?.name)?.products?.[0]?.name)
+          || null;
+
+        await supabaseAdmin.functions.invoke('discord-order-notification', {
+          body: {
+            notificationType: 'new_order',
+            orderId: orderId,
+            cartTotal: order.total,
+            userEmail: clientEmail,
+            productImage: firstProductImage
+          }
+        });
+      } catch (discordError) {
+        console.error("Discord notification for new order failed:", discordError);
+      }
+
+      // WhatsApp admin notification
+      try {
+        let customerName: string | undefined;
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profile) {
+            const fn = [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim();
+            if (fn) customerName = fn;
+          }
+        } catch (_) { /* ignore */ }
+
+        await notifyAdminNewOrder({
+          orderId: orderId,
+          total: order.total,
+          userEmail: clientEmail,
+          channel: 'admin_wallet',
+          customerName: customerName ?? ((user as any)?.user_metadata?.full_name as string | undefined) ?? clientEmail ?? undefined,
+        });
+      } catch (whatsappError) {
+        console.error("WhatsApp notification failed:", whatsappError);
+      }
     }
 
     return NextResponse.json({ success: true });

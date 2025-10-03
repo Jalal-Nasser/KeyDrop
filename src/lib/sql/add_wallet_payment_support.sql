@@ -55,6 +55,7 @@ BEGIN
   UPDATE public.orders
   SET 
     status = 'completed',
+    payment_gateway = 'admin_wallet',
     payment_method = 'admin_wallet',
     purchased_for_user_id = NULLIF(p_client_id, '')::UUID,
     updated_at = NOW()

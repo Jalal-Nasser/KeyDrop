@@ -6,12 +6,11 @@ import { toast } from "sonner"
 import { supabase as browserSupabase } from "@/integrations/supabase/client" // Renamed imported supabase
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import { CartItem } from "@/types/cart"
-import { createWalletOrder } from "@/app/checkout/actions"
 import { Tables } from "@/types/supabase"
+import { useCart } from "@/context/cart-context"
 
 interface CheckoutPaymentSectionProps {
   orderId: string // This is the ID of the order created in the DB
@@ -40,7 +39,8 @@ export function CheckoutPaymentSection({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number>(0)
   const [isLoadingWallet, setIsLoadingWallet] = useState(true)
-  const [fundAmount, setFundAmount] = useState<string>('') // For adding funds
+  const { cartItems } = useCart() // Get cart items from context
+  const [paypalOrderId, setPaypalOrderId] = useState<string>("") // Store PayPal order ID
 
   const isAdmin = profile?.is_admin || false
   const currentUserId = profile?.id
@@ -52,18 +52,40 @@ export function CheckoutPaymentSection({
         return;
       }
       setIsLoadingWallet(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('wallet_balance')
-        .eq('id', currentUserId)
-        .single();
+      
+      // For admin users, ensure they have at least $150 balance
+      if (isAdmin) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('wallet_balance')
+          .eq('id', currentUserId)
+          .single();
 
-      if (error) {
-        console.error('Error fetching wallet balance:', error);
-        toast.error('Failed to load wallet balance.');
-        setWalletBalance(0);
+        if (error) {
+          console.error('Error fetching wallet balance:', error);
+          toast.error('Failed to load wallet balance.');
+          setWalletBalance(150); // Default admin balance
+        } else {
+          const currentBalance = data?.wallet_balance || 0;
+          // If balance is less than $150, update it to $150
+          if (currentBalance < 150) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ wallet_balance: 150 })
+              .eq('id', currentUserId);
+            
+            if (updateError) {
+              console.error('Error updating admin wallet balance:', updateError);
+              setWalletBalance(150); // Use default even if update fails
+            } else {
+              setWalletBalance(150);
+            }
+          } else {
+            setWalletBalance(currentBalance);
+          }
+        }
       } else {
-        setWalletBalance(data?.wallet_balance || 0);
+        setWalletBalance(0);
       }
       setIsLoadingWallet(false);
     };
@@ -84,15 +106,16 @@ export function CheckoutPaymentSection({
 
       const { data: { session } } = await supabase.auth.getSession();
 
-      const response = await fetch("/api/paypal/create-order", {
+      const response = await fetch("/api/paypal/create-order-with-cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
-          orderId, // Pass the pre-created orderId
-          amount: totalAmount,
+          cartItems: cartItems,
+          cartTotal: totalAmount,
+          targetUserId: selectedClientId || profile.id,
         }),
       });
 
@@ -101,9 +124,15 @@ export function CheckoutPaymentSection({
         throw new Error(`PayPal order creation failed: ${errorData.error || response.statusText}`);
       }
 
-      const order = await response.json();
-      onOrderCreated(orderId, new Date().toISOString()); // Notify parent that order is created
-      return order.paypalOrderId; // Return the PayPal order ID
+      const result = await response.json();
+      
+      // Store the PayPal order ID for later use
+      setPaypalOrderId(result.paypalOrderId);
+      
+      // Update the parent component with the new order ID
+      onOrderCreated(result.orderId, new Date().toISOString());
+      
+      return result.paypalOrderId; // Return the PayPal order ID
     } catch (error: any) {
       console.error("Error creating PayPal order:", error);
       toast.error(error.message || "Failed to create PayPal order. Please try again.");
@@ -121,13 +150,16 @@ export function CheckoutPaymentSection({
         throw new Error('User not authenticated')
       }
 
+      // Use the order ID from the parent component (set during order creation)
+      const orderIdToUse = orderId;
+
       const response = await fetch("/api/paypal/capture", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          orderId, // Pass the pre-created orderId
+          orderId: orderIdToUse,
           paypalOrderId: data.orderID,
         }),
       });
@@ -140,7 +172,7 @@ export function CheckoutPaymentSection({
       const result = await response.json();
       if (result.success) {
         toast.success('Payment successful!')
-        router.push(`/account/orders/${orderId}/invoice`) // Redirect to invoice page
+        router.push(`/account/orders/${orderIdToUse}/invoice`) // Redirect to invoice page
       } else {
         throw new Error(result.error || 'Payment not completed by PayPal.')
       }
@@ -176,13 +208,41 @@ export function CheckoutPaymentSection({
 
     setIsProcessingPayment(true)
     try {
+      // First create the order in our database
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const createOrderResponse = await fetch("/api/paypal/create-order-with-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          cartItems: cartItems,
+          cartTotal: totalAmount,
+          targetUserId: selectedClientId || profile?.id,
+        }),
+      });
+
+      if (!createOrderResponse.ok) {
+        const errorData = await createOrderResponse.json();
+        throw new Error(`Order creation failed: ${errorData.error || createOrderResponse.statusText}`);
+      }
+
+      const orderResult = await createOrderResponse.json();
+      const newOrderId = orderResult.orderId;
+
+      // Update the parent component with the new order ID
+      onOrderCreated(newOrderId, new Date().toISOString());
+
+      // Now process the wallet payment
       const response = await fetch('/api/admin/wallet-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderId,
+          orderId: newOrderId,
           clientId: selectedClientId,
           amount: totalAmount,
         }),
@@ -191,8 +251,7 @@ export function CheckoutPaymentSection({
       const result = await response.json()
       if (response.ok) {
         toast.success('Payment successful!')
-        onOrderCreated(orderId, new Date().toISOString()); // Update order creation time
-        router.push(`/account/orders/${orderId}/invoice`)
+        router.push(`/account/orders/${newOrderId}/invoice`)
       } else {
         throw new Error(result.error || 'Payment failed')
       }
@@ -204,17 +263,6 @@ export function CheckoutPaymentSection({
     }
   }
 
-  const handleAddFunds = async () => {
-    if (parseFloat(fundAmount) <= 0 || isNaN(parseFloat(fundAmount))) {
-      toast.error("Please enter a valid amount to add.");
-      return;
-    }
-    toast.info("Add Funds functionality is a placeholder.", { description: `Attempting to add $${parseFloat(fundAmount).toFixed(2)}` });
-    // In a real application, this would initiate a payment flow to add funds to the wallet.
-    // For now, we'll just simulate a balance update.
-    // setWalletBalance(prev => prev + parseFloat(fundAmount));
-    // setFundAmount('');
-  };
 
   if (!profile) {
     return <p className="text-center text-red-500">User profile not loaded. Cannot proceed with payment.</p>
@@ -223,28 +271,16 @@ export function CheckoutPaymentSection({
   return (
     <div className="space-y-6">
       {isAdmin ? (
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Admin Wallet</h3>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm">Balance:</span>
-            {isLoadingWallet ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <span className="font-bold text-lg">${walletBalance.toFixed(2)}</span>
-            )}
+            <h3 className="font-semibold text-lg">Admin Wallet</h3>
             <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="Amount"
-                value={fundAmount}
-                onChange={(e) => setFundAmount(e.target.value)}
-                className="w-24"
-              />
-              <Button onClick={handleAddFunds} size="sm" disabled={isProcessingPayment}>
-                Add Funds
-              </Button>
+              <span className="text-sm">Balance:</span>
+              {isLoadingWallet ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <span className="font-bold text-lg text-blue-600">${walletBalance.toFixed(2)}</span>
+              )}
             </div>
           </div>
 
@@ -255,8 +291,8 @@ export function CheckoutPaymentSection({
               value={selectedClientId}
               disabled={isProcessingPayment || users.length === 0}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a client" />
+              <SelectTrigger className="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                <SelectValue placeholder="For Myself" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={currentUserId || ""}>For Myself</SelectItem>
@@ -264,12 +300,12 @@ export function CheckoutPaymentSection({
                   .filter(user => user.id !== currentUserId)
                   .map(user => (
                     <SelectItem key={user.id} value={user.id}>
-                      {user.first_name} {user.last_name} ({user.id.substring(0, 8)}...)
+                      {user.first_name} {user.last_name}
                     </SelectItem>
                   ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Select a client to make a purchase on their behalf.
             </p>
           </div>
@@ -287,20 +323,11 @@ export function CheckoutPaymentSection({
               Insufficient balance. Please add funds to your wallet.
             </p>
           )}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
         </div>
       ) : null}
 
-      {/* PayPal Section (always visible for non-admin, or below admin wallet for admin) */}
+      {/* PayPal Section */}
       <div className="space-y-4">
-        <h3 className="font-semibold text-lg">PayPal</h3>
         {isPayPalScriptPending ? (
           <div className="text-center">Loading PayPal...</div>
         ) : (
@@ -317,14 +344,7 @@ export function CheckoutPaymentSection({
             }}
           />
         )}
-        <Button
-          onClick={() => toast.info("Debit or Credit Card payment via PayPal is a placeholder.")}
-          disabled={!isFormValid || isProcessingPayment}
-          className="w-full bg-gray-800 text-white py-3 rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Debit or Credit Card
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">Powered by PayPal</p>
+        <p className="text-center text-xs text-gray-500">Powered by PayPal</p>
       </div>
     </div>
   )
