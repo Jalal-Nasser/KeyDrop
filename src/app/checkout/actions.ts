@@ -24,6 +24,11 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
 
   // Get current user from the session
   const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  console.log("=== Supabase auth.getUser debug ===");
+  console.log("userError:", userError);
+  console.log("user:", user);
+
   if (userError || !user) {
     throw new Error('User not authenticated');
   }
@@ -89,7 +94,11 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
       .select()
       .single()
 
-    if (orderError) throw orderError
+    if (orderError) {
+      console.error("Insert order error:", orderError);
+      throw orderError;
+    }
+    console.log("Order created successfully for user:", user.id);
     const orderId = orderData.id
 
     // 2. Create order items using recalculated pricing
