@@ -53,9 +53,10 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        ...((props.components as React.ComponentProps<typeof DayPicker>['components']) || {}), // Adjusted type assertion
+        IconLeft: ({ ...iconProps }) => <ChevronLeft className="h-4 w-4" {...iconProps} />,
+        IconRight: ({ ...iconProps }) => <ChevronRight className="h-4 w-4" {...iconProps} />,
+        // Spread any other custom components from props.components if they exist
+        ...((props.components as CustomComponents) || {}),
       }}
       {...props}
     />
