@@ -6,6 +6,12 @@ import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Define OTPInputContextValue type locally based on input-otp's context structure
+interface OTPInputContextValue {
+  slots: Array<{ char: string; hasFakeCaret: boolean; isActive: boolean }>;
+  // Add other properties if needed from the context
+}
+
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -34,7 +40,12 @@ const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext)
+  const inputOTPContext = React.useContext(OTPInputContext) as OTPInputContextValue | undefined; // Allow undefined
+  
+  if (!inputOTPContext) {
+    throw new Error("InputOTPSlot must be used within InputOTPGroup");
+  }
+
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
 
   return (
@@ -50,7 +61,7 @@ const InputOTPSlot = React.forwardRef<
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
+          <div className="h-4 w-px animate-caret-blink bg-foreground" />
         </div>
       )}
     </div>
@@ -61,8 +72,12 @@ InputOTPSlot.displayName = "InputOTPSlot"
 const InputOTPSeparator = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
->(({ ...props }, ref) => (
-  <div ref={ref} role="separator" {...props}>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("-mx-2 flex items-center justify-center", className)}
+    {...props}
+  >
     <Dot />
   </div>
 ))
