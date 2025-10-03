@@ -25,9 +25,9 @@ import {
 } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
-import { getStoreNotice, updateOrCreateStoreNotice } from "@/app/admin/store-notice/actions" // Removed .ts
+import { getStoreNotice, updateOrCreateStoreNotice } from "@/app/admin/store-notice/actions"
 import { Loader2 } from "lucide-react"
-import { useSession } from "@/context/session-context" // Import useSession
+import { useSession } from "@/context/session-context"
 
 const storeNoticeSchema = z.object({
   id: z.string().optional(), // ID is optional for new notices
@@ -40,7 +40,7 @@ type StoreNoticeFormValues = z.infer<typeof storeNoticeSchema>
 export function StoreNoticeForm() {
   const [loading, setLoading] = useState(true)
   const [initialNotice, setInitialNotice] = useState<StoreNoticeFormValues | null>(null)
-  const { supabase } = useSession(); // Get supabase from context
+  const { supabase } = useSession();
 
   const form = useForm<StoreNoticeFormValues>({
     resolver: zodResolver(storeNoticeSchema),
@@ -53,25 +53,26 @@ export function StoreNoticeForm() {
   useEffect(() => {
     const fetchNotice = async () => {
       setLoading(true)
-      // These actions are server actions, so they don't directly use the client-side supabase instance.
-      // The server action itself will create a server client.
       const { data, error } = await getStoreNotice()
       if (data) {
-        setInitialNotice(data)
-        form.reset(data)
+        // Ensure is_active is always a boolean for the form
+        const formattedData = {
+          ...data,
+          is_active: data.is_active ?? false, // Default null to false
+        };
+        setInitialNotice(formattedData);
+        form.reset(formattedData);
       } else if (error) {
         toast.error(`Failed to load store notice: ${error}`)
       }
       setLoading(false)
     }
     fetchNotice()
-  }, [form, supabase]) // Add supabase to dependencies
+  }, [form, supabase])
 
   const onSubmit = async (values: StoreNoticeFormValues) => {
     const toastId = toast.loading("Saving store notice...")
     try {
-      // This action is a server action, so it doesn't directly use the client-side supabase instance.
-      // The server action itself will create a server client.
       const result = await updateOrCreateStoreNotice(values)
       if (result.error) {
         throw new Error(result.error)
