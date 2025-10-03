@@ -55,7 +55,7 @@ function Calendar({
       components={{
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        ...((props.components as CustomComponents) || {}), // Explicitly cast to CustomComponents
+        ...((props.components as React.ComponentProps<typeof DayPicker>['components']) || {}), // Adjusted type assertion
       }}
       {...props}
     />
