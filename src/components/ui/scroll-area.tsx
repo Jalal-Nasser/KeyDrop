@@ -17,7 +17,6 @@ const ScrollArea = React.forwardRef<
     <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
       {children}
     </ScrollAreaPrimitive.Viewport>
-    {/* Render ScrollBar and ScrollAreaPrimitive.Corner separately */}
     <ScrollBar />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
@@ -41,11 +40,10 @@ const ScrollBar = React.forwardRef<
     )}
     {...props}
   >
-    {/* ScrollAreaPrimitive.ScrollAreaThumb is now rendered directly inside ScrollAreaPrimitive.ScrollAreaScrollbar */}
     <ScrollAreaPrimitive.ScrollAreaThumb
       className={cn("relative rounded-full bg-border")}
     />
-  </ScrollAreaPrimitive.Scrollbar>
+  </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
