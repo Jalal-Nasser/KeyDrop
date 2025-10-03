@@ -2,25 +2,24 @@
 
 import { useState, useEffect } from 'react'
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
-import { useCart } from '@/context/cart-context' // Corrected import path
-import { useAuth } from '@/components/auth/AuthProvider' // Corrected import path
+import { useCart } from '@/context/cart-context'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { toast } from 'sonner'
 import { createWalletOrder } from '@/app/checkout/actions'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
+import { CartItem } from '@/types/cart' // Corrected import
 
 interface WalletCheckoutButtonProps {
   planId?: string // Optional planId for subscription products
-  cartTotal?: number // Total amount for the cart
-  cartItems?: any[] // Array of cart items
-  targetUserId?: string // ID of the user making the purchase
-  isFormValid?: boolean // Whether the form is valid for checkout
+  cartTotal: number;
+  cartItems: CartItem[];
+  targetUserId: string;
+  isFormValid: boolean;
 }
 
-const WalletCheckoutButton: React.FC<WalletCheckoutButtonProps> = ({ planId, cartTotal: propCartTotal, cartItems: propCartItems, targetUserId: propTargetUserId, isFormValid }) => {
-  const { cartItems: contextCartItems, cartTotal: contextCartTotal, clearCart } = useCart()
-  const cartItems = propCartItems || contextCartItems
-  const cartTotal = propCartTotal || contextCartTotal
+const WalletCheckoutButton: React.FC<WalletCheckoutButtonProps> = ({ planId, cartTotal, cartItems, targetUserId, isFormValid }) => {
+  const { clearCart } = useCart()
   const { user } = useAuth()
   const router = useRouter()
   const [{ isPending }] = usePayPalScriptReducer()
@@ -33,75 +32,46 @@ const WalletCheckoutButton: React.FC<WalletCheckoutButtonProps> = ({ planId, car
   }, [isProcessing])
 
   const createOrder = async (data: any, actions: any) => {
-    setIsProcessing(true);
+    setIsProcessing(true)
     try {
       if (!user) {
-        const errorMsg = 'You must be logged in to complete this purchase.';
-        console.error('Wallet checkout: User not authenticated');
-        toast.error(errorMsg);
-        setIsProcessing(false);
-        throw new Error(errorMsg);
+        toast.error('You must be logged in to complete this purchase.')
+        setIsProcessing(false)
+        throw new Error('User not authenticated')
       }
 
-      // Get the current session and access token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        const errorMsg = 'Failed to get authentication session. Please sign in again.';
-        console.error('Wallet checkout: Session error:', sessionError);
-        toast.error(errorMsg);
-        setIsProcessing(false);
-        throw new Error(errorMsg);
-      }
+      const { data: { session } } = await supabase.auth.getSession();
 
-      console.log('Wallet checkout: User ID:', user.id);
-      console.log('Wallet checkout: Session user ID:', session.user?.id);
-      console.log('Wallet checkout: Access token present:', !!session.access_token);
+      console.log("Wallet checkout: session?.user?.id:", session?.user?.id);
+      console.log("Wallet checkout: token present:", !!session?.access_token);
 
-      // Prepare the request body
-      const requestBody = {
-        cartItems,
-        cartTotal,
-        targetUserId: propTargetUserId || user.id,
-        planId,
-      };
-
-      console.log('Wallet checkout: Sending request to create order:', {
-        url: '/api/checkout/create-order',
-        method: 'POST',
-        hasToken: !!session.access_token,
-        body: { ...requestBody, cartItems: cartItems.map((item: any) => ({ id: item.id, quantity: item.quantity })) },
-      });
-
-      // Call the API route to create the order
-      const response = await fetch('/api/checkout/create-order', {
-        method: 'POST',
+      // Call your API route to create the PayPal order
+      const response = await fetch("/api/checkout/create-order", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`, // Attach Supabase access token
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          cartItems,
+          cartTotal,
+          targetUserId: targetUserId, // Use the prop targetUserId
+          planId, // Pass planId if it's a subscription
+        }),
       });
 
-      const responseData = await response.json();
-      
       if (!response.ok) {
-        const errorMsg = responseData?.error || `Request failed with status ${response.status}`;
-        console.error('Wallet checkout: API error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorMsg,
-        });
-        throw new Error(`Checkout failed: ${errorMsg}`);
+        const errorData = await response.json();
+        throw new Error(`Checkout failed: ${errorData.error || response.statusText}`);
       }
 
-      console.log('Wallet checkout: Order created successfully:', responseData);
-      return responseData.id;
+      const order = await response.json();
+      return order.id; // Return the PayPal order ID
     } catch (error: any) {
-      console.error('Wallet checkout: Error in createOrder:', error);
-      toast.error(error.message || 'Failed to create order. Please try again.');
-      setIsProcessing(false);
-      throw error; // Re-throw to stop the PayPal flow
+      console.error("Error creating PayPal order:", error);
+      toast.error(error.message || "Failed to create PayPal order. Please try again.");
+      setIsProcessing(false)
+      throw error; // Re-throw to stop PayPal flow
     }
   }
 
@@ -137,7 +107,7 @@ const WalletCheckoutButton: React.FC<WalletCheckoutButtonProps> = ({ planId, car
         const { success, orderId, message } = await createWalletOrder({
           cartItems,
           cartTotal,
-          targetUserId: propTargetUserId || user.id,
+          targetUserId: targetUserId, // Use the prop targetUserId
         });
 
         if (success) {
@@ -178,7 +148,7 @@ const WalletCheckoutButton: React.FC<WalletCheckoutButtonProps> = ({ planId, car
           createOrder={createOrder}
           onApprove={onApprove}
           onError={onError}
-          disabled={isProcessing || cartItems.length === 0}
+          disabled={isProcessing || cartItems.length === 0 || !isFormValid}
         />
       )}
       {isProcessing && (

@@ -14,14 +14,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
-import { PayPalCartButton } from "@/components/paypal-cart-button"
 import { toast } from "sonner"
 import { PromoCodeForm } from "@/components/promo-code-form"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, ShieldCheck, Lock } from "lucide-react"
 import { getImagePath } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
-import WalletCheckoutButton from "@/components/wallet-checkout-button" // Corrected to default import
 import { AuthDialog } from "@/components/auth-dialog"
 import { CountdownTimer } from "@/components/countdown-timer"
 import { Database, Tables } from "@/types/supabase"
@@ -34,6 +32,7 @@ import {
 } from "@/components/ui/select"
 import { getCurrentUserProfile, getAllUserProfilesForAdmin } from "@/app/account/actions"
 import { CountrySelect } from "@/components/country-select"
+import { CheckoutPaymentSection } from "@/components/checkout/checkout-payment-section"
 
 // Define the base schema for billing details with direct validation
 const profileBillingSchema = z.object({
@@ -100,9 +99,10 @@ export default function CheckoutPage() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<string>("")
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
-  const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(new Date().toISOString())
+  const [orderCreatedAt, setOrderCreatedAt] = useState<string | null>(null) // Initialize as null
   const [isExpired, setIsExpired] = useState(false)
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [orderId, setOrderId] = useState<string>("") // State to hold the order ID
 
   useEffect(() => {
     if (isExpired) {
@@ -208,7 +208,12 @@ export default function CheckoutPage() {
   }
 
   const isAgreedToTerms = form.watch('agreedToTerms');
-  const isPaymentButtonEnabled = isAgreedToTerms;
+
+  // Function to handle order creation and set the orderId
+  const handleOrderCreated = (newOrderId: string, orderCreatedTime: string) => {
+    setOrderId(newOrderId);
+    setOrderCreatedAt(orderCreatedTime);
+  };
 
   if (session) {
     if (isLoadingProfile) {
@@ -308,58 +313,16 @@ export default function CheckoutPage() {
                           </FormItem>
                         )}
                       />
-                      <PayPalCartButton cartTotal={finalCartTotal} cartItems={cartItems} billingDetails={form.watch()} isFormValid={isPaymentButtonEnabled} onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)} />
-                      {profile?.is_admin && (
-                        <>
-                          <div className="relative my-6">
-                            <Separator />
-                            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-2 text-sm text-muted-foreground">
-                              Admin Only
-                            </span>
-                          </div>
-                          <div className="space-y-4">
-                            <FormItem>
-                              <FormLabel>Purchase for Client</FormLabel>
-                              <Select
-                                onValueChange={setSelectedClientId}
-                                value={selectedClientId}
-                                disabled={isLoadingUsers}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a client" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {isLoadingUsers ? (
-                                    <SelectItem value="loading" disabled>Loading...</SelectItem>
-                                  ) : (
-                                    <>
-                                      <SelectItem value={session.user.id}>For Myself</SelectItem>
-                                      {users
-                                        .filter(user => user.id !== session.user.id)
-                                        .map(user => (
-                                          <SelectItem key={user.id} value={user.id}>
-                                            {user.first_name} {user.last_name}
-                                          </SelectItem>
-                                        ))}
-                                    </>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                Select a client to make a purchase on their behalf.
-                              </FormDescription>
-                            </FormItem>
-                            <WalletCheckoutButton
-                              cartTotal={finalCartTotal}
-                              cartItems={cartItems}
-                              targetUserId={selectedClientId}
-                              isFormValid={isPaymentButtonEnabled}
-                            />
-                          </div>
-                        </>
-                      )}
+                      <CheckoutPaymentSection
+                        orderId={orderId} // Pass the orderId state
+                        totalAmount={finalCartTotal}
+                        profile={profile}
+                        users={users}
+                        selectedClientId={selectedClientId}
+                        setSelectedClientId={setSelectedClientId}
+                        isFormValid={isAgreedToTerms}
+                        onOrderCreated={(newOrderId: string, orderCreatedTime: string) => handleOrderCreated(newOrderId, orderCreatedTime)} // Pass callback
+                      />
                     </form>
                   </Form>
                 </CardContent>
@@ -503,12 +466,15 @@ export default function CheckoutPage() {
                     <p>Please <button onClick={() => setIsAuthDialogOpen(true)} className="underline font-bold hover:text-primary">sign in or create an account</button>.</p>
                   </div>
                 ) : (
-                  <PayPalCartButton 
-                    cartTotal={finalCartTotal} 
-                    cartItems={cartItems} 
-                    billingDetails={form.watch()} 
-                    isFormValid={isPaymentButtonEnabled}
-                    onOrderCreated={(orderCreatedTime) => setOrderCreatedAt(orderCreatedTime)}
+                  <CheckoutPaymentSection
+                    orderId={orderId} // Pass the orderId state
+                    totalAmount={finalCartTotal}
+                    profile={profile}
+                    users={users}
+                    selectedClientId={selectedClientId}
+                    setSelectedClientId={setSelectedClientId}
+                    isFormValid={isAgreedToTerms}
+                    onOrderCreated={(newOrderId: string, orderCreatedTime: string) => handleOrderCreated(newOrderId, orderCreatedTime)} // Pass callback
                   />
                 )}
               </CardContent>

@@ -250,6 +250,7 @@ export type Database = {
           state_province_region: string | null
           vat_number: string | null
           email: string | null // Added email
+          wallet_balance: number | null // Added wallet_balance
         }
         Insert: {
           address_line_1?: string | null // Added address fields
@@ -265,6 +266,7 @@ export type Database = {
           state_province_region?: string | null
           vat_number?: string | null
           email?: string | null // Added email
+          wallet_balance?: number | null // Added wallet_balance
         }
         Update: {
           address_line_1?: string | null // Added address fields
@@ -280,6 +282,7 @@ export type Database = {
           state_province_region?: string | null
           vat_number?: string | null
           email?: string | null // Added email
+          wallet_balance?: number | null // Added wallet_balance
         }
         Relationships: []
       }
@@ -464,7 +467,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      process_wallet_payment: {
+        Args: {
+          p_order_id: string;
+          p_admin_id: string;
+          p_client_id: string;
+          p_amount: number;
+          p_current_balance: number;
+        };
+        Returns: Json;
+      };
     }
     Enums: {
       [_ in never]: never

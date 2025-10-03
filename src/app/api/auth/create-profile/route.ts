@@ -3,12 +3,35 @@ import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    const { userId, email } = await request.json()
+    // First, read the request body as text
+    const bodyText = await request.text()
+    
+    // If body is empty, return error
+    if (!bodyText) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Request body is empty' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Parse the JSON body
+    let requestBody;
+    try {
+      requestBody = JSON.parse(bodyText);
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
+      return new NextResponse(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { userId, email } = requestBody;
 
     if (!userId || !email) {
       return new NextResponse(
         JSON.stringify({ error: 'User ID and email are required' }),
-        { status: 400 }
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
@@ -24,7 +47,7 @@ export async function POST(request: Request) {
     if (existingProfile) {
       return new NextResponse(
         JSON.stringify({ message: 'Profile already exists' }),
-        { status: 200 }
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
@@ -42,22 +65,37 @@ export async function POST(request: Request) {
       ])
 
     if (error) {
-      console.error('Error creating profile:', error)
+      console.error('Error creating profile:', error);
       return new NextResponse(
-        JSON.stringify({ error: 'Failed to create profile' }),
-        { status: 500 }
-      )
+        JSON.stringify({ 
+          error: 'Failed to create profile',
+          details: error.message 
+        }),
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     return new NextResponse(
       JSON.stringify({ message: 'Profile created successfully' }),
-      { status: 201 }
-    )
+      { 
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
-    console.error('Error in create-profile API:', error)
+    console.error('Error in create-profile API:', error);
     return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
-    )
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
-import { PayPalButton } from "@/components/paypal-button";
+import PaymentSection from "@/components/payment-section";
 
 const BASE_PRICE = 1495;
 const PRICE_PER_EXTRA_USER = 230;
@@ -257,7 +257,16 @@ export default function KasperskyPage() {
               </label>
 
               <CardFooter className="w-full">
-                <PayPalButton product={foundationsProduct} quantity={1} />
+                <PaymentSection 
+                  orderId={foundationsProduct.id.toString()} 
+                  totalAmount={foundationsProduct.price}
+                  cartItems={[{
+                    id: foundationsProduct.id,
+                    name: foundationsProduct.name,
+                    quantity: 1,
+                    price: foundationsProduct.price
+                  }]} 
+                />
               </CardFooter>
             </Card>
 
@@ -333,7 +342,16 @@ export default function KasperskyPage() {
               </label>
 
               <CardFooter className="w-full">
-                <PayPalButton product={optimumProduct} quantity={1} />
+                <PaymentSection 
+                  orderId={optimumProduct.id.toString()} 
+                  totalAmount={optimumProduct.price}
+                  cartItems={[{
+                    id: optimumProduct.id,
+                    name: optimumProduct.name,
+                    quantity: 1,
+                    price: optimumProduct.price
+                  }]} 
+                />
               </CardFooter>
             </Card>
           </div>
