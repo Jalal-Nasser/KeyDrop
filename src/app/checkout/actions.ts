@@ -1,6 +1,8 @@
 'use server'
 
-import { createSupabaseServerClientComponent, createAdminClient, getSession } from "@/lib/supabase/server" // Updated import
+import { cookies } from "next/headers" // Import cookies
+import { createServerActionClient } from "@supabase/auth-helpers-nextjs" // Import createServerActionClient
+import { createAdminClient } from "@/lib/supabase/server" // Keep for admin client
 import { sendOrderConfirmation } from "@/lib/email-actions"
 import { CartItem } from "@/types/cart"
 import { createClient } from '@supabase/supabase-js'
@@ -15,24 +17,28 @@ interface CreateWalletOrderPayload {
 }
 
 export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: CreateWalletOrderPayload) {
-  const supabase = await createSupabaseServerClientComponent() // Await the client
+  // Directly initialize Supabase client for this server action
+  const supabase = createServerActionClient({ cookies });
 
   console.log('createWalletOrder: Attempting to create order for targetUserId:', targetUserId); // Added log
 
-  // Get current user session
-  const session = await getSession();
-  if (!session || !session.user) {
+  // Get current user from the session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
     throw new Error('User not authenticated');
   }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
-    .eq('id', session.user.id)
+    .eq('id', user.id) // Use the authenticated user's ID to check admin status
     .single()
 
   const isAdmin = profile?.is_admin || false
-  const dbClient = isAdmin ? await createAdminClient() : supabase
+  
+  // If admin, use admin client for potentially creating orders for other users
+  // Otherwise, use the regular authenticated user's client
+  const dbClient = isAdmin ? await createAdminClient() : supabase;
 
   try {
     // Recalculate totals from DB to ensure sale pricing and integrity
@@ -74,12 +80,12 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     const { data: orderData, error: orderError } = await dbClient
       .from("orders")
       .insert({
-        user_id: targetUserId,
+        user_id: targetUserId, // Use targetUserId as specified
         total: finalTotal, // server-calculated total with fees
-        status: "pending", // Changed from "completed"
+        status: "pending",
         payment_gateway: "wallet",
         payment_id: `wallet_${new Date().getTime()}`,
-      } as TablesInsert<'orders'>) // Removed explicit cast, now types should align
+      } as TablesInsert<'orders'>)
       .select()
       .single()
 
@@ -95,7 +101,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
       product_name: oi.product_name,
       unit_price: oi.unit_price,
       line_total: oi.line_total,
-    })) // Removed explicit cast, now types should align
+    }))
 
     const { error: itemsError } = await dbClient
       .from("order_items")
@@ -104,11 +110,12 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     if (itemsError) throw itemsError
 
     // 3. Get the target user's email for the confirmation using an admin client
-    const supabaseAdmin = createClient(
+    // Note: If dbClient is already an admin client, this createClient call is redundant but harmless.
+    const supabaseAdminForEmail = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    const { data: { user: targetUser }, error: targetUserError } = await supabaseAdmin.auth.admin.getUserById(targetUserId)
+    const { data: { user: targetUser }, error: targetUserError } = await supabaseAdminForEmail.auth.admin.getUserById(targetUserId)
 
     if (targetUserError || !targetUser || !targetUser.email) {
       throw new Error(`Failed to fetch user email for user ${targetUserId}: ${targetUserError?.message}`)
@@ -118,11 +125,11 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     await sendOrderConfirmation({ orderId: orderId, userEmail: targetUser.email })
     
     // 5. Send Discord notification via Edge Function
-    const { data: discordData, error: discordError } = await supabaseAdmin.functions.invoke('discord-order-notification', {
+    const { data: discordData, error: discordError } = await supabaseAdminForEmail.functions.invoke('discord-order-notification', {
       body: {
         notificationType: 'new_order',
         orderId: orderId,
-        cartTotal: cartTotal,
+        cartTotal: finalTotal, // Use server-calculated total
         userEmail: targetUser.email,
         cartItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity, image: item.image })) // Include product image
       }
@@ -148,7 +155,7 @@ export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: 
     const firstItem = cartItems[0];
     notifyAdminNewOrder({
       orderId,
-      total: finalTotal,
+      total: finalTotal, // Use server-calculated total
       userEmail: targetUser.email,
       channel: 'wallet',
       customerName: customerName ?? ((targetUser as any)?.user_metadata?.full_name as string | undefined) ?? targetUser.email ?? undefined,
