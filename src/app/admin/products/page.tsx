@@ -9,11 +9,11 @@ import {
 import { ProductForm } from "@/components/admin/product-form"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/types/product"
-import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
-import Image from "next/image" // Import Image
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server"
+import Image from "next/image"
 
 export default async function ProductsPage() {
-  const supabase = await createSupabaseServerClientComponent() // Await the client
+  const supabase = await createSupabaseServerClientComponent()
   const { data: products, error } = await supabase
     .from("products")
     .select("*")
@@ -34,7 +34,7 @@ export default async function ProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Image</TableHead> {/* Added Image column */}
+              <TableHead>Image</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Price</TableHead>
