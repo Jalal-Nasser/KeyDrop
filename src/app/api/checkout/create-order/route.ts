@@ -9,23 +9,36 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // Ensure this route is always dynamic
 
 export async function POST(req: NextRequest) {
+  console.log('API /api/checkout/create-order: Request received.');
   const supabase = await createSupabaseServerClientComponent(); // Await the client
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError) {
+    console.error('API /api/checkout/create-order: Error fetching user:', userError);
+    return NextResponse.json({ error: 'Authentication error' }, { status: 401 });
+  }
 
   if (!user) {
+    console.log('API /api/checkout/create-order: User not authenticated.');
+    // Log cookies for debugging
+    console.log('Request Cookies:', req.headers.get('cookie'));
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  console.log('API /api/checkout/create-order: User authenticated:', user.id);
 
   const body = await req.json();
   const validation = createOrderSchema.safeParse(body);
 
   if (!validation.success) {
+    console.error('API /api/checkout/create-order: Invalid request body:', validation.error.issues);
     return NextResponse.json({ error: 'Invalid request body', issues: validation.error.issues }, { status: 400 });
   }
 
   const { cartItems, promoCode } = validation.data;
 
   if (cartItems.length === 0) {
+    console.error('API /api/checkout/create-order: Cart is empty.');
     return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
   }
 
@@ -38,13 +51,14 @@ export async function POST(req: NextRequest) {
       .in('id', productIds);
 
     if (productError) {
-      console.error("Error fetching products:", productError);
+      console.error("API /api/checkout/create-order: Error fetching products:", productError);
       throw new Error(`Database error fetching products: ${productError.message}`);
     }
     if (products.length !== productIds.length) {
       // Identify missing products
       const foundProductIds = new Set(products.map(p => p.id));
       const missingProductIds = productIds.filter(id => !foundProductIds.has(id));
+      console.error('API /api/checkout/create-order: One or more products not found:', missingProductIds);
       return NextResponse.json({ error: `One or more products not found: ${missingProductIds.join(', ')}` }, { status: 409 });
     }
 
@@ -117,7 +131,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (orderError) {
-      console.error("Error creating order:", orderError);
+      console.error("API /api/checkout/create-order: Error creating order:", orderError);
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
 
@@ -134,14 +148,15 @@ export async function POST(req: NextRequest) {
 
     const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert as TablesInsert<'order_items'>[]);
     if (itemsError) {
-      console.error("Error saving order items:", itemsError);
+      console.error("API /api/checkout/create-order: Error saving order items:", itemsError);
       throw new Error(`Failed to save order items: ${itemsError.message}`);
     }
 
+    console.log('API /api/checkout/create-order: Order created successfully:', order.id);
     return NextResponse.json({ orderId: order.id, amounts });
 
   } catch (error: any) {
-    console.error('Order creation failed:', error);
+    console.error('API /api/checkout/create-order: Order creation failed:', error);
     // Return specific status codes for known errors
     if (error.message.includes('Product') && error.message.includes('price')) {
       return NextResponse.json({ error: error.message }, { status: 409 });

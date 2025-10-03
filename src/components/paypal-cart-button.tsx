@@ -64,6 +64,7 @@ export function PayPalCartButton({ cartItems, billingDetails, isFormValid, onOrd
           cartItems: cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
           // promoCode: "...", // Pass promo code here if applicable
         }),
+        credentials: 'include', // Ensure cookies are sent
       });
 
       const ourOrder = await createOrderResponse.json();
@@ -86,6 +87,7 @@ export function PayPalCartButton({ cartItems, billingDetails, isFormValid, onOrd
           orderId: ourOrder.orderId,
           // The order total from the API already includes process fees
         }),
+        credentials: 'include', // Ensure cookies are sent
       });
 
       const payPalOrder = await createPayPalOrderResponse.json();
@@ -117,6 +119,7 @@ export function PayPalCartButton({ cartItems, billingDetails, isFormValid, onOrd
           orderId: internalOrderId, // Use the ID from state
           paypalOrderId: data.orderID, // Use the ID from PayPal
         }),
+        credentials: 'include', // Ensure cookies are sent
       })
       const result = await response.json()
 
