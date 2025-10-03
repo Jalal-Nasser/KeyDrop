@@ -42,7 +42,9 @@ export default function AccountPage() {
     }
     const { data: profileData, error: profileError } = await getCurrentUserProfile();
     if (profileError) {
-      console.error("Error fetching user profile:", profileError);
+      if (profileError !== 'User not authenticated') {
+        console.error("Error fetching user profile:", profileError);
+      }
       setUserProfile(null);
     } else {
       setUserProfile(profileData);
@@ -111,6 +113,15 @@ export default function AccountPage() {
   // Check if profile is complete
   const isProfileComplete = userProfile ? profileSchema.safeParse(userProfile).success : false;
 
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 py-12 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading your profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4 py-12">
       <Card className="max-w-2xl mx-auto">
@@ -118,7 +129,7 @@ export default function AccountPage() {
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold">Your Account</h2>
             <p className="text-sm text-muted-foreground">
-              Welcome back, {session.user.email}
+              Welcome back, {session?.user?.email || 'User'}
             </p>
           </div>
           
@@ -129,7 +140,13 @@ export default function AccountPage() {
             </div>
           )}
 
-          <ProfileForm initialProfile={userProfile} onProfileUpdated={handleProfileUpdated} />
+          {userProfile && (
+            <ProfileForm 
+              key={userProfile.id} // Force re-render when profile changes
+              initialProfile={userProfile} 
+              onProfileUpdated={handleProfileUpdated} 
+            />
+          )}
           
           <div className="grid gap-6">
             <div className="space-y-4">

@@ -112,7 +112,6 @@ export default function CheckoutPage() {
   }, [isExpired, router])
 
   const form = useForm<CheckoutFormValues>({
-    resolver: zodResolver(checkoutSchema),
     defaultValues: {
       first_name: "", last_name: "", company_name: "", vat_number: "",
       address_line_1: "", address_line_2: "", city: "",
@@ -209,7 +208,7 @@ export default function CheckoutPage() {
   }
 
   const isAgreedToTerms = form.watch('agreedToTerms');
-  const isPaymentButtonEnabled = form.formState.isValid && isAgreedToTerms;
+  const isPaymentButtonEnabled = isAgreedToTerms;
 
   if (session) {
     if (isLoadingProfile) {

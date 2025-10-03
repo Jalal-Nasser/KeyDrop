@@ -50,7 +50,6 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
   const { supabase } = useSession(); // Get supabase from context
 
   const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
     defaultValues: {
       first_name: initialProfile?.first_name || "",
       last_name: initialProfile?.last_name || "",
@@ -84,11 +83,19 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
   }, [initialProfile, form]);
 
   async function onSubmit(values: ProfileFormValues) {
+    // Client-side validation
+    const validation = profileSchema.safeParse(values);
+    if (!validation.success) {
+      const errors = validation.error.issues.map(issue => issue.message).join('\n');
+      toast.error(`Please fix the following errors:\n${errors}`);
+      return;
+    }
+
     setIsLoading(true);
     const toastId = toast.loading("Saving profile...");
 
     try {
-      const result = await updateCurrentUserProfile(values);
+      const result = await updateCurrentUserProfile(validation.data);
 
       if (result.error) {
         throw new Error(result.error.message);
@@ -98,7 +105,10 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       onProfileUpdated?.(); // Notify parent component
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error(error.message || "Failed to update profile.", { id: toastId });
+      toast.error(error.message || "Failed to update profile. Please check all required fields.", { 
+        id: toastId,
+        duration: 5000 // Show error for 5 seconds
+      });
     } finally {
       setIsLoading(false);
     }
@@ -116,42 +126,195 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="first_name" render={({ field }) => (
-                <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="last_name" render={({ field }) => (
-                <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <FormField 
+                control={form.control} 
+                name="first_name" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        required 
+                        disabled={isLoading}
+                        placeholder="John"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              <FormField 
+                control={form.control} 
+                name="last_name" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        required 
+                        disabled={isLoading}
+                        placeholder="Doe"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="company_name" render={({ field }) => (
-                <FormItem><FormLabel>Company Name (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="vat_number" render={({ field }) => (
-                <FormItem><FormLabel>VAT Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormField 
+                control={form.control} 
+                name="company_name" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        placeholder="Company Name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              <FormField 
+                control={form.control} 
+                name="vat_number" 
+                render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>VAT Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      disabled={isLoading}
+                      className={formState.errors.vat_number ? "border-red-500" : ""}
+                    />
+                  </FormControl>
+                  {formState.errors.vat_number && (
+                    <FormMessage>{formState.errors.vat_number.message}</FormMessage>
+                  )}
+                </FormItem>
               )} />
             </div>
-            <FormField control={form.control} name="address_line_1" render={({ field }) => (
-              <FormItem><FormLabel>Address Line 1</FormLabel><FormControl><Input placeholder="Street address" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormField 
+              control={form.control} 
+              name="address_line_1" 
+              render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>Address Line 1 *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Street address" 
+                      {...field} 
+                      required 
+                      disabled={isLoading}
+                      className={formState.errors.address_line_1 ? "border-red-500" : ""}
+                    />
+                  </FormControl>
+                  {formState.errors.address_line_1 && (
+                    <FormMessage>{formState.errors.address_line_1.message}</FormMessage>
+                  )}
+                </FormItem>
+              )} 
+            />
+            <FormField control={form.control} name="address_line_2" render={({ field, formState }) => (
+              <FormItem>
+                <FormLabel>Address Line 2 (Optional)</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Apartment, suite, etc." 
+                    {...field} 
+                    className={formState.errors.address_line_2 ? "border-red-500" : ""}
+                  />
+                </FormControl>
+                {formState.errors.address_line_2 && (
+                  <FormMessage>{formState.errors.address_line_2.message}</FormMessage>
+                )}
+              </FormItem>
             )} />
-            <FormField control={form.control} name="address_line_2" render={({ field }) => (
-              <FormItem><FormLabel>Address Line 2 (Optional)</FormLabel><FormControl><Input placeholder="Apartment, suite, etc." {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="city" render={({ field }) => (
-                <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="state_province_region" render={({ field }) => (
-                <FormItem><FormLabel>State / Province / Region</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <FormField 
+                control={form.control}
+                name="city" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        required 
+                        disabled={isLoading}
+                        placeholder="New York"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              <FormField 
+                control={form.control} 
+                name="state_province_region" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State / Province / Region *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        required 
+                        disabled={isLoading}
+                        placeholder="NY"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="postal_code" render={({ field }) => (
-                <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="country" render={({ field }) => (
-                <FormItem><FormLabel>Country</FormLabel><FormControl><CountrySelect value={field.value || ''} onChange={field.onChange} disabled={isLoading} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <FormField 
+                control={form.control} 
+                name="postal_code" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Postal Code *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        required 
+                        disabled={isLoading}
+                        placeholder="10001"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              <FormField 
+                control={form.control} 
+                name="country" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country *</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <CountrySelect 
+                          value={field.value || ''} 
+                          onChange={field.onChange} 
+                          disabled={isLoading}
+                        />
+                        {!field.value && (
+                          <div className="absolute inset-0 border border-red-500 rounded-md pointer-events-none"></div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (

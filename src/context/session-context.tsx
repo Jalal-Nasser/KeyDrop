@@ -8,8 +8,8 @@ import React, {
   useMemo, 
   useRef
 } from "react"
-import type { Session, User, SupabaseClient } from "@supabase/supabase-js"
-import { supabase } from "@/lib/supabaseClient" // Import the new centralized client
+import type { Session, User, SupabaseClient, AuthChangeEvent } from "@supabase/supabase-js"
+import { supabase } from "@/app/lib/supabase-browser" // Use the same client as AuthProvider
 import { Database } from "@/types/supabase-fixed"
 
 type SessionContextType = {
@@ -40,7 +40,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) throw error
-        
+
         if (isMounted.current) {
           setState({
             session,
@@ -48,8 +48,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             isLoading: false,
           })
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error getting session:', error)
+        // If refresh token is invalid, clear stored auth data
+        if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+          console.log('Clearing invalid auth tokens')
+          // Clear Supabase auth storage
+          if (typeof window !== 'undefined') {
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('sb-')) {
+                localStorage.removeItem(key)
+              }
+            })
+          }
+        }
         if (isMounted.current) {
           setState(prev => ({ ...prev, isLoading: false }))
         }
@@ -57,7 +69,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event: AuthChangeEvent, session: Session | null) => {
         requestAnimationFrame(() => {
           if (isMounted.current) {
             setState({

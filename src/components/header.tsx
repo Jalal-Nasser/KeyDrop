@@ -34,8 +34,13 @@ export function Header({ className }: { className?: string }) {
     { href: "/contact", label: "Contact Us" },
   ]
 
-  // Conditionally add "Account" link
-  const navLinks = session ? [...baseNavLinks, { href: "/account", label: "Account" }] : baseNavLinks;
+  // Conditionally add "Account" or "Login" link
+  const navLinks = [...baseNavLinks];
+  if (session) {
+    navLinks.push({ href: "/account", label: "Account" });
+  } else {
+    navLinks.push({ href: "/login", label: "Login" });
+  }
 
   const handleMouseEnter = (e: MouseEvent<HTMLAnchorElement>) => {
     setHovered(true)

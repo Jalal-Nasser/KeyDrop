@@ -7,6 +7,23 @@ import { toast } from "sonner"
 import { CartItem } from "@/types/cart"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { z } from "zod"
+
+const checkoutSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  company_name: z.string().optional().nullable(),
+  vat_number: z.string().optional().nullable(),
+  address_line_1: z.string().trim().min(1, "Address is required"),
+  address_line_2: z.string().optional().nullable(),
+  city: z.string().trim().min(1, "City is required"),
+  state_province_region: z.string().trim().min(1, "State/Province/Region is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().length(2, "Country is required"),
+  agreedToTerms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions.",
+  }),
+});
 
 interface PayPalCartButtonProps {
   cartTotal: number // This will now be for display only
@@ -27,9 +44,13 @@ export function PayPalCartButton({ cartItems, billingDetails, isFormValid, onOrd
       toast.error("You must be signed in to make a purchase.")
       return Promise.reject(new Error("User not signed in"))
     }
-    if (!isFormValid) {
-      toast.error("Please fill in all required billing details and agree to the terms.")
-      return Promise.reject(new Error("Billing form is invalid"))
+
+    // Validate billing details
+    const validation = checkoutSchema.safeParse(billingDetails);
+    if (!validation.success) {
+      const errors = validation.error.issues.map(issue => issue.message).join('\n');
+      toast.error(`Please fix the following errors:\n${errors}`);
+      return Promise.reject(new Error("Billing form is invalid"));
     }
 
     const toastId = toast.loading("Creating secure order...")
