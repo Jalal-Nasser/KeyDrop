@@ -17,6 +17,8 @@ interface CreateWalletOrderPayload {
 export async function createWalletOrder({ cartItems, cartTotal, targetUserId }: CreateWalletOrderPayload) {
   const supabase = await createSupabaseServerClientComponent() // Await the client
 
+  console.log('createWalletOrder: Attempting to create order for targetUserId:', targetUserId); // Added log
+
   try {
     // Recalculate totals from DB to ensure sale pricing and integrity
     const productIds = cartItems.map(i => i.id)
