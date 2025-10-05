@@ -157,3 +157,4 @@ export async function POST(req: NextRequest) {
     console.error('PayPal order creation failed:', error);
     return NextResponse.json({ error: error.message || 'Failed to create PayPal order' }, { status: 500 });
   }
+}
