@@ -1,4 +1,5 @@
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
@@ -61,6 +62,7 @@ export default function RootLayout({
         </SessionProvider>
         
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
