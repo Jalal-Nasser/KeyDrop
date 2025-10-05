@@ -3,15 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Shield, Award, Headset, DollarSign, CreditCard, Loader2, ShoppingCart } from 'lucide-react'; // Added ShoppingCart
-import { toast } from 'sonner'; // Changed from useToast to toast from sonner
+import { CheckCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/context/session-context';
 import { AuthDialog } from '@/components/auth-dialog';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'; // Import PayPal components
-import { cn } from "@/lib/utils"; // Added cn import
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { cn } from "@/lib/utils";
 
-// Define a type for the product to ensure type safety
 interface KasperskyProduct {
   id: string;
   name: string;
@@ -22,7 +21,7 @@ interface KasperskyProduct {
 
 const kasperskyProducts: KasperskyProduct[] = [
   {
-    id: 'kaspersky-endpoint-security-cloud',
+    id: '23',
     name: 'Kaspersky Endpoint Security Cloud',
     price: 199.99,
     features: [
@@ -33,10 +32,10 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Web and device control',
       'Easy to deploy and manage',
     ],
-    image: '/kaspersky-cloud.png', // Placeholder image
+    image: '/kaspersky-cloud.png',
   },
   {
-    id: 'kaspersky-endpoint-security-for-business-select',
+    id: '24',
     name: 'Kaspersky Endpoint Security for Business Select',
     price: 299.99,
     features: [
@@ -47,10 +46,10 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Centralized management console',
       'Anti-malware for workstations and file servers',
     ],
-    image: '/kaspersky-select.png', // Placeholder image
+    image: '/kaspersky-select.png',
   },
   {
-    id: 'kaspersky-endpoint-security-for-business-advanced',
+    id: '25',
     name: 'Kaspersky Endpoint Security for Business Advanced',
     price: 499.99,
     features: [
@@ -61,7 +60,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'System management tools',
       'Advanced anomaly control',
     ],
-    image: '/kaspersky-advanced.png', // Placeholder image
+    image: '/kaspersky-advanced.png',
   },
 ];
 
@@ -72,10 +71,9 @@ export default function KasperskyEndpointPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const router = useRouter();
   const { session, isLoading: isLoadingSession } = useSession();
-  const [{ isPending }] = usePayPalScriptReducer(); // PayPal script reducer
+  const [{ isPending }] = usePayPalScriptReducer();
 
   useEffect(() => {
-    // Set the first product as selected by default
     if (kasperskyProducts.length > 0) {
       setSelectedProduct(kasperskyProducts[0]);
     }
@@ -83,7 +81,7 @@ export default function KasperskyEndpointPage() {
 
   const handleProductSelect = (product: KasperskyProduct) => {
     setSelectedProduct(product);
-    setQuantity(1); // Reset quantity when product changes
+    setQuantity(1);
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,54 +89,10 @@ export default function KasperskyEndpointPage() {
     if (!isNaN(value) && value > 0) {
       setQuantity(value);
     } else if (e.target.value === '') {
-      setQuantity(0); // Allow empty input temporarily for user to type
+      setQuantity(0);
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!selectedProduct || quantity <= 0) {
-      toast.error('Please select a product and a valid quantity.');
-      return;
-    }
-
-    if (!session) {
-      setIsAuthDialogOpen(true);
-      return;
-    }
-
-    setIsProcessingPayment(true);
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: selectedProduct.id,
-          quantity: quantity,
-          price: selectedProduct.price,
-          name: selectedProduct.name,
-          image: selectedProduct.image,
-          isKaspersky: true, // Indicate it's a Kaspersky product
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add to cart');
-      }
-
-      toast.success(`${quantity} x ${selectedProduct.name} added to your cart.`);
-      router.push('/cart'); // Redirect to cart page
-    } catch (error: any) {
-      console.error('Error adding to cart:', error);
-      toast.error(error.message || 'Failed to add product to cart.');
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
-
-  // PayPal integration functions
   const createOrder = async (data: any, actions: any) => {
     if (!selectedProduct || quantity <= 0) {
       toast.error('Please select a product and a valid quantity.');
@@ -151,34 +105,53 @@ export default function KasperskyEndpointPage() {
     }
 
     try {
-      const response = await fetch('/api/paypal/create-order', {
+      // First create the order in your database
+      const orderResponse = await fetch('/api/orders/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           items: [{
-            id: selectedProduct.id,
-            name: selectedProduct.name,
+            product_id: parseInt(selectedProduct.id),
             quantity: quantity,
-            price: selectedProduct.price,
-            isKaspersky: true,
+            unit_price: selectedProduct.price,
           }],
-          totalAmount: (selectedProduct.price * quantity).toFixed(2),
+          total: selectedProduct.price * quantity,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json();
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+
+      const orderData = await orderResponse.json();
+      const orderId = orderData.orderId;
+
+      // Then create PayPal order
+      const paypalResponse = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          amount: selectedProduct.price * quantity,
+        }),
+      });
+
+      if (!paypalResponse.ok) {
+        const errorData = await paypalResponse.json();
         throw new Error(errorData.error || 'Failed to create PayPal order');
       }
 
-      const order = await response.json();
-      return order.paypalOrderId; // Return the PayPal order ID
+      const paypalData = await paypalResponse.json();
+      return paypalData.paypalOrderId || paypalData.id;
     } catch (error: any) {
       console.error('Error creating PayPal order:', error);
       toast.error(error.message || 'Failed to create PayPal order. Please try again.');
-      throw error; // Re-throw to stop PayPal flow
+      throw error;
     }
   };
 
@@ -192,14 +165,6 @@ export default function KasperskyEndpointPage() {
         },
         body: JSON.stringify({
           orderID: data.orderID,
-          items: [{
-            id: selectedProduct!.id,
-            name: selectedProduct!.name,
-            quantity: quantity,
-            price: selectedProduct!.price,
-            isKaspersky: true,
-          }],
-          totalAmount: (selectedProduct!.price * quantity).toFixed(2),
         }),
       });
 
@@ -209,8 +174,8 @@ export default function KasperskyEndpointPage() {
       }
 
       const orderDetails = await response.json();
-      toast.success(`Your order ${orderDetails.orderId} has been placed.`);
-      router.push(`/order-confirmation?orderId=${orderDetails.orderId}`);
+      toast.success('Payment successful!');
+      router.push(`/order-confirmation/${orderDetails.orderId}`);
     } catch (error: any) {
       console.error('Error capturing PayPal order:', error);
       toast.error(error.message || 'There was an issue processing your PayPal payment.');
@@ -236,7 +201,7 @@ export default function KasperskyEndpointPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-12 text-primary">Kaspersky Endpoint Solutions</h1>
-
+      
       <section className="grid md:grid-cols-3 gap-8 mb-12">
         {kasperskyProducts.map((product) => (
           <div
@@ -258,7 +223,7 @@ export default function KasperskyEndpointPage() {
             </div>
             <h2 className="text-2xl font-semibold mb-2 text-center text-secondary-foreground">{product.name}</h2>
             <p className="text-3xl font-bold text-center text-green-600 mb-4">${product.price.toFixed(2)}</p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-sm text-muted-foreground mb-4">
               {product.features.map((feature, index) => (
                 <li key={index} className="flex items-start">
                   <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-1" />
@@ -298,69 +263,34 @@ export default function KasperskyEndpointPage() {
               </div>
               <p className="text-2xl font-bold mb-6">Total: <span className="text-green-600">${totalAmount}</span></p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={isProcessingPayment || isLoadingSession || quantity <= 0}
-                  className="flex-1 py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isProcessingPayment ? (
+              <div className="max-w-md mx-auto">
+                {isPending || isLoadingSession ? (
+                  <div className="flex items-center justify-center py-3 bg-gray-200 rounded-md">
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  ) : (
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                  )}
-                  Add to Cart
-                </Button>
-                {/* PayPal Buttons */}
-                <div className="flex-1">
-                  {isPending ? (
-                    <div className="flex items-center justify-center py-3 bg-gray-200 rounded-md">
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Loading PayPal...
-                    </div>
-                  ) : (
-                    <PayPalButtons
-                      style={{ layout: "vertical", color: "blue", shape: "rect", label: "paypal" }}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onError={onError}
-                      onCancel={onCancel}
-                      disabled={isProcessingPayment || isLoadingSession || quantity <= 0}
-                    />
-                  )}
-                </div>
+                    Loading...
+                  </div>
+                ) : (
+                  <PayPalButtons
+                    style={{
+                      layout: "vertical",
+                      color: "gold",
+                      shape: "rect",
+                      label: "checkout",
+                      height: 48,
+                    }}
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    onCancel={onCancel}
+                    disabled={isProcessingPayment || quantity <= 0 || !session}
+                  />
+                )}
               </div>
             </div>
           </div>
         </section>
       )}
-
-      <section className="text-center py-12 bg-secondary rounded-lg shadow-inner">
-        <h2 className="text-3xl font-bold mb-6 text-primary">Why Choose Kaspersky Endpoint Security?</h2>
-        <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-          <div className="flex flex-col items-center p-4">
-            <Shield className="w-12 h-12 text-blue-600 mb-3" />
-            <h3 className="text-xl font-semibold mb-2">Robust Protection</h3>
-            <p className="text-muted-foreground">Multi-layered security against all cyber threats.</p>
-          </div>
-          <div className="flex flex-col items-center p-4">
-            <Award className="w-12 h-12 text-green-600 mb-3" />
-            <h3 className="text-xl font-semibold mb-2">Award-Winning</h3>
-            <p className="text-muted-foreground">Recognized by industry experts for superior performance.</p>
-          </div>
-          <div className="flex flex-col items-center p-4">
-            <Headset className="w-12 h-12 text-purple-600 mb-3" />
-            <h3 className="text-xl font-semibold mb-2">24/7 Support</h3>
-            <p className="text-muted-foreground">Expert assistance whenever you need it.</p>
-          </div>
-          <div className="flex flex-col items-center p-4">
-            <DollarSign className="w-12 h-12 text-yellow-600 mb-3" />
-            <h3 className="text-xl font-semibold mb-2">Cost-Effective</h3>
-            <p className="text-muted-foreground">Premium security solutions at competitive prices.</p>
-          </div>
-        </div>
-      </section>
-
+      
       <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </div>
   );

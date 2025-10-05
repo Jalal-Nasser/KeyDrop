@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // Insert order items
     const orderItemsToInsert = items.map((item: any) => ({
       order_id: orderId,
-      product_id: item.id, // Assuming item.id is the product_id
+      product_id: parseInt(item.id, 10), // Convert item.id to number for product_id
       quantity: item.quantity,
       price_at_purchase: item.price,
       product_name: item.name,
@@ -92,7 +92,6 @@ export async function POST(req: NextRequest) {
 
     const payPalOrder = await getPaypalClient().execute(request);
     
-    // Update the pending order with PayPal's order ID
     const { error: updateError } = await supabase
       .from('orders')
       .update({ payment_id: payPalOrder.result.id })
@@ -103,10 +102,58 @@ export async function POST(req: NextRequest) {
       // Don't throw, as PayPal order was created successfully. Log and continue.
     }
 
-    return NextResponse.json({ paypalOrderId: payPalOrder.result.id, orderId: orderId });
+    // Calculate order totals for notification
+    const recalculatedSubtotal = orderItemsToInsert.reduce(
+      (sum, item) => sum + item.line_total, 0
+    );
+    const processingFee = 0; // Add your processing fee calculation if needed
+    const finalTotal = recalculatedSubtotal + processingFee;
+
+    // Send WhatsApp notification to admin
+    try {
+      const itemsList = orderItemsToInsert
+        .map(item => `- ${item.product_name} (x${item.quantity}) - $${item.line_total.toFixed(2)}`)
+        .join('\n');
+
+      const message = `New Order Received!\n\nOrder ID: ${orderId}\nCustomer: ${user.email}\nSubtotal: $${recalculatedSubtotal.toFixed(2)}\nProcessing Fee: $${processingFee.toFixed(2)}\nTotal: $${finalTotal.toFixed(2)}\n\nItems:\n${itemsList}`;
+
+      const authString = Buffer.from(
+        `${process.env.VONAGE_API_KEY}:${process.env.VONAGE_API_SECRET}`
+      ).toString('base64');
+
+      const whatsappResponse = await fetch('https://api.nexmo.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          from: process.env.VONAGE_WHATSAPP_NUMBER,
+          to: process.env.VONAGE_ADMIN_WHATSAPP,
+          message_type: 'text',
+          text: message,
+          channel: 'whatsapp'
+        })
+      });
+
+      if (!whatsappResponse.ok) {
+        const errorText = await whatsappResponse.text();
+        console.error('WhatsApp notification failed:', whatsappResponse.status, errorText);
+      } else {
+        console.log('WhatsApp notification sent successfully');
+      }
+    } catch (whatsappError) {
+      console.error('WhatsApp notification error:', whatsappError);
+      // Don't fail the order if WhatsApp notification fails
+    }
+
+    return NextResponse.json({ 
+      paypalOrderId: payPalOrder.result.id, 
+      orderId: orderId 
+    });
 
   } catch (error: any) {
     console.error('PayPal order creation failed:', error);
     return NextResponse.json({ error: error.message || 'Failed to create PayPal order' }, { status: 500 });
   }
-}

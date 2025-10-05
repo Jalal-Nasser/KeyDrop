@@ -81,6 +81,48 @@ export async function POST(request: NextRequest) {
       .select('total, user_id, order_items(product_name, products(name, image))')
       .eq('id', orderId)
       .single() as { data: OrderDetailsForNotification | null, error: any }; // Explicitly cast here
+      
+    // Send WhatsApp notification to admin
+    try {
+      const { data: orderItems } = await supabase
+        .from('order_items')
+        .select('product_name, quantity, line_total')
+        .eq('order_id', orderId);
+
+      const itemsList = orderItems
+        ?.map(item => `- ${item.product_name} (x${item.quantity}) - $${(item.line_total || 0).toFixed(2)}`)
+        .join('\n') || 'No items';
+
+      const purchaseType = clientId ? 'Admin purchase for client' : 'Admin personal purchase';
+
+      const message = `${purchaseType}\n\nOrder ID: ${orderId}\nPaid by: Admin (Wallet)\nAmount: $${amount.toFixed(2)}\n\nItems:\n${itemsList}`;
+
+      const authString = Buffer.from(
+        `${process.env.VONAGE_API_KEY}:${process.env.VONAGE_API_SECRET}`
+      ).toString('base64');
+
+      const whatsappResponse = await fetch('https://api.nexmo.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          from: process.env.VONAGE_WHATSAPP_NUMBER,
+          to: process.env.VONAGE_ADMIN_WHATSAPP,
+          message_type: 'text',
+          text: message,
+          channel: 'whatsapp'
+        })
+      });
+
+      if (!whatsappResponse.ok) {
+        console.error('WhatsApp notification failed:', await whatsappResponse.text());
+      }
+    } catch (whatsappError) {
+      console.error('WhatsApp notification error:', whatsappError);
+    }
 
     if (orderError) {
       console.error('Error fetching order details for notifications:', orderError);
@@ -173,7 +215,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      newBalance,
+      message: 'Payment completed successfully'
+    });
   } catch (error) {
     console.error('Wallet payment error:', error);
     return NextResponse.json(

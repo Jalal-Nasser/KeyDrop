@@ -6,9 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+export interface Database {
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
@@ -80,7 +78,7 @@ export type Database = {
           order_id: string
           price_at_purchase: number
           product_id: number
-          product_key: string | null // Added product_key
+          product_key: string | null
           product_name: string | null
           quantity: number
           sku: string | null
@@ -92,7 +90,7 @@ export type Database = {
           order_id: string
           price_at_purchase: number
           product_id: number
-          product_key?: string | null // Added product_key
+          product_key?: string | null
           product_name?: string | null
           quantity: number
           sku?: string | null
@@ -104,7 +102,7 @@ export type Database = {
           order_id?: string
           price_at_purchase?: number
           product_id?: number
-          product_key?: string | null // Added product_key
+          product_key?: string | null
           product_name?: string | null
           quantity?: number
           sku?: string | null
@@ -130,37 +128,37 @@ export type Database = {
       }
       orders: {
         Row: {
-          amounts: Json | null // Added amounts
+          amounts: Json | null
           created_at: string
           id: string
           payment_gateway: string | null
           payment_id: string | null
-          promo_code: string | null // Added promo_code
-          promo_snapshot: Json | null // Added promo_snapshot
-          status: string // Added status
+          promo_code: string | null
+          promo_snapshot: Json | null
+          status: string
           total: number
           user_id: string
         }
         Insert: {
-          amounts?: Json | null // Added amounts
+          amounts?: Json | null
           created_at?: string
           id?: string
           payment_gateway?: string | null
           payment_id?: string | null
-          promo_code?: string | null // Added promo_code
-          promo_snapshot?: Json | null // Added promo_snapshot
+          promo_code?: string | null
+          promo_snapshot?: Json | null
           status?: string
           total: number
           user_id: string
         }
         Update: {
-          amounts?: Json | null // Added amounts
+          amounts?: Json | null
           created_at?: string
           id?: string
           payment_gateway?: string | null
           payment_id?: string | null
-          promo_code?: string | null // Added promo_code
-          promo_snapshot?: Json | null // Added promo_snapshot
+          promo_code?: string | null
+          promo_snapshot?: Json | null
           status?: string
           total?: number
           user_id?: string
@@ -237,52 +235,61 @@ export type Database = {
       }
       profiles: {
         Row: {
-          address_line_1: string | null // Added address fields
+          address_line_1: string | null
           address_line_2: string | null
           city: string | null
           company_name: string | null
           country: string | null
           first_name: string | null
           id: string
-          is_admin: boolean | null // Added is_admin
+          is_admin: boolean | null
           last_name: string | null
           postal_code: string | null
           state_province_region: string | null
           vat_number: string | null
-          email: string | null // Added email
-          wallet_balance: number | null // Added wallet_balance
+          email: string | null
+          created_at: string | null
+          updated_at: string | null
+          role: string | null
+          wallet_balance: number | null
         }
         Insert: {
-          address_line_1?: string | null // Added address fields
+          address_line_1?: string | null
           address_line_2?: string | null
           city?: string | null
           company_name?: string | null
           country?: string | null
           first_name?: string | null
           id: string
-          is_admin?: boolean | null // Added is_admin
+          is_admin?: boolean | null
           last_name?: string | null
           postal_code?: string | null
           state_province_region?: string | null
           vat_number?: string | null
-          email?: string | null // Added email
-          wallet_balance?: number | null // Added wallet_balance
+          email?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          role?: string | null
+          wallet_balance?: number | null
         }
         Update: {
-          address_line_1?: string | null // Added address fields
+          address_line_1?: string | null
           address_line_2?: string | null
           city?: string | null
           company_name?: string | null
           country?: string | null
           first_name?: string | null
           id?: string
-          is_admin?: boolean | null // Added is_admin
+          is_admin?: boolean | null
           last_name?: string | null
           postal_code?: string | null
           state_province_region?: string | null
           vat_number?: string | null
-          email?: string | null // Added email
-          wallet_balance?: number | null // Added wallet_balance
+          email?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          role?: string | null
+          wallet_balance?: number | null
         }
         Relationships: []
       }
@@ -467,16 +474,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      process_wallet_payment: {
-        Args: {
-          p_order_id: string;
-          p_admin_id: string;
-          p_client_id: string;
-          p_amount: number;
-          p_current_balance: number;
-        };
-        Returns: Json;
-      };
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
