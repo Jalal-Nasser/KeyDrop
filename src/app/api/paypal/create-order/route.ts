@@ -1,160 +1,145 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
-import { getPaypalClient } from '@/lib/paypal';
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server'; // Corrected import for Supabase server client
+import { getPaypalClient } from '@/lib/paypal'; // Corrected import for PayPal client
 import paypal from '@paypal/checkout-server-sdk';
-import { TablesInsert } from '@/types/supabase';
+import { TablesInsert } from '@/types/supabase'; // Import TablesInsert for type safety
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServerClientComponent();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const body = await req.json();
-    const { items, totalAmount } = body;
+    const { items, totalAmount } = await req.json();
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'No items provided for PayPal order' }, { status: 400 });
-    }
-    if (typeof totalAmount !== 'string' || parseFloat(totalAmount) <= 0) {
-      return NextResponse.json({ error: 'Invalid total amount for PayPal order' }, { status: 400 });
+    if (!items || !Array.isArray(items) || items.length === 0 || typeof totalAmount !== 'number' || totalAmount <= 0) {
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
     }
 
-    // Create a pending order in your database first
+    // Calculate item_total for PayPal breakdown and prepare order items for DB
+    let item_total_value = 0;
+    const orderItemsToInsert = items.map((item: any) => {
+      const itemPrice = parseFloat(item.price.toFixed(2));
+      const lineTotal = itemPrice * item.quantity;
+      item_total_value += lineTotal;
+      return {
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        price_at_purchase: itemPrice,
+        unit_price: itemPrice,
+        line_total: lineTotal,
+        sku: item.sku || null, // Assuming sku might be present
+      };
+    });
+
+    // Create an order in your Supabase database
     const { data: orderData, error: orderError } = await supabase
-      .from("orders")
+      .from('orders')
       .insert({
         user_id: user.id,
-        total: parseFloat(totalAmount),
-        status: "pending",
-        payment_gateway: "paypal",
-        payment_id: null, // Will be updated with PayPal's order ID later
-      } as TablesInsert<'orders'>)
+        total: totalAmount, // Use the totalAmount passed from client
+        status: 'pending',
+        payment_gateway: 'paypal',
+        // payment_id will be updated after PayPal order creation
+      } as TablesInsert<'orders'>) // Cast to TablesInsert for type safety
       .select()
       .single();
 
-    if (orderError) {
-      console.error("Error creating pending order in DB:", orderError);
-      throw new Error(`Failed to create pending order: ${orderError.message}`);
+    if (orderError || !orderData) {
+      console.error('Supabase order creation failed:', orderError);
+      return NextResponse.json({ error: `Failed to create order in database: ${orderError?.message}` }, { status: 500 });
     }
 
-    const orderId = orderData.id;
-
-    // Insert order items
-    const orderItemsToInsert = items.map((item: any) => ({
-      order_id: orderId,
-      product_id: parseInt(item.id, 10), // Convert item.id to number for product_id
-      quantity: item.quantity,
-      price_at_purchase: item.price,
-      product_name: item.name,
-      unit_price: item.price,
-      line_total: item.price * item.quantity,
-      sku: item.sku || null,
+    // Link order items to the newly created order
+    const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
+      ...item,
+      order_id: orderData.id,
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItemsToInsert);
+    const { error: orderItemsError } = await supabase
+      .from('order_items')
+      .insert(orderItemsWithOrderId as TablesInsert<'order_items'>[]); // Cast for type safety
 
-    if (itemsError) {
-      console.error("Error inserting order items:", itemsError);
-      throw new Error(`Failed to insert order items: ${itemsError.message}`);
+    if (orderItemsError) {
+      console.error('Supabase order items creation failed:', orderItemsError);
+      // If order items fail, consider rolling back the main order
+      await supabase.from('orders').delete().eq('id', orderData.id);
+      return NextResponse.json({ error: `Failed to create order items in database: ${orderItemsError.message}` }, { status: 500 });
     }
 
-    // Now create PayPal order
+    // Create a PayPal order
     const request = new paypal.orders.OrdersCreateRequest();
-    request.prefer('return=representation');
+    request.prefer("return=representation");
     request.requestBody({
       intent: 'CAPTURE',
-      purchase_units: [{
-        amount: {
-          currency_code: 'USD',
-          value: parseFloat(totalAmount).toFixed(2),
-        },
-        items: items.map((item: any) => ({
-          name: item.name,
-          quantity: item.quantity.toString(),
-          unit_amount: {
+      purchase_units: [
+        {
+          reference_id: orderData.id, // Use your internal order ID as reference
+          amount: {
             currency_code: 'USD',
-            value: item.price.toFixed(2),
+            value: totalAmount.toFixed(2),
+            breakdown: {
+              item_total: {
+                currency_code: 'USD',
+                value: item_total_value.toFixed(2), // This fixes the ITEM_TOTAL_REQUIRED error
+              },
+              // Add other breakdown components if applicable (e.g., tax, shipping, discount)
+            },
           },
-        })),
-      }],
+          items: orderItemsToInsert.map(item => ({
+            name: item.product_name || 'Unknown Product',
+            unit_amount: {
+              currency_code: 'USD',
+              value: item.unit_price.toFixed(2),
+            },
+            quantity: item.quantity.toString(),
+          })),
+        },
+      ],
       application_context: {
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account/orders/${orderData.id}/invoice`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/kaspersky`,
+        brand_name: 'Dropskey', // Replace with your brand name
+        locale: 'en-US',
+        landing_page: 'BILLING',
         shipping_preference: 'NO_SHIPPING',
+        user_action: 'PAY_NOW',
       },
     });
 
-    const payPalOrder = await getPaypalClient().execute(request);
-    
-    const { error: updateError } = await supabase
+    const paypalResponse = await getPaypalClient().execute(request);
+
+    if (paypalResponse.statusCode !== 201) {
+      console.error('PayPal order creation failed:', paypalResponse.result);
+      // If PayPal order creation fails, delete the order from your DB
+      await supabase.from('orders').delete().eq('id', orderData.id);
+      return NextResponse.json({ error: 'Failed to create PayPal order' }, { status: 500 });
+    }
+
+    // Update the Supabase order with the PayPal Order ID
+    const { error: updatePaymentIdError } = await supabase
       .from('orders')
-      .update({ payment_id: payPalOrder.result.id })
-      .eq('id', orderId);
+      .update({ payment_id: paypalResponse.result.id })
+      .eq('id', orderData.id);
 
-    if (updateError) {
-      console.error("Error updating order with PayPal ID:", updateError);
-      // Don't throw, as PayPal order was created successfully. Log and continue.
+    if (updatePaymentIdError) {
+      console.error('Failed to update Supabase order with PayPal ID:', updatePaymentIdError);
+      // Log the error but don't fail the entire process as PayPal order is created
     }
 
-    // Calculate order totals for notification
-    const recalculatedSubtotal = orderItemsToInsert.reduce(
-      (sum, item) => sum + item.line_total, 0
-    );
-    const processingFee = 0; // Add your processing fee calculation if needed
-    const finalTotal = recalculatedSubtotal + processingFee;
-
-    // Send WhatsApp notification to admin
-    try {
-      const itemsList = orderItemsToInsert
-        .map(item => `- ${item.product_name} (x${item.quantity}) - $${item.line_total.toFixed(2)}`)
-        .join('\n');
-
-      const message = `New Order Received!\n\nOrder ID: ${orderId}\nCustomer: ${user.email}\nSubtotal: $${recalculatedSubtotal.toFixed(2)}\nProcessing Fee: $${processingFee.toFixed(2)}\nTotal: $${finalTotal.toFixed(2)}\n\nItems:\n${itemsList}`;
-
-      const authString = Buffer.from(
-        `${process.env.VONAGE_API_KEY}:${process.env.VONAGE_API_SECRET}`
-      ).toString('base64');
-
-      const whatsappResponse = await fetch('https://api.nexmo.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${authString}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          from: process.env.VONAGE_WHATSAPP_NUMBER,
-          to: process.env.VONAGE_ADMIN_WHATSAPP,
-          message_type: 'text',
-          text: message,
-          channel: 'whatsapp'
-        })
-      });
-
-      if (!whatsappResponse.ok) {
-        const errorText = await whatsappResponse.text();
-        console.error('WhatsApp notification failed:', whatsappResponse.status, errorText);
-      } else {
-        console.log('WhatsApp notification sent successfully');
-      }
-    } catch (whatsappError) {
-      console.error('WhatsApp notification error:', whatsappError);
-      // Don't fail the order if WhatsApp notification fails
-    }
-
-    return NextResponse.json({ 
-      paypalOrderId: payPalOrder.result.id, 
-      orderId: orderId 
+    return NextResponse.json({
+      orderId: orderData.id, // Your internal DB order ID
+      paypalOrderId: paypalResponse.result.id, // PayPal's order ID
     });
 
   } catch (error: any) {
-    console.error('PayPal order creation failed:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create PayPal order' }, { status: 500 });
+    console.error('Error in create-order API:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

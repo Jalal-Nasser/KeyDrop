@@ -10,6 +10,7 @@ import { useSession } from '@/context/session-context';
 import { AuthDialog } from '@/components/auth-dialog';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { cn } from "@/lib/utils";
+import { Checkbox } from '@/components/ui/checkbox'; // Assuming you have a Checkbox component
 
 interface KasperskyProduct {
   id: string;
@@ -32,7 +33,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Web and device control',
       'Easy to deploy and manage',
     ],
-    image: '/images/kaspersky-cloud.png', // Updated image path
+    image: '/images/kaspersky-cloud.png',
   },
   {
     id: '24',
@@ -46,7 +47,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Centralized management console',
       'Anti-malware for workstations and file servers',
     ],
-    image: '/images/kaspersky-select.png', // Updated image path
+    image: '/images/kaspersky-select.png',
   },
   {
     id: '25',
@@ -60,7 +61,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'System management tools',
       'Advanced anomaly control',
     ],
-    image: '/images/kaspersky-advanced.png', // Updated image path
+    image: '/images/kaspersky-advanced.png',
   },
 ];
 
@@ -69,7 +70,8 @@ export default function KasperskyEndpointPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [dbOrderId, setDbOrderId] = useState<string | null>(null); // State to store our DB order ID
+  const [dbOrderId, setDbOrderId] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false); // New state for terms and conditions
   const router = useRouter();
   const { session, isLoading: isLoadingSession } = useSession();
   const [{ isPending }] = usePayPalScriptReducer();
@@ -105,6 +107,11 @@ export default function KasperskyEndpointPage() {
       throw new Error('User not authenticated for PayPal order.');
     }
 
+    if (!acceptedTerms) {
+      toast.error('Please accept the terms and conditions to proceed.');
+      throw new Error('Terms and conditions not accepted.');
+    }
+
     setIsProcessingPayment(true);
     try {
       const totalAmount = (selectedProduct.price * quantity).toFixed(2);
@@ -113,10 +120,9 @@ export default function KasperskyEndpointPage() {
         name: selectedProduct.name,
         price: selectedProduct.price,
         quantity: quantity,
-        image: selectedProduct.image, // Include image for potential notifications
+        image: selectedProduct.image,
       }];
 
-      // Call the API route that creates the DB order and then the PayPal order
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
         headers: {
@@ -134,8 +140,8 @@ export default function KasperskyEndpointPage() {
       }
 
       const result = await response.json();
-      setDbOrderId(result.orderId); // Store our DB order ID
-      return result.paypalOrderId; // Return PayPal's order ID
+      setDbOrderId(result.orderId);
+      return result.paypalOrderId;
     } catch (error: any) {
       console.error('Error creating PayPal order:', error);
       toast.error(error.message || 'Failed to create PayPal order. Please try again.');
@@ -158,15 +164,14 @@ export default function KasperskyEndpointPage() {
         throw new Error('Database Order ID is missing.');
       }
 
-      // Call the API route to capture the PayPal payment
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderID: data.orderID, // PayPal's order ID
-          orderId: dbOrderId, // Our DB order ID
+          orderID: data.orderID,
+          orderId: dbOrderId,
         }),
       });
 
@@ -177,7 +182,7 @@ export default function KasperskyEndpointPage() {
 
       const orderDetails = await response.json();
       toast.success('Payment successful!');
-      router.push(`/account/orders/${orderDetails.orderId}/invoice`); // Redirect to invoice page
+      router.push(`/account/orders/${orderDetails.orderId}/invoice`);
     } catch (error: any) {
       console.error('Error capturing PayPal order:', error);
       toast.error(error.message || 'There was an issue processing your PayPal payment.');
@@ -266,6 +271,24 @@ export default function KasperskyEndpointPage() {
               <p className="text-2xl font-bold mb-6">Total: <span className="text-green-600">${totalAmount}</span></p>
 
               <div className="max-w-md mx-auto">
+                {/* Terms and Conditions Checkbox */}
+                <div className="flex items-center space-x-2 mb-4">
+                  <Checkbox
+                    id="terms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I accept the{' '}
+                    <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      Terms and Conditions
+                    </a>
+                  </label>
+                </div>
+
                 {isPending || isLoadingSession ? (
                   <div className="flex items-center justify-center py-3 bg-gray-200 rounded-md">
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -284,7 +307,7 @@ export default function KasperskyEndpointPage() {
                     onApprove={onApprove}
                     onError={onError}
                     onCancel={onCancel}
-                    disabled={isProcessingPayment || quantity <= 0 || !session}
+                    disabled={isProcessingPayment || quantity <= 0 || !session || !acceptedTerms} // Disable if terms not accepted
                   />
                 )}
               </div>
