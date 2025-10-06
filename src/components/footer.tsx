@@ -3,16 +3,23 @@ export function Footer() {
     <footer className="text-white py-12" style={{ backgroundColor: "#1e73be" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* My account - EXACT content */}
+          {/* Our Partner - Kaspersky */}
           <div>
-            <h3 className="font-semibold mb-4 text-white">My account</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="/register" className="text-blue-100 hover:text-white transition-colors">
-                  Register
-                </a>
-              </li>
-            </ul>
+            <h3 className="font-semibold mb-4 text-white">Our Partner</h3>
+            <div className="space-y-4">
+              <a 
+                href="https://www.kaspersky.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <img 
+                  src="/images/kaspersky_b2b_registered_partner-dropskey.png" 
+                  alt="Kaspersky B2B Registered Partner"
+                  className="h-auto w-48"
+                />
+              </a>
+            </div>
           </div>
 
           {/* Terms and Conditions - EXACT content */}
