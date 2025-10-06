@@ -32,7 +32,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Web and device control',
       'Easy to deploy and manage',
     ],
-    image: '/kaspersky-cloud.png',
+    image: '/images/kaspersky-cloud.png', // Updated image path
   },
   {
     id: '24',
@@ -46,7 +46,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'Centralized management console',
       'Anti-malware for workstations and file servers',
     ],
-    image: '/kaspersky-select.png',
+    image: '/images/kaspersky-select.png', // Updated image path
   },
   {
     id: '25',
@@ -60,7 +60,7 @@ const kasperskyProducts: KasperskyProduct[] = [
       'System management tools',
       'Advanced anomaly control',
     ],
-    image: '/kaspersky-advanced.png',
+    image: '/images/kaspersky-advanced.png', // Updated image path
   },
 ];
 
@@ -69,6 +69,7 @@ export default function KasperskyEndpointPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [dbOrderId, setDbOrderId] = useState<string | null>(null); // State to store our DB order ID
   const router = useRouter();
   const { session, isLoading: isLoadingSession } = useSession();
   const [{ isPending }] = usePayPalScriptReducer();
@@ -104,53 +105,41 @@ export default function KasperskyEndpointPage() {
       throw new Error('User not authenticated for PayPal order.');
     }
 
+    setIsProcessingPayment(true);
     try {
-      // First create the order in your database
-      const orderResponse = await fetch('/api/orders/create', {
+      const totalAmount = (selectedProduct.price * quantity).toFixed(2);
+      const items = [{
+        id: parseInt(selectedProduct.id),
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        quantity: quantity,
+        image: selectedProduct.image, // Include image for potential notifications
+      }];
+
+      // Call the API route that creates the DB order and then the PayPal order
+      const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: [{
-            product_id: parseInt(selectedProduct.id),
-            quantity: quantity,
-            unit_price: selectedProduct.price,
-          }],
-          total: selectedProduct.price * quantity,
+          items: items,
+          totalAmount: totalAmount,
         }),
       });
 
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
-        throw new Error(errorData.error || 'Failed to create order');
-      }
-
-      const orderData = await orderResponse.json();
-      const orderId = orderData.orderId;
-
-      // Then create PayPal order
-      const paypalResponse = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: orderId,
-          amount: selectedProduct.price * quantity,
-        }),
-      });
-
-      if (!paypalResponse.ok) {
-        const errorData = await paypalResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create PayPal order');
       }
 
-      const paypalData = await paypalResponse.json();
-      return paypalData.paypalOrderId || paypalData.id;
+      const result = await response.json();
+      setDbOrderId(result.orderId); // Store our DB order ID
+      return result.paypalOrderId; // Return PayPal's order ID
     } catch (error: any) {
       console.error('Error creating PayPal order:', error);
       toast.error(error.message || 'Failed to create PayPal order. Please try again.');
+      setIsProcessingPayment(false);
       throw error;
     }
   };
@@ -158,13 +147,26 @@ export default function KasperskyEndpointPage() {
   const onApprove = async (data: any, actions: any) => {
     setIsProcessingPayment(true);
     try {
+      if (!session) {
+        toast.error('You must be logged in to complete this purchase.');
+        setIsProcessingPayment(false);
+        throw new Error('User not authenticated for PayPal order.');
+      }
+
+      if (!dbOrderId) {
+        toast.error('Order ID not found. Please try creating the order again.');
+        throw new Error('Database Order ID is missing.');
+      }
+
+      // Call the API route to capture the PayPal payment
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderID: data.orderID,
+          orderID: data.orderID, // PayPal's order ID
+          orderId: dbOrderId, // Our DB order ID
         }),
       });
 
@@ -175,7 +177,7 @@ export default function KasperskyEndpointPage() {
 
       const orderDetails = await response.json();
       toast.success('Payment successful!');
-      router.push(`/order-confirmation/${orderDetails.orderId}`);
+      router.push(`/account/orders/${orderDetails.orderId}/invoice`); // Redirect to invoice page
     } catch (error: any) {
       console.error('Error capturing PayPal order:', error);
       toast.error(error.message || 'There was an issue processing your PayPal payment.');
