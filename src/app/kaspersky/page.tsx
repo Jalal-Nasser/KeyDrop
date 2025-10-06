@@ -10,7 +10,7 @@ import { useSession } from '@/context/session-context';
 import { AuthDialog } from '@/components/auth-dialog';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { cn } from "@/lib/utils";
-import { Checkbox } from '@/components/ui/checkbox'; // Assuming you have a Checkbox component
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface KasperskyProduct {
   id: string;
@@ -71,7 +71,7 @@ export default function KasperskyEndpointPage() {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [dbOrderId, setDbOrderId] = useState<string | null>(null);
-  const [acceptedTerms, setAcceptedTerms] = useState(false); // New state for terms and conditions
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const router = useRouter();
   const { session, isLoading: isLoadingSession } = useSession();
   const [{ isPending }] = usePayPalScriptReducer();
@@ -114,9 +114,10 @@ export default function KasperskyEndpointPage() {
 
     setIsProcessingPayment(true);
     try {
-      const totalAmount = (selectedProduct.price * quantity).toFixed(2);
+      // Send totalAmount as a number, not a string
+      const totalAmount = selectedProduct.price * quantity;
       const items = [{
-        id: parseInt(selectedProduct.id),
+        id: selectedProduct.id, // Keep as string for product_id in DB
         name: selectedProduct.name,
         price: selectedProduct.price,
         quantity: quantity,
@@ -130,7 +131,7 @@ export default function KasperskyEndpointPage() {
         },
         body: JSON.stringify({
           items: items,
-          totalAmount: totalAmount,
+          totalAmount: totalAmount, // Now sending as a number
         }),
       });
 
@@ -203,14 +204,14 @@ export default function KasperskyEndpointPage() {
     setIsProcessingPayment(false);
   };
 
-  const totalAmount = selectedProduct ? (selectedProduct.price * quantity).toFixed(2) : '0.00';
+  const displayTotalAmount = selectedProduct ? (selectedProduct.price * quantity).toFixed(2) : '0.00';
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-12 text-primary">Kaspersky Endpoint Solutions</h1>
       
       <section className="grid md:grid-cols-3 gap-8 mb-12">
-        {kasperskyProducts.map((product) => (
+        {kasperskyProducts.map((product, index) => (
           <div
             key={product.id}
             className={cn(
@@ -224,6 +225,8 @@ export default function KasperskyEndpointPage() {
                 src={product.image}
                 alt={product.name}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={index === 0} // Add priority to the first image
                 style={{ objectFit: 'contain' }}
                 className="rounded-md"
               />
@@ -231,8 +234,8 @@ export default function KasperskyEndpointPage() {
             <h2 className="text-2xl font-semibold mb-2 text-center text-secondary-foreground">{product.name}</h2>
             <p className="text-3xl font-bold text-center text-green-600 mb-4">${product.price.toFixed(2)}</p>
             <ul className="space-y-2 text-sm text-muted-foreground mb-4">
-              {product.features.map((feature, index) => (
-                <li key={index} className="flex items-start">
+              {product.features.map((feature, featureIndex) => (
+                <li key={featureIndex} className="flex items-start">
                   <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-1" />
                   <span>{feature}</span>
                 </li>
@@ -251,6 +254,7 @@ export default function KasperskyEndpointPage() {
                 src={selectedProduct.image}
                 alt={selectedProduct.name}
                 fill
+                sizes="(max-width: 768px) 100vw, 20vw" // Adjust sizes for the selected product image
                 style={{ objectFit: 'contain' }}
                 className="rounded-md"
               />
@@ -268,7 +272,7 @@ export default function KasperskyEndpointPage() {
                   className="w-24 p-2 border rounded-md text-center bg-background"
                 />
               </div>
-              <p className="text-2xl font-bold mb-6">Total: <span className="text-green-600">${totalAmount}</span></p>
+              <p className="text-2xl font-bold mb-6">Total: <span className="text-green-600">${displayTotalAmount}</span></p>
 
               <div className="max-w-md mx-auto">
                 {/* Terms and Conditions Checkbox */}
@@ -307,7 +311,7 @@ export default function KasperskyEndpointPage() {
                     onApprove={onApprove}
                     onError={onError}
                     onCancel={onCancel}
-                    disabled={isProcessingPayment || quantity <= 0 || !session || !acceptedTerms} // Disable if terms not accepted
+                    disabled={isProcessingPayment || quantity <= 0 || !session || !acceptedTerms}
                   />
                 )}
               </div>
