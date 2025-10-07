@@ -44,8 +44,38 @@ export default function InvoicePage() {
   const params = useParams();
   const router = useRouter();
   
-  // Calculate amounts
-  const amounts = (order?.amounts || { subtotal: '0.00', discount: '0.00', tax: '0.00', total: '0.00', currency: 'USD' }) as { subtotal: string, discount: string, tax: string, total: string, currency: string };
+  // Process amounts
+  const getAmount = (value: any, defaultValue = 0) => {
+    if (value === null || value === undefined) return defaultValue;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return parseFloat(value) || 0;
+    return defaultValue;
+  };
+
+  // Type the amounts object
+  type OrderAmounts = {
+    subtotal?: string | number;
+    discount?: string | number;
+    tax?: string | number;
+    currency?: string;
+    [key: string]: any;
+  };
+
+  // Safely get the amounts object with proper typing
+  const orderAmounts = (order?.amounts as OrderAmounts) || {};
+  
+  // Calculate amounts with proper fallbacks
+  const amounts = {
+    subtotal: getAmount(orderAmounts.subtotal || order?.total || 0),
+    discount: getAmount(orderAmounts.discount || 0),
+    tax: getAmount(orderAmounts.tax || 0),
+    currency: orderAmounts.currency || 'USD'
+  };
+  
+  // Calculate derived values
+  const subtotalAfterDiscount = Math.max(0, amounts.subtotal - amounts.discount);
+  const processingFee = subtotalAfterDiscount * 0.15;
+  const total = subtotalAfterDiscount + processingFee;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -189,26 +219,40 @@ export default function InvoicePage() {
             <thead>
               <tr className="border-b border-border">
                 <th className="py-2 text-foreground">Item</th>
-                <th className="py-2 text-right text-foreground">Qty</th>
                 <th className="py-2 text-right text-foreground">Unit Price</th>
                 <th className="py-2 text-right text-foreground">Amount</th>
               </tr>
             </thead>
             <tbody>
-              {order.order_items.map((item) => (
-                <tr key={item.id} className="border-b border-border">
-                  <td className="py-3 text-muted-foreground">
-                    {item.product_name || `Product ${item.product_id}`}
-                  </td>
-                  <td className="py-3 text-right text-muted-foreground">
-                    {item.quantity}
-                  </td>
-                  <td className="py-3 text-muted-foreground">${item.price_at_purchase.toFixed(2)}</td>
-                  <td className="py-3 text-right text-muted-foreground">
-                    {item.line_total ? `$${item.line_total.toFixed(2)}` : `$${(item.price_at_purchase * item.quantity).toFixed(2)}`}
-                  </td>
-                </tr>
-              ))}
+              {Array.isArray(order.order_items) && order.order_items.map((item) => {
+                const unitPrice = typeof item.price_at_purchase === 'number' 
+                  ? item.price_at_purchase 
+                  : typeof item.price_at_purchase === 'string' 
+                    ? parseFloat(item.price_at_purchase) 
+                    : 0;
+                
+                const quantity = item.quantity || 1;
+                const lineTotal = item.line_total 
+                  ? (typeof item.line_total === 'string' ? parseFloat(item.line_total) : item.line_total)
+                  : unitPrice * quantity;
+                
+                return (
+                  <tr key={item.id} className="border-b border-border">
+                    <td className="py-3 text-muted-foreground">
+                      {item.product_name || `Product ${item.product_id || 'N/A'}`}
+                    </td>
+                    <td className="py-3 text-right text-muted-foreground">
+                      {quantity}
+                    </td>
+                    <td className="py-3 text-right text-muted-foreground">
+                      ${unitPrice.toFixed(2)}
+                    </td>
+                    <td className="py-3 text-right text-muted-foreground">
+                      ${lineTotal.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot>
               <tr>
@@ -216,41 +260,38 @@ export default function InvoicePage() {
                   Subtotal:
                 </td>
                 <td className="py-3 text-right font-semibold text-foreground">
-                  ${parseFloat(amounts.subtotal).toFixed(2)}
+                  ${amounts.subtotal.toFixed(2)}
                 </td>
               </tr>
-              {parseFloat(amounts.discount) > 0 && (
+              {amounts.discount > 0 && (
                 <tr>
                   <td colSpan={3} className="py-3 text-right font-semibold text-green-600">
                     Discount:
                   </td>
                   <td className="py-3 text-right font-semibold text-green-600">
-                    -${parseFloat(amounts.discount).toFixed(2)}
+                    -${amounts.discount.toFixed(2)}
                   </td>
                 </tr>
               )}
-              {parseFloat(amounts.tax) > 0 && (
-                <tr>
-                  <td colSpan={3} className="py-3 text-right font-semibold text-foreground">
-                    Tax:
-                  </td>
-                  <td className="py-3 text-right font-semibold text-foreground">
-                    ${parseFloat(amounts.tax).toFixed(2)}
-                  </td>
-                </tr>
-              )}
+              <tr>
+                <td colSpan={3} className="py-2 text-right font-semibold text-foreground">
+                  Processing Fee (15%):
+                </td>
+                <td className="py-2 text-right font-semibold text-foreground">
+                  ${processingFee.toFixed(2)}
+                </td>
+              </tr>
               <tr className="bg-muted">
                 <td colSpan={3} className="py-4 text-right text-xl font-bold text-foreground">
                   TOTAL:
                 </td>
                 <td className="py-4 text-right text-xl font-bold text-foreground">
-                  ${parseFloat(amounts.total).toFixed(2)}
+                  ${total.toFixed(2)}
                 </td>
               </tr>
             </tfoot>
           </table>
         </div>
-
         <div className="p-8 bg-muted text-center text-muted-foreground text-sm">
           <p>Thank you for your business!</p>
           <p>If you have any questions, please contact us at support@dropskey.com</p>

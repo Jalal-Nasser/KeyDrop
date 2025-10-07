@@ -23,8 +23,67 @@ export default function PaymentSection({ orderId, totalAmount, cartItems = [] }:
   const clients: { id: string; full_name?: string; email?: string }[] = [];
   const isAdmin = false;
   const handleFundWallet = () => {};
-  const handleWalletPayment = () => {};
-  const handlePayPalPayment = () => {};
+  const handleWalletPayment = async () => {
+    if (!agreedToTerms) {
+      // Show toast error
+      return;
+    }
+
+    if (walletBalance < totalAmount) {
+      // Show toast error
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/wallet-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          clientId: selectedClientId === 'myself' ? null : selectedClientId,
+          amount: totalAmount
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Clear the cart after successful payment
+        await fetch('/api/cart/clear', { method: 'POST' });
+        // Show success toast
+        // router.push(`/order-confirmation/${orderId}`);
+      } else {
+        // Show error toast
+      }
+    } catch (error) {
+      console.error('Wallet payment error:', error);
+      // Show error toast
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handlePayPalPayment = async () => {
+    if (!agreedToTerms) {
+      // Show toast error
+      return;
+    }
+
+    // This would typically be handled by the PayPal button component
+    // For now, we'll just show a success message
+    try {
+      // Simulate PayPal payment success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Clear the cart after successful payment
+      await fetch('/api/cart/clear', { method: 'POST' });
+      // Show success toast
+      // router.push(`/order-confirmation/${orderId}`);
+    } catch (error) {
+      console.error('Payment error:', error);
+      // Show error toast
+    }
+  };
 
   return (
     <div className="rounded-lg border p-6">
@@ -44,11 +103,10 @@ export default function PaymentSection({ orderId, totalAmount, cartItems = [] }:
           </label>
         </div>
       </div>
-
       {isAdmin && <div className="text-center text-xs text-gray-500">Admin Only</div>}
 
       {isAdmin ? (
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-4 relative z-50">
           <label className="text-sm font-medium block">Purchase for Client</label>
           <select
             value={selectedClientId}

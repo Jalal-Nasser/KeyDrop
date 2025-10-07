@@ -12,6 +12,9 @@ import { CartItem } from "@/types/cart"
 import { Tables } from "@/types/supabase"
 import { useCart } from "@/context/cart-context"
 
+import { Checkbox } from "@/components/ui/checkbox"
+import Link from "next/link"
+
 interface CheckoutPaymentSectionProps {
   orderId: string // This is the ID of the order created in the DB
   totalAmount: number
@@ -141,6 +144,32 @@ export function CheckoutPaymentSection({
     }
   }
 
+  const clearUserCart = async () => {
+    try {
+      // Clear cart from localStorage
+      localStorage.removeItem('cart');
+      
+      // Clear cart from context if available
+      const { clearCart } = useCart();
+      if (clearCart) {
+        clearCart();
+      }
+      
+      // Also call the API to clear server-side cart
+      await fetch('/api/cart/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      return false;
+    }
+  };
+
   const handleOnPayPalApprove = async (data: any) => {
     setIsProcessingPayment(true)
     try {
@@ -171,8 +200,10 @@ export function CheckoutPaymentSection({
 
       const result = await response.json();
       if (result.success) {
-        toast.success('Payment successful!')
-        router.push(`/account/orders/${orderIdToUse}/invoice`) // Redirect to invoice page
+        // Clear cart after successful payment
+        await clearUserCart();
+        toast.success('Payment successful!');
+        router.push(`/account/orders/${orderIdToUse}/invoice`); // Redirect to invoice page
       } else {
         throw new Error(result.error || 'Payment not completed by PayPal.')
       }
@@ -190,11 +221,42 @@ export function CheckoutPaymentSection({
     setIsProcessingPayment(false)
   }
 
+  const clearCart = async () => {
+    try {
+      const response = await fetch('/api/cart/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear cart');
+      }
+      
+      // Clear cart from local storage
+      localStorage.removeItem('cart');
+      
+      // Clear cart from context
+      const { clearCart } = useCart();
+      if (clearCart) {
+        clearCart();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      return false;
+    }
+  };
+
   const handleWalletPayment = async () => {
     if (!isFormValid) {
       toast.error('Please agree to the terms and conditions.')
       return
     }
+    
+    setIsProcessingPayment(true);
 
     if (isAdmin && !selectedClientId) {
       toast.error('Please select a client.')
@@ -206,7 +268,6 @@ export function CheckoutPaymentSection({
       return
     }
 
-    setIsProcessingPayment(true)
     try {
       // First create the order in our database
       const { data: { session } } = await supabase.auth.getSession();
@@ -246,20 +307,23 @@ export function CheckoutPaymentSection({
           clientId: selectedClientId,
           amount: totalAmount,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
       if (response.ok) {
-        toast.success('Payment successful!')
-        router.push(`/account/orders/${newOrderId}/invoice`)
+        // Clear the cart after successful payment
+        await clearUserCart();
+        
+        toast.success('Payment successful!');
+        router.push(`/account/orders/${newOrderId}/invoice`);
       } else {
-        throw new Error(result.error || 'Payment failed')
+        throw new Error(result.error || 'Payment failed');
       }
     } catch (error: any) {
-      console.error('Wallet payment error:', error)
-      toast.error(error.message || 'Payment failed. Please try again.')
+      console.error('Wallet payment error:', error);
+      toast.error(error.message || 'Payment failed. Please try again.');
     } finally {
-      setIsProcessingPayment(false)
+      setIsProcessingPayment(false);
     }
   }
 
@@ -344,7 +408,7 @@ export function CheckoutPaymentSection({
             }}
           />
         )}
-        <p className="text-center text-xs text-gray-500">Powered by PayPal</p>
+        <p className="text-center text-xs text-gray-500 mt-2">Powered by PayPal</p>
       </div>
     </div>
   )
