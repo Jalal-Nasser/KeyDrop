@@ -70,7 +70,6 @@ export function Footer() {
             <div className="space-y-2 text-sm text-blue-100">
               <p>+1 (310) 777 8808</p>
               <p>+1 (310) 888 7708</p>
-              <p>support@dropskey.com</p>
             </div>
           </div>
         </div>
