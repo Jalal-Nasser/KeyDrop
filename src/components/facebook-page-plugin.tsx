@@ -50,6 +50,7 @@ export function FacebookPagePlugin() {
       if (document.body.contains(script)) {
         document.body.removeChild(script);
       }
+      // @ts-ignore - Delete window property for cleanup
       delete window.fbAsyncInit;
     };
   }, []);
