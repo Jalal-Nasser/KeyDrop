@@ -321,10 +321,26 @@ export default function KasperskyEndpointPage() {
                   </label>
                 </div>
 
-                {isPending || isLoadingSession ? (
+                {!session ? (
+                  <Button
+                    onClick={() => setIsAuthDialogOpen(true)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    Sign In to Purchase
+                  </Button>
+                ) : !acceptedTerms ? (
+                  <Button
+                    disabled
+                    className="w-full"
+                    size="lg"
+                  >
+                    Accept Terms to Continue
+                  </Button>
+                ) : isPending || isLoadingSession ? (
                   <div className="flex items-center justify-center py-3 bg-gray-200 rounded-md">
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Loading...
+                    Loading PayPal...
                   </div>
                 ) : (
                   <PayPalButtons
@@ -339,7 +355,7 @@ export default function KasperskyEndpointPage() {
                     onApprove={onApprove}
                     onError={onError}
                     onCancel={onCancel}
-                    disabled={isProcessingPayment || quantity <= 0 || !session || !acceptedTerms}
+                    disabled={isProcessingPayment || quantity <= 0}
                   />
                 )}
               </div>

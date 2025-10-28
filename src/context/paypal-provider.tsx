@@ -11,6 +11,7 @@ export function PayPalProvider({ children }: { children: React.ReactNode }) {
         clientId: PAYPAL_CLIENT_ID,
         currency: "USD",
         intent: "capture",
+        components: "buttons",
       }}
     >
       {children}

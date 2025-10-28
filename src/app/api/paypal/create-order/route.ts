@@ -62,24 +62,88 @@ export async function POST(req: NextRequest) {
       order_id: orderData.id,
     }));
 
-    const { error: orderItemsError } = await supabase
-      .from('order_items')
-      .insert(orderItemsWithOrderId.map(item => ({
-        order_id: item.order_id,
-        product_id: 1, // Temporary default product ID to satisfy foreign key constraint
-        product_name: item.product_name,
-        quantity: item.quantity,
-        price_at_purchase: item.price_at_purchase,
-        unit_price: item.unit_price,
-        line_total: item.line_total,
-        sku: item.sku,
-      })));
+    // Ensure referenced products exist in the products table.
+    // For items with SKU, upsert a minimal product record so we have a valid product_id to reference.
+    try {
+      const uniqueSkus = Array.from(new Set(orderItemsWithOrderId.map(i => i.sku).filter(Boolean)));
 
-    if (orderItemsError) {
-      console.error('Supabase order items creation failed:', orderItemsError);
-      // If order items fail, consider rolling back the main order
+      if (uniqueSkus.length > 0) {
+        const productsToUpsert = uniqueSkus.map(sku => {
+          const matchingItem = orderItemsWithOrderId.find(it => it.sku === sku);
+          return {
+            sku,
+            name: matchingItem?.product_name || `Product ${sku}`,
+            price: matchingItem ? matchingItem.unit_price : 0,
+            description: matchingItem?.product_name || null,
+            category: 'Uncategorized',
+            is_digital: true,
+            image: null,
+          };
+        });
+
+        // Upsert by SKU so we get an ID for each SKU (will insert if missing, update otherwise)
+        const { data: upsertedProducts, error: upsertError } = await supabase
+          .from('products')
+          .upsert(productsToUpsert, { onConflict: 'sku' })
+          .select('id,sku');
+
+        if (upsertError) {
+          console.error('Failed to upsert products for order items:', upsertError);
+          // Not fatal — we'll try to insert order_items but may fallback to null product_id
+        }
+
+        // Create a map sku -> id
+        const skuToId: Record<string, number> = {};
+        (upsertedProducts || []).forEach((p: any) => {
+          if (p?.sku && p?.id) skuToId[p.sku] = p.id;
+        });
+
+        // Prepare final payload for order_items insert using found product IDs when available
+        const payloadForInsert = orderItemsWithOrderId.map(item => ({
+          order_id: item.order_id,
+          product_id: skuToId[item.sku] ?? null,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price_at_purchase: item.price_at_purchase,
+          unit_price: item.unit_price,
+          line_total: item.line_total,
+          sku: item.sku,
+        }));
+
+        const { error: orderItemsError } = await supabase
+          .from('order_items')
+          .insert(payloadForInsert as any);
+
+        if (orderItemsError) {
+          console.error('Supabase order items creation failed:', orderItemsError);
+          // If order items fail, roll back the main order
+          await supabase.from('orders').delete().eq('id', orderData.id);
+          return NextResponse.json({ error: `Failed to create order items in database: ${orderItemsError.message}` }, { status: 500 });
+        }
+      } else {
+        // No SKUs — insert order items without product references
+        const { error: orderItemsError } = await supabase
+          .from('order_items')
+          .insert(orderItemsWithOrderId.map(item => ({
+            order_id: item.order_id,
+            product_name: item.product_name,
+            quantity: item.quantity,
+            price_at_purchase: item.price_at_purchase,
+            unit_price: item.unit_price,
+            line_total: item.line_total,
+            sku: item.sku,
+          })) as any);
+
+        if (orderItemsError) {
+          console.error('Supabase order items creation failed:', orderItemsError);
+          await supabase.from('orders').delete().eq('id', orderData.id);
+          return NextResponse.json({ error: `Failed to create order items in database: ${orderItemsError.message}` }, { status: 500 });
+        }
+      }
+    } catch (err) {
+      console.error('Unexpected error while preparing order items:', err);
       await supabase.from('orders').delete().eq('id', orderData.id);
-      return NextResponse.json({ error: `Failed to create order items in database: ${orderItemsError.message}` }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to prepare order items' }, { status: 500 });
     }
 
     // Create a PayPal order
@@ -89,16 +153,15 @@ export async function POST(req: NextRequest) {
       intent: 'CAPTURE',
       purchase_units: [
         {
-          reference_id: orderData.id, // Use your internal order ID as reference
+          reference_id: orderData.id.toString(), // Use your internal order ID as reference
           amount: {
             currency_code: 'USD',
             value: totalAmount.toFixed(2),
             breakdown: {
               item_total: {
                 currency_code: 'USD',
-                value: item_total_value.toFixed(2), // This fixes the ITEM_TOTAL_REQUIRED error
+                value: item_total_value.toFixed(2),
               },
-              // Add other breakdown components if applicable (e.g., tax, shipping, discount)
             },
           },
           items: orderItemsToInsert.map(item => ({
@@ -109,12 +172,13 @@ export async function POST(req: NextRequest) {
             },
             quantity: item.quantity.toString(),
           })),
+          description: `Order #${orderData.id} - ${items.length} item(s)`,
         },
       ],
       application_context: {
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account/orders/${orderData.id}/invoice`,
-        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/kaspersky`,
-        brand_name: 'Dropskey', // Replace with your brand name
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/account/orders/${orderData.id}/invoice`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/kaspersky`,
+        brand_name: 'Dropskey',
         locale: 'en-US',
         landing_page: 'BILLING',
         shipping_preference: 'NO_SHIPPING',
