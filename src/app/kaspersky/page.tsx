@@ -96,6 +96,15 @@ export default function KasperskyEndpointPage() {
     }
   };
 
+  // Calculate price with 1.5% discount for each additional user
+  const calculateDiscountedPrice = (basePrice: number, users: number) => {
+    if (users <= 1) return basePrice;
+    const discountPercentage = (users - 1) * 1.5; // 1.5% for each additional user
+    const maxDiscount = 50; // Cap at 50% discount
+    const finalDiscountPercentage = Math.min(discountPercentage, maxDiscount);
+    return basePrice * (1 - finalDiscountPercentage / 100);
+  };
+
   const createOrder = async (data: any, actions: any) => {
     if (!selectedProduct || quantity <= 0) {
       toast.error('Please select a product and a valid quantity.');
@@ -114,12 +123,13 @@ export default function KasperskyEndpointPage() {
 
     setIsProcessingPayment(true);
     try {
-      // Send totalAmount as a number, not a string
-      const totalAmount = selectedProduct.price * quantity;
+      // Calculate discounted price
+      const discountedPrice = calculateDiscountedPrice(selectedProduct.price, quantity);
+      const totalAmount = discountedPrice * quantity;
       const items = [{
         id: selectedProduct.id, // Keep as string for product_id in DB
         name: selectedProduct.name,
-        price: selectedProduct.price,
+        price: discountedPrice,
         quantity: quantity,
         image: selectedProduct.image,
       }];
@@ -204,7 +214,7 @@ export default function KasperskyEndpointPage() {
     setIsProcessingPayment(false);
   };
 
-  const displayTotalAmount = selectedProduct ? (selectedProduct.price * quantity).toFixed(2) : '0.00';
+  const displayTotalAmount = selectedProduct ? (calculateDiscountedPrice(selectedProduct.price, quantity) * quantity).toFixed(2) : '0.00';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -262,7 +272,7 @@ export default function KasperskyEndpointPage() {
             <div className="flex-grow">
               <p className="text-lg text-muted-foreground mb-4">{selectedProduct.features[0]} and more.</p>
               <div className="flex items-center gap-4 mb-6">
-                <label htmlFor="quantity" className="text-lg font-medium">Quantity:</label>
+                <label htmlFor="quantity" className="text-lg font-medium">Users:</label>
                 <input
                   id="quantity"
                   type="number"
@@ -271,7 +281,25 @@ export default function KasperskyEndpointPage() {
                   onChange={handleQuantityChange}
                   className="w-24 p-2 border rounded-md text-center bg-background"
                 />
+                {quantity > 1 && (
+                  <span className="text-sm text-green-600 font-medium">
+                    {Math.min((quantity - 1) * 1.5, 50)}% discount applied!
+                  </span>
+                )}
               </div>
+              {selectedProduct && quantity > 1 && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-700">
+                    <span className="font-medium">Original price per user:</span> ${selectedProduct.price.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <span className="font-medium">Discounted price per user:</span> ${calculateDiscountedPrice(selectedProduct.price, quantity).toFixed(2)}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <span className="font-medium">You save:</span> ${((selectedProduct.price - calculateDiscountedPrice(selectedProduct.price, quantity)) * quantity).toFixed(2)}
+                  </p>
+                </div>
+              )}
               <p className="text-2xl font-bold mb-6">Total: <span className="text-green-600">${displayTotalAmount}</span></p>
 
               <div className="max-w-md mx-auto">
