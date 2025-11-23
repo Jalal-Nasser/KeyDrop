@@ -49,7 +49,50 @@ interface InvoiceTemplateProps {
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile }) => {
-  const amounts = order.amounts as { subtotal: string, discount: string, tax: string, total: string, currency: string } || { subtotal: order.total.toFixed(2), discount: "0.00", tax: "0.00", total: order.total.toFixed(2), currency: "USD" };
+  // Safely parse stored amounts snapshot (may have subtotal already including tax)
+  const snapshot = (order.amounts as { subtotal?: string | number; discount?: string | number; tax?: string | number; total?: string | number; currency?: string }) || {};
+  const parseNum = (v: any, def = 0) => {
+    if (v === null || v === undefined) return def;
+    if (typeof v === 'number') return v;
+    const n = parseFloat(String(v));
+    return isNaN(n) ? def : n;
+  };
+
+  // Compute item subtotal from order items (line_total preferred, else unit * qty)
+  const itemSubtotal = order.order_items.reduce((acc, item) => {
+    const unit = (item.unit_price != null ? item.unit_price : item.price_at_purchase) || 0;
+    const qty = item.quantity || 1;
+    const line = item.line_total != null ? item.line_total : unit * qty;
+    return acc + line;
+  }, 0);
+
+  const discount = parseNum(snapshot.discount, 0);
+  // Stored subtotal may already include tax; if greater than order.total, ignore it and use itemSubtotal.
+  let storedSubtotal = parseNum(snapshot.subtotal, itemSubtotal);
+  if (storedSubtotal >= order.total && order.total > 0) {
+    storedSubtotal = itemSubtotal; // treat stored value as inflated
+  }
+
+  // Base subtotal after discount (pre-tax)
+  const baseSubtotal = Math.max(0, itemSubtotal - discount);
+  // Determine tax: prefer snapshot.tax; else difference between order.total and baseSubtotal if positive; else fallback 15%.
+  const snapshotTax = parseNum(snapshot.tax, 0);
+  let tax = snapshotTax;
+  if (tax <= 0) {
+    if (order.total > baseSubtotal) {
+      tax = order.total - baseSubtotal;
+    } else {
+      tax = baseSubtotal * 0.15; // fallback processing/tax rate
+    }
+  }
+
+  // Total: prefer order.total if consistent, else recompute
+  let total = parseNum(snapshot.total, order.total || (baseSubtotal + tax));
+  if (total < baseSubtotal || total < itemSubtotal) {
+    total = baseSubtotal + tax;
+  }
+
+  const currency = snapshot.currency || 'USD';
 
   // Format date as readable string
   const invoiceDate = new Date(order.created_at).toLocaleDateString('en-US', {
@@ -172,7 +215,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
           <div className="section">
             <div className="invoice-info">
               <h3>Invoice Date</h3>
-              <p><strong>Status: PAID</strong><br />
+              <p><strong>Status: {order.status.toUpperCase()}</strong><br />
               {invoiceDate}
               </p>
             </div>
@@ -188,44 +231,48 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
             <thead>
               <tr>
                 <th>Description</th>
-                <th>Total</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Line Total</th>
               </tr>
             </thead>
             <tbody>
               {order.order_items.map((item, index) => {
                 const fallbackName = (item.products && item.products[0]?.name) || null;
                 const productName = item.product_name || fallbackName || 'Unknown Product';
-                const lineTotal = (item.line_total || (item.unit_price || item.price_at_purchase) * item.quantity).toFixed(2);
+                const unit = (item.unit_price != null ? item.unit_price : item.price_at_purchase) || 0;
+                const qty = item.quantity || 1;
+                const line = item.line_total != null ? item.line_total : unit * qty;
                 return (
                   <tr key={index}>
                     <td>{productName}</td>
-                    <td>${lineTotal}</td>
+                    <td>{qty}</td>
+                    <td>${unit.toFixed(2)}</td>
+                    <td>${line.toFixed(2)}</td>
                   </tr>
                 );
               })}
             </tbody>
             <tfoot>
               <tr>
-                <td className="total">Sub Total</td>
-                <td className="total">${parseFloat(amounts.subtotal).toFixed(2)}</td>
+                <td colSpan={3} className="total">Subtotal</td>
+                <td className="total">${baseSubtotal.toFixed(2)}</td>
               </tr>
-              {parseFloat(amounts.discount) > 0 && (
+              {discount > 0 && (
                 <tr>
-                  <td className="total">Discount</td>
-                  <td className="total">-${parseFloat(amounts.discount).toFixed(2)}</td>
+                  <td colSpan={3} className="total">Discount</td>
+                  <td className="total">-${discount.toFixed(2)}</td>
                 </tr>
               )}
-              {parseFloat(amounts.tax) > 0 && (
-                <tr>
-                  <td className="total">Tax</td>
-                  <td className="total">${parseFloat(amounts.tax).toFixed(2)}</td>
-                </tr>
-              )}
+              <tr>
+                <td colSpan={3} className="total">Tax</td>
+                <td className="total">${tax.toFixed(2)}</td>
+              </tr>
             </tfoot>
           </table>
 
           <div className="footer-total">
-            Total: ${parseFloat(amounts.total).toFixed(2)}
+            Total: ${total.toFixed(2)} {currency}
           </div>
         </div>
       </body>
