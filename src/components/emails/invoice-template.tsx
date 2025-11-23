@@ -94,6 +94,13 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
 
   const currency = snapshot.currency || 'USD';
 
+  // Configurable logo URL and width
+  const DEFAULT_LOGO_URL = "https://i.imgur.com/dcJe2iS.png";
+  const DEFAULT_LOGO_WIDTH = 220;
+  // Use environment variables if available (for SSR, process.env; for client, fallback to defaults)
+  const logoUrl = (process.env.EMAIL_LOGO_URL as string) || DEFAULT_LOGO_URL;
+  const logoWidth = parseInt((process.env.EMAIL_LOGO_WIDTH as string) || "" + DEFAULT_LOGO_WIDTH, 10);
+
   // Inline styles for email client compatibility (Gmail/Outlook)
   const styles = {
     body: {
@@ -118,7 +125,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
     },
     section: { padding: '20px 24px' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    brand: { display: 'flex', alignItems: 'center' },
+    brand: { width: '100%', textAlign: 'center' as const, padding: '12px 0' },
     brandText: { marginLeft: '8px', fontSize: '20px', fontWeight: 700 as const, color: '#1e73be' },
     metaRight: { textAlign: 'right' as const },
     h1: { margin: 0, fontSize: '22px', fontWeight: 700 as const },
@@ -157,16 +164,23 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
     <div style={styles.body}>
       <div style={styles.container}>
         <div style={styles.card}>
+          <div style={styles.brand}>
+            <img
+              src={logoUrl}
+              alt="Dropskey LTD"
+              width={logoWidth}
+              style={{
+                display: 'block',
+                margin: '0 auto',
+                width: logoWidth + 'px',
+                maxWidth: logoWidth + 'px',
+                height: 'auto',
+                imageRendering: 'auto',
+                padding: '8px 0',
+              }}
+            />
+          </div>
           <div style={{ ...styles.section, ...styles.header }}>
-            <div style={styles.brand}>
-              {/* High-res logo: recommend hosting a 400px wide PNG; scaled down for crispness */}
-              <img
-                src="https://i.imgur.com/dcJe2iS.png"
-                alt="Dropskey LTD"
-                width={200}
-                style={{ display: 'block', width: '200px', maxWidth: '200px', height: 'auto', imageRendering: 'auto' as const }}
-              />
-            </div>
             <div style={styles.metaRight}>
               <div style={styles.h1}>INVOICE</div>
               <div style={styles.small}>Invoice ID: {order.id.substring(0, 8)}</div>
