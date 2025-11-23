@@ -125,7 +125,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
     },
     section: { padding: '20px 24px' },
     brand: { width: '100%', textAlign: 'center' as const, padding: '12px 0 0 0' },
-    headerDetails: { width: '100%', textAlign: 'left' as const, padding: '8px 0 16px 0' },
+    headerDetails: { width: '100%', textAlign: 'left' as const, padding: '8px 0 16px 24px' },
     h1: { margin: 0, fontSize: '22px', fontWeight: 700 as const, textAlign: 'left' as const },
     small: { margin: 0, color: '#6B7280', fontSize: '12px', textAlign: 'left' as const },
     hr: { border: 0, borderTop: '1px solid #E5E7EB', margin: 0 },
