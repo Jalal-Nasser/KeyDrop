@@ -159,7 +159,13 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
         <div style={styles.card}>
           <div style={{ ...styles.section, ...styles.header }}>
             <div style={styles.brand}>
-              <img src="https://i.imgur.com/dcJe2iS.png" alt="Dropskey LTD" width={160} height={48} style={{ display: 'block', height: 'auto', width: '160px' }} />
+              {/* High-res logo: recommend hosting a 400px wide PNG; scaled down for crispness */}
+              <img
+                src="https://i.imgur.com/dcJe2iS.png"
+                alt="Dropskey LTD"
+                width={200}
+                style={{ display: 'block', width: '200px', maxWidth: '200px', height: 'auto', imageRendering: 'auto' as const }}
+              />
             </div>
             <div style={styles.metaRight}>
               <div style={styles.h1}>INVOICE</div>
