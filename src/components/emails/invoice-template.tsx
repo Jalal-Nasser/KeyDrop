@@ -124,12 +124,10 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
       borderRadius: '8px',
     },
     section: { padding: '20px 24px' },
-    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    brand: { width: '100%', textAlign: 'center' as const, padding: '12px 0' },
-    brandText: { marginLeft: '8px', fontSize: '20px', fontWeight: 700 as const, color: '#1e73be' },
-    metaRight: { textAlign: 'right' as const },
-    h1: { margin: 0, fontSize: '22px', fontWeight: 700 as const },
-    small: { margin: 0, color: '#6B7280', fontSize: '12px' },
+    brand: { width: '100%', textAlign: 'center' as const, padding: '12px 0 0 0' },
+    headerDetails: { width: '100%', textAlign: 'left' as const, padding: '8px 0 16px 0' },
+    h1: { margin: 0, fontSize: '22px', fontWeight: 700 as const, textAlign: 'left' as const },
+    small: { margin: 0, color: '#6B7280', fontSize: '12px', textAlign: 'left' as const },
     hr: { border: 0, borderTop: '1px solid #E5E7EB', margin: 0 },
     grid: { display: 'table', width: '100%' },
     col: { display: 'table-cell', verticalAlign: 'top' as const, width: '50%' },
@@ -180,13 +178,11 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
               }}
             />
           </div>
-          <div style={{ ...styles.section, ...styles.header }}>
-            <div style={styles.metaRight}>
-              <div style={styles.h1}>INVOICE</div>
-              <div style={styles.small}>Invoice ID: {order.id.substring(0, 8)}</div>
-              <div style={styles.small}>Date: {invoiceDate}</div>
-              <div style={styles.small}>Status: {order.status.toUpperCase()}</div>
-            </div>
+          <div style={styles.headerDetails}>
+            <div style={styles.h1}>INVOICE</div>
+            <div style={styles.small}>Invoice ID: {order.id.substring(0, 8)}</div>
+            <div style={styles.small}>Date: {invoiceDate}</div>
+            <div style={styles.small}>Status: {order.status.toUpperCase()}</div>
           </div>
           <div style={styles.section}>
             <div style={styles.grid}>
