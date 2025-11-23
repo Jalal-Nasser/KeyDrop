@@ -74,12 +74,11 @@ export default function InvoicePage() {
     currency: orderAmounts.currency || 'USD'
   };
 
-  // Base after discount (pre-tax)
-  const baseAfterDiscount = Math.max(0, amounts.subtotal - amounts.discount);
-  // If a tax value was stored use it; otherwise derive 15%
-  const taxRate = 0.15;
-  const tax = amounts.tax > 0 ? amounts.tax : baseAfterDiscount * taxRate;
-  const total = baseAfterDiscount + tax;
+  // We will compute a reliable item subtotal after data loads; initialize placeholders.
+  const [itemSubtotal, setItemSubtotal] = useState<number>(0);
+  const taxRateFallback = 0.15;
+  const [derivedTax, setDerivedTax] = useState<number>(0);
+  const [derivedTotal, setDerivedTotal] = useState<number>(0);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -125,7 +124,30 @@ export default function InvoicePage() {
           .single();
 
         if (error) throw error;
-        setOrder(data as unknown as Order);
+        const typedOrder = data as unknown as Order;
+        setOrder(typedOrder);
+        // Compute item subtotal directly from line items to avoid double counting fees.
+        if (typedOrder?.order_items) {
+          const sum = typedOrder.order_items.reduce((acc, item) => {
+            const unit = typeof item.price_at_purchase === 'number' ? item.price_at_purchase : parseFloat(String(item.price_at_purchase) || '0');
+            const qty = item.quantity || 1;
+            const line = item.line_total != null ? (typeof item.line_total === 'number' ? item.line_total : parseFloat(String(item.line_total) || '0')) : unit * qty;
+            return acc + line;
+          }, 0);
+          setItemSubtotal(sum);
+          // Decide tax: priority: amounts.tax >0 -> use; else order.total - sum if positive -> treat as tax; else compute fallback rate.
+          const providedTax = getAmount((typedOrder.amounts as any)?.tax, 0);
+          let taxValue = 0;
+          if (providedTax > 0) {
+            taxValue = providedTax;
+          } else if (typedOrder.total && typedOrder.total > sum) {
+            taxValue = typedOrder.total - sum; // difference represents fee/tax included in stored total
+          } else {
+            taxValue = sum * taxRateFallback;
+          }
+          setDerivedTax(taxValue);
+          setDerivedTotal(sum + taxValue);
+        }
       } catch (err) {
         console.error("Error fetching order:", err);
         setError("Failed to load invoice");
@@ -281,7 +303,7 @@ export default function InvoicePage() {
                   Subtotal:
                 </td>
                 <td className="py-3 text-right font-semibold text-foreground">
-                  ${amounts.subtotal.toFixed(2)}
+                  ${itemSubtotal.toFixed(2)}
                 </td>
               </tr>
               {amounts.discount > 0 && (
@@ -296,10 +318,10 @@ export default function InvoicePage() {
               )}
               <tr>
                 <td colSpan={3} className="py-2 text-right font-semibold text-foreground">
-                  {amounts.tax > 0 ? 'Tax:' : 'Tax (15%):'}
+                  {(amounts.tax && amounts.tax > 0) ? 'Tax:' : 'Tax (15% fallback):'}
                 </td>
                 <td className="py-2 text-right font-semibold text-foreground">
-                  ${tax.toFixed(2)}
+                  ${derivedTax.toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-muted">
@@ -307,7 +329,7 @@ export default function InvoicePage() {
                   TOTAL:
                 </td>
                 <td className="py-4 text-right text-xl font-bold text-foreground">
-                  ${total.toFixed(2)}
+                  ${derivedTotal.toFixed(2)}
                 </td>
               </tr>
             </tfoot>
