@@ -74,12 +74,12 @@ export default function InvoicePage() {
     currency: orderAmounts.currency || 'USD'
   };
 
-  // Base after discount (no fee yet)
+  // Base after discount (pre-tax)
   const baseAfterDiscount = Math.max(0, amounts.subtotal - amounts.discount);
-  // Use provided tax if present; otherwise compute 15% processing fee
-  const processingFeeRate = 0.15;
-  const processingFee = amounts.tax > 0 ? amounts.tax : baseAfterDiscount * processingFeeRate;
-  const total = baseAfterDiscount + processingFee;
+  // If a tax value was stored use it; otherwise derive 15%
+  const taxRate = 0.15;
+  const tax = amounts.tax > 0 ? amounts.tax : baseAfterDiscount * taxRate;
+  const total = baseAfterDiscount + tax;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -296,10 +296,10 @@ export default function InvoicePage() {
               )}
               <tr>
                 <td colSpan={3} className="py-2 text-right font-semibold text-foreground">
-                  Processing Fee (15%):
+                  {amounts.tax > 0 ? 'Tax:' : 'Tax (15%):'}
                 </td>
                 <td className="py-2 text-right font-semibold text-foreground">
-                  ${processingFee.toFixed(2)}
+                  ${tax.toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-muted">
