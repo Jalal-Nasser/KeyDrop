@@ -29,9 +29,10 @@ type Profile = Database['public']['Tables']['profiles']['Row'] & {
 };
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
-  status: string; // Changed from payment_status
-  payment_id: string | null; // Changed from payment_intent_id
-  amounts: Json | null; // Added amounts
+  status: string;
+  payment_id: string | null;
+  payment_gateway?: string | null; // include gateway for display logic
+  amounts: Json | null;
   order_items: OrderItem[];
   profiles: Profile[] | null;
 };
@@ -66,16 +67,19 @@ export default function InvoicePage() {
   
   // Calculate amounts with proper fallbacks
   const amounts = {
-    subtotal: getAmount(orderAmounts.subtotal || order?.total || 0),
-    discount: getAmount(orderAmounts.discount || 0),
-    tax: getAmount(orderAmounts.tax || 0),
+    // Assume provided subtotal is pre-tax; fallback to order.total only if subtotal missing
+    subtotal: getAmount(orderAmounts.subtotal ?? order?.total ?? 0),
+    discount: getAmount(orderAmounts.discount ?? 0),
+    tax: getAmount(orderAmounts.tax ?? 0),
     currency: orderAmounts.currency || 'USD'
   };
-  
-  // Calculate derived values
-  const subtotalAfterDiscount = Math.max(0, amounts.subtotal - amounts.discount);
-  const processingFee = subtotalAfterDiscount * 0.15;
-  const total = subtotalAfterDiscount + processingFee;
+
+  // Base after discount (no fee yet)
+  const baseAfterDiscount = Math.max(0, amounts.subtotal - amounts.discount);
+  // Use provided tax if present; otherwise compute 15% processing fee
+  const processingFeeRate = 0.15;
+  const processingFee = amounts.tax > 0 ? amounts.tax : baseAfterDiscount * processingFeeRate;
+  const total = baseAfterDiscount + processingFee;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -93,6 +97,7 @@ export default function InvoicePage() {
             total, 
             status, 
             payment_id, 
+            payment_gateway,
             amounts,
             order_items (
               id, 
@@ -200,7 +205,22 @@ export default function InvoicePage() {
           <div className="text-right md:text-left">
             <h3 className="text-lg font-semibold mb-2 text-foreground">Payment Details:</h3>
             <p className="text-muted-foreground">
-              <strong>Method:</strong> {order.payment_id ? 'Stripe' : 'N/A'}
+              <strong>Method:</strong>{' '}
+              {(() => {
+                const gateway = order.payment_gateway?.toLowerCase();
+                switch (gateway) {
+                  case 'admin_wallet':
+                    return 'Admin Wallet';
+                  case 'paypal':
+                    return 'PayPal';
+                  case 'stripe':
+                    return 'Stripe';
+                  case 'manual':
+                    return 'Manual';
+                  default:
+                    return gateway ? gateway.charAt(0).toUpperCase() + gateway.slice(1) : 'N/A';
+                }
+              })()}
             </p>
             {order.payment_id && (
               <p className="text-muted-foreground">
@@ -219,6 +239,7 @@ export default function InvoicePage() {
             <thead>
               <tr className="border-b border-border">
                 <th className="py-2 text-foreground">Item</th>
+                <th className="py-2 text-right text-foreground">Qty</th>
                 <th className="py-2 text-right text-foreground">Unit Price</th>
                 <th className="py-2 text-right text-foreground">Amount</th>
               </tr>
