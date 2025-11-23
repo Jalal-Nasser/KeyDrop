@@ -94,6 +94,49 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
 
   const currency = snapshot.currency || 'USD';
 
+  // Inline styles for email client compatibility (Gmail/Outlook)
+  const styles = {
+    body: {
+      margin: 0,
+      padding: 0,
+      backgroundColor: '#F5F7FB',
+      color: '#111827',
+      fontFamily: 'Arial, Helvetica, sans-serif' as const,
+    },
+    container: {
+      width: '100%',
+      padding: '24px 0',
+      boxSizing: 'border-box' as const,
+    },
+    card: {
+      width: '600px',
+      maxWidth: '600px',
+      margin: '0 auto',
+      backgroundColor: '#ffffff',
+      border: '1px solid #E5E7EB',
+      borderRadius: '8px',
+    },
+    section: { padding: '20px 24px' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    brand: { display: 'flex', alignItems: 'center' },
+    brandText: { marginLeft: '8px', fontSize: '20px', fontWeight: 700 as const, color: '#1e73be' },
+    metaRight: { textAlign: 'right' as const },
+    h1: { margin: 0, fontSize: '22px', fontWeight: 700 as const },
+    small: { margin: 0, color: '#6B7280', fontSize: '12px' },
+    hr: { border: 0, borderTop: '1px solid #E5E7EB', margin: 0 },
+    grid: { display: 'table', width: '100%' },
+    col: { display: 'table-cell', verticalAlign: 'top' as const, width: '50%' },
+    label: { fontSize: '14px', fontWeight: 600 as const, marginBottom: '6px' },
+    muted: { color: '#374151', fontSize: '13px', lineHeight: '20px' },
+    table: { width: '100%', borderCollapse: 'collapse' as const, marginTop: '8px' },
+    th: { backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', padding: '10px', fontSize: '13px', textAlign: 'left' as const },
+    td: { border: '1px solid #E5E7EB', padding: '10px', fontSize: '13px' },
+    tdRight: { border: '1px solid #E5E7EB', padding: '10px', fontSize: '13px', textAlign: 'right' as const },
+    totalRowLabel: { padding: '10px', fontWeight: 700 as const, textAlign: 'right' as const, fontSize: '14px' },
+    totalRowValue: { padding: '10px', fontWeight: 700 as const, textAlign: 'right' as const, fontSize: '14px' },
+    footer: { backgroundColor: '#F9FAFB', padding: '14px 24px', textAlign: 'right' as const, fontWeight: 700 as const, fontSize: '16px' },
+  };
+
   // Format date as readable string
   const invoiceDate = new Date(order.created_at).toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -111,171 +154,87 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ order, profile
   ].filter(Boolean);
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="UTF-8" />
-        <title>Invoice - Dropskey LTD</title>
-        <style>
-          {`
-            body {
-              font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-              margin: 0;
-              padding: 0;
-              color: #333;
-              background: #f8f8f8;
-            }
-            .invoice-box {
-              max-width: 900px;
-              margin: auto;
-              padding: 30px;
-              background: #fff;
-              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            .top-logo {
-              width: 200px;
-            }
-            .invoice-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding-bottom: 20px;
-            }
-            .header-strip {
-              background-color: #3cdd8e;
-              padding: 20px;
-              text-align: center;
-              color: white;
-              font-size: 24px;
-              font-weight: bold;
-            }
-            .section {
-              margin-top: 30px;
-            }
-            .section h3 {
-              margin-bottom: 10px;
-              color: #444;
-            }
-            .address, .invoice-info {
-              display: inline-block;
-              vertical-align: top;
-              width: 48%;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-            }
-            table, th, td {
-              border: 1px solid #eaeaea;
-            }
-            th, td {
-              padding: 12px;
-              text-align: left;
-            }
-            th {
-              background: #f3f3f3;
-            }
-            .total {
-              font-weight: bold;
-              background: #f9f9f9;
-            }
-            .footer-total {
-              background: #3cdd8e;
-              color: white;
-              text-align: right;
-              padding: 15px;
-              font-size: 18px;
-            }
-          `}
-        </style>
-      </head>
-      <body>
-        <div className="invoice-box">
-          <div className="invoice-header">
-            <img
-              src="https://i.imgur.com/dcJe2iS.png"
-              alt="Dropskey LTD"
-              width="200"
-              height="60"
-              style={{ width: '200px', maxWidth: '200px', height: 'auto', display: 'block' }}
-            />
-            <div style={{ textAlign: 'left', marginTop: '20px' }}>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Dropskey LTD</strong><br />
-                4283 Express Lane<br />
-                Suite 193-395<br />
-                Sarasota, FL 34249<br />
-                VAT Number: 20115192
+    <div style={styles.body}>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={{ ...styles.section, ...styles.header }}>
+            <div style={styles.brand}>
+              <img src="https://i.imgur.com/dcJe2iS.png" alt="Dropskey LTD" width={160} height={48} style={{ display: 'block', height: 'auto', width: '160px' }} />
+            </div>
+            <div style={styles.metaRight}>
+              <div style={styles.h1}>INVOICE</div>
+              <div style={styles.small}>Invoice ID: {order.id.substring(0, 8)}</div>
+              <div style={styles.small}>Date: {invoiceDate}</div>
+              <div style={styles.small}>Status: {order.status.toUpperCase()}</div>
+            </div>
+          </div>
+          <div style={styles.section}>
+            <div style={styles.grid}>
+              <div style={styles.col}>
+                <div style={styles.label}>Billed From</div>
+                <div style={styles.muted}>
+                  <div><strong>Dropskey LTD</strong></div>
+                  <div>4283 Express Lane</div>
+                  <div>Suite 193-395</div>
+                  <div>Sarasota, FL 34249</div>
+                  <div>VAT Number: 20115192</div>
+                </div>
+              </div>
+              <div style={styles.col}>
+                <div style={styles.label}>Billed To</div>
+                <div style={styles.muted}>
+                  {clientAddressLines.map((line, idx) => (<div key={idx}>{line}</div>))}
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="header-strip">Invoice #{order.id.substring(0, 8)} - {order.status.toUpperCase()}</div>
-
-          <div className="section">
-            <div className="invoice-info">
-              <h3>Invoice Date</h3>
-              <p><strong>Status: {order.status.toUpperCase()}</strong><br />
-              {invoiceDate}
-              </p>
-            </div>
-            <div className="address">
-              <h3>Invoiced To</h3>
-              {clientAddressLines.map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Line Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.order_items.map((item, index) => {
-                const fallbackName = (item.products && item.products[0]?.name) || null;
-                const productName = item.product_name || fallbackName || 'Unknown Product';
-                const unit = (item.unit_price != null ? item.unit_price : item.price_at_purchase) || 0;
-                const qty = item.quantity || 1;
-                const line = item.line_total != null ? item.line_total : unit * qty;
-                return (
-                  <tr key={index}>
-                    <td>{productName}</td>
-                    <td>{qty}</td>
-                    <td>${unit.toFixed(2)}</td>
-                    <td>${line.toFixed(2)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={3} className="total">Subtotal</td>
-                <td className="total">${baseSubtotal.toFixed(2)}</td>
-              </tr>
-              {discount > 0 && (
+          <hr style={styles.hr} />
+          <div style={styles.section}>
+            <table style={styles.table} cellPadding={0} cellSpacing={0} role="presentation">
+              <thead>
                 <tr>
-                  <td colSpan={3} className="total">Discount</td>
-                  <td className="total">-${discount.toFixed(2)}</td>
+                  <th style={{ ...styles.th, width: '55%' }}>Description</th>
+                  <th style={{ ...styles.th, width: '15%', textAlign: 'right' as const }}>Qty</th>
+                  <th style={{ ...styles.th, width: '15%', textAlign: 'right' as const }}>Unit Price</th>
+                  <th style={{ ...styles.th, width: '15%', textAlign: 'right' as const }}>Line Total</th>
                 </tr>
-              )}
-              <tr>
-                <td colSpan={3} className="total">Tax</td>
-                <td className="total">${tax.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-
-          <div className="footer-total">
-            Total: ${total.toFixed(2)} {currency}
+              </thead>
+              <tbody>
+                {order.order_items.map((item, index) => {
+                  const fallbackName = (item.products && item.products[0]?.name) || null;
+                  const productName = item.product_name || fallbackName || 'Unknown Product';
+                  const unit = (item.unit_price != null ? item.unit_price : item.price_at_purchase) || 0;
+                  const qty = item.quantity || 1;
+                  const line = item.line_total != null ? item.line_total : unit * qty;
+                  return (
+                    <tr key={index}>
+                      <td style={styles.td}>{productName}</td>
+                      <td style={styles.tdRight}>{qty}</td>
+                      <td style={styles.tdRight}>${unit.toFixed(2)}</td>
+                      <td style={styles.tdRight}>${line.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <td style={styles.totalRowLabel} colSpan={3}>Subtotal</td>
+                  <td style={styles.totalRowValue}>${baseSubtotal.toFixed(2)}</td>
+                </tr>
+                {discount > 0 && (
+                  <tr>
+                    <td style={styles.totalRowLabel} colSpan={3}>Discount</td>
+                    <td style={styles.totalRowValue}>-${discount.toFixed(2)}</td>
+                  </tr>
+                )}
+                <tr>
+                  <td style={styles.totalRowLabel} colSpan={3}>Tax</td>
+                  <td style={styles.totalRowValue}>${tax.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <div style={styles.footer}>Total: ${total.toFixed(2)} {currency}</div>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 };
