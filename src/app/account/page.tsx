@@ -15,8 +15,18 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { format } from "date-fns"
 import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import MD5 from "crypto-js/md5"
 
 type Profile = Tables<'profiles'>;
+
+// Generate Gravatar URL from email using MD5 hash
+const getGravatarUrl = (email: string, size: number = 200): string => {
+  const trimmedEmail = email.trim().toLowerCase();
+  const emailHash = MD5(trimmedEmail).toString();
+
+  return `https://www.gravatar.com/avatar/${emailHash}?s=${size}&d=identicon`;
+};
 
 // Define the schema for profile validation (same as in profile-form.tsx)
 const profileSchema = z.object({
@@ -149,11 +159,22 @@ export default function AccountPage() {
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
-            <p className="text-muted-foreground mt-2">
-              Welcome back, {session?.user?.email || 'User'}
-            </p>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20 border-2 border-primary">
+              <AvatarImage
+                src={session?.user?.email ? getGravatarUrl(session.user.email, 200) : undefined}
+                alt={session?.user?.email || 'User'}
+              />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-semibold">
+                {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
+              <p className="text-muted-foreground mt-2">
+                Welcome back, {session?.user?.email || 'User'}
+              </p>
+            </div>
           </div>
           {isAdmin && (
             <Badge variant="default" className="text-sm px-3 py-1">
@@ -199,6 +220,30 @@ export default function AccountPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Gravatar Section */}
+              <div className="flex flex-col items-center pb-4 border-b">
+                <Avatar className="h-24 w-24 border-2 border-primary/20">
+                  <AvatarImage
+                    src={session?.user?.email ? getGravatarUrl(session.user.email, 200) : undefined}
+                    alt={session?.user?.email || 'User'}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                    {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Profile picture from{" "}
+                  <a
+                    href="https://gravatar.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Gravatar
+                  </a>
+                </p>
+              </div>
+
               <div className="flex items-start gap-3">
                 <Mail className="h-4 w-4 text-muted-foreground mt-1" />
                 <div className="flex-1">

@@ -71,7 +71,9 @@ export function Footer() {
       {/* Copyright section - EXACT styling */}
       <div className="bg-gray-800 mt-8 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-400">Copyright © 2025 Dropskey</p>
+          <p className="text-center text-sm text-gray-400">
+            Copyright © {new Date().getFullYear()} Dropskey
+          </p>
         </div>
       </div>
     </footer>
