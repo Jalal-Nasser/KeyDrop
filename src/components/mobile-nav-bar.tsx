@@ -18,13 +18,8 @@ export function MobileNavBar({ className }: { className?: string }) {
     { href: "/", label: "Home", icon: Home },
     { href: "/shop", label: "Shop", icon: ShoppingBag },
     { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount, isLoading: isLoadingWishlist }, // Use actual wishlist count and loading state
-    { href: "/account/orders", label: "Track Order", icon: PackageCheck },
+    { href: "/account", label: "Account", icon: User },
   ]
-
-  // Add "My account" only if session exists AND is not loading
-  if (!isLoadingSession && session) {
-    navItems.push({ href: "/account", label: "My account", icon: User });
-  }
 
   return (
     <div className={cn("fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden", className)}>
@@ -51,12 +46,6 @@ export function MobileNavBar({ className }: { className?: string }) {
             )}
           </Link>
         ))}
-        {isLoadingSession && ( // Add a loading indicator for the session-dependent item
-          <div className="flex flex-col items-center text-xs text-gray-600 animate-pulse">
-            <User className="w-5 h-5 mb-1" />
-            <span>Loading...</span>
-          </div>
-        )}
       </nav>
     </div>
   )
