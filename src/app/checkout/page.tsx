@@ -120,6 +120,30 @@ export default function CheckoutPage() {
     },
   })
 
+  // Save form data to sessionStorage before opening auth dialog
+  const saveFormDataToSession = () => {
+    const formData = form.getValues()
+    sessionStorage.setItem('checkoutFormData', JSON.stringify(formData))
+  }
+
+  // Restore form data from sessionStorage after successful signup
+  useEffect(() => {
+    const savedFormData = sessionStorage.getItem('checkoutFormData')
+    if (savedFormData && session) {
+      try {
+        const formData = JSON.parse(savedFormData)
+        form.reset({
+          ...formData,
+          agreedToTerms: false, // Reset terms agreement for security
+        })
+        sessionStorage.removeItem('checkoutFormData')
+        toast.success("Welcome! Please review your details and complete your purchase.")
+      } catch (error) {
+        console.error('Error restoring form data:', error)
+      }
+    }
+  }, [session, form])
+
   useEffect(() => {
     if (cartCount === 0) {
       toast.info("Your cart is empty. Redirecting to shop...")
@@ -461,9 +485,19 @@ export default function CheckoutPage() {
               <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
               <CardContent>
                 {!session ? (
-                  <div className="text-center text-destructive">
-                    <p>You must be signed in to complete your purchase.</p>
-                    <p>Please <button onClick={() => setIsAuthDialogOpen(true)} className="underline font-bold hover:text-primary">sign in or create an account</button>.</p>
+                  <div className="text-center space-y-4">
+                    <p className="text-destructive">You must be signed in to complete your purchase.</p>
+                    <Button
+                      onClick={() => {
+                        saveFormDataToSession()
+                        setIsAuthDialogOpen(true)
+                      }}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Sign In or Create Account
+                    </Button>
+                    <p className="text-sm text-muted-foreground">Your form data will be saved and restored after signup.</p>
                   </div>
                 ) : (
                   <CheckoutPaymentSection

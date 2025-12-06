@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Dialog,
   DialogContent,
@@ -33,9 +34,21 @@ function isAllowedEmail(email: string) {
   return allowedDomains.includes(domain);
 }
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+  const router = useRouter()
   const { supabase, session } = useSession() // Get supabase from context
   const [emailError, setEmailError] = useState<string | null>(null)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState<string | null>(null)
+
+  // Check if there's saved checkout form data to redirect back after signup
+  useEffect(() => {
+    if (open && typeof window !== 'undefined') {
+      const savedFormData = sessionStorage.getItem('checkoutFormData')
+      if (savedFormData) {
+        setRedirectAfterAuth('/checkout')
+      }
+    }
+  }, [open])
 
   // Handle email input validation
   useEffect(() => {
@@ -97,6 +110,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
             // Close the dialog after successful sign in
             onOpenChange(false);
+
+            // Redirect to checkout if user was in the middle of checkout flow
+            if (redirectAfterAuth) {
+              toast.success("Account created successfully! Redirecting to checkout...");
+              setTimeout(() => {
+                router.push(redirectAfterAuth);
+                setRedirectAfterAuth(null);
+              }, 500);
+            }
           } catch (error) {
             console.error('Error in auth state change:', error);
           }
@@ -107,7 +129,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [open, supabase, onOpenChange]); // Add supabase and onOpenChange to dependencies
+  }, [open, supabase, onOpenChange, redirectAfterAuth, router]); // Add dependencies
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
