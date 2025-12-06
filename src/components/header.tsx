@@ -179,7 +179,7 @@ export function Header({ className }: { className?: string }) {
                       href={link.href}
                       className="text-white px-6 py-3 text-sm font-medium"
                       style={{
-                        backgroundColor: pathname === link.href ? "#28a745" : "transparent",
+                        backgroundColor: pathname === link.href ? "#ff7300" : "transparent",
                       }}
                       onMouseEnter={handleMouseEnter}
                     >
@@ -215,7 +215,7 @@ export function Header({ className }: { className?: string }) {
                   href={link.href}
                   className="block px-3 py-2 text-white font-medium rounded"
                   style={{
-                    backgroundColor: pathname === link.href ? "#28a745" : "transparent",
+                    backgroundColor: pathname === link.href ? "#ff7300" : "transparent",
                   }}
                 >
                   {link.label}
@@ -228,7 +228,7 @@ export function Header({ className }: { className?: string }) {
                     setIsAuthSheetOpen(true);
                     setIsMenuOpen(false); // Close mobile menu when opening auth dialog
                   }}
-                  className="block w-full text-left px-3 py-2 text-white font-medium rounded hover:bg-[#28a745]"
+                  className="block w-full text-left px-3 py-2 text-white font-medium rounded hover:bg-[#ff7300]"
                 >
                   Sign In
                 </button>
