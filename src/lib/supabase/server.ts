@@ -159,7 +159,6 @@ export const updateProfile = async (profileData: Partial<Profile>, cookieStore?:
       .from('profiles')
       .update({
         ...profileData,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', user.id)
       .select()
