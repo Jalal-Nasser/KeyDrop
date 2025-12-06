@@ -4,13 +4,17 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/context/session-context"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardTitle, CardHeader } from "@/components/ui/card"
 import Link from "next/link"
 import { ProfileForm } from "@/components/profile-form"
 import { getCurrentUserProfile } from "@/app/account/actions"
-import { Loader2 } from "lucide-react"
+import { Loader2, User, ShoppingBag, Shield, LogOut, Mail, Calendar, CheckCircle2, AlertCircle } from "lucide-react"
 import { z } from "zod"
 import { Tables } from "@/types/supabase"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { format } from "date-fns"
+import { Separator } from "@/components/ui/separator"
 
 type Profile = Tables<'profiles'>;
 
@@ -27,6 +31,23 @@ const profileSchema = z.object({
   postal_code: z.string().trim().min(1, "Postal code is required"),
   country: z.string().trim().length(2, "Country is required"),
 });
+
+// Calculate profile completion percentage
+const calculateProfileCompletion = (profile: Profile | null): number => {
+  if (!profile) return 0;
+
+  const requiredFields = [
+    'first_name', 'last_name', 'address_line_1',
+    'city', 'state_province_region', 'postal_code', 'country'
+  ];
+
+  const filledFields = requiredFields.filter(field => {
+    const value = profile[field as keyof Profile];
+    return value && String(value).trim().length > 0;
+  });
+
+  return Math.round((filledFields.length / requiredFields.length) * 100);
+};
 
 export default function AccountPage() {
   const { session, supabase } = useSession() // Get supabase from context
@@ -112,6 +133,7 @@ export default function AccountPage() {
 
   // Check if profile is complete
   const isProfileComplete = userProfile ? profileSchema.safeParse(userProfile).success : false;
+  const profileCompletion = calculateProfileCompletion(userProfile);
 
   if (loading) {
     return (
@@ -123,68 +145,175 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 py-12">
-      <Card className="max-w-2xl mx-auto">
-        <CardContent className="p-6 space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold">Your Account</h2>
-            <p className="text-sm text-muted-foreground">
+    <div className="container mx-auto p-4 py-12 max-w-6xl">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
+            <p className="text-muted-foreground mt-2">
               Welcome back, {session?.user?.email || 'User'}
             </p>
           </div>
-          
-          {!isProfileComplete && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-              <p className="font-bold">Profile Incomplete!</p>
-              <p>Please complete your profile details below to proceed with purchases.</p>
-            </div>
+          {isAdmin && (
+            <Badge variant="default" className="text-sm px-3 py-1">
+              <Shield className="h-3 w-3 mr-1" />
+              Admin
+            </Badge>
           )}
+        </div>
 
-          {userProfile && (
-            <ProfileForm 
-              key={userProfile.id} // Force re-render when profile changes
-              initialProfile={userProfile} 
-              onProfileUpdated={handleProfileUpdated} 
-            />
-          )}
-          
-          <div className="grid gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Quick Links</h3>
-              <div className="grid gap-2">
-                <Button asChild variant="outline" className="w-full sm:w-auto justify-start">
-                  <Link href="/account/orders">View Order History</Link>
-                </Button>
-                {isAdmin && (
-                  <Button asChild variant="outline" className="w-full sm:w-auto justify-start">
-                    <Link href="/admin">Admin Panel</Link>
-                  </Button>
+        {/* Profile Completion Card */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {profileCompletion === 100 ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
                 )}
-                <Button
-                  variant="destructive"
-                  className="w-full sm:w-auto justify-start"
-                  onClick={async () => {
-                    if (!supabase) return;
-                    setLoading(true);
-                    try {
-                      await supabase.auth.signOut();
-                      router.push('/');
-                      router.refresh();
-                    } catch (error) {
-                      console.error('Error signing out:', error);
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  disabled={loading}
-                >
-                  Sign Out
-                </Button>
+                <h3 className="font-semibold">Profile Completion</h3>
               </div>
+              <span className="text-2xl font-bold">{profileCompletion}%</span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <Progress value={profileCompletion} className="h-2 mb-2" />
+            <p className="text-sm text-muted-foreground">
+              {profileCompletion === 100
+                ? "Your profile is complete! You're all set to make purchases."
+                : "Complete your profile to proceed with purchases and enjoy a better experience."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Profile Info & Quick Actions */}
+        <div className="space-y-6">
+          {/* Account Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Account Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Mail className="h-4 w-4 text-muted-foreground mt-1" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Email</p>
+                  <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+                </div>
+              </div>
+
+              {userProfile?.created_at && (
+                <div className="flex items-start gap-3">
+                  <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Member Since</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(userProfile.created_at), 'MMMM dd, yyyy')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3">
+                <Shield className="h-4 w-4 text-muted-foreground mt-1" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Account Type</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isAdmin ? 'Administrator' : 'Customer'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button asChild variant="outline" className="w-full justify-start" size="lg">
+                <Link href="/account/orders">
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  View Order History
+                </Link>
+              </Button>
+
+              {isAdmin && (
+                <Button asChild variant="outline" className="w-full justify-start" size="lg">
+                  <Link href="/admin">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Panel
+                  </Link>
+                </Button>
+              )}
+
+              <Separator className="my-4" />
+
+              <Button
+                variant="destructive"
+                className="w-full justify-start"
+                size="lg"
+                onClick={async () => {
+                  if (!supabase) return;
+                  setLoading(true);
+                  try {
+                    await supabase.auth.signOut();
+                    router.push('/');
+                    router.refresh();
+                  } catch (error) {
+                    console.error('Error signing out:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Profile Form */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Details</CardTitle>
+              <CardDescription>
+                Update your personal information and billing address
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!isProfileComplete && (
+                <div className="bg-orange-50 dark:bg-orange-950/20 border-l-4 border-orange-500 text-orange-900 dark:text-orange-200 p-4 mb-6" role="alert">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Profile Incomplete</p>
+                      <p className="text-sm mt-1">Please complete all required fields below to proceed with purchases.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {userProfile && (
+                <ProfileForm
+                  key={userProfile.id}
+                  initialProfile={userProfile}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
