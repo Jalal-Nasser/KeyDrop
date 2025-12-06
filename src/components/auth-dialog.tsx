@@ -65,8 +65,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             const email = input.value.trim();
             if (email && !isAllowedEmail(email)) {
               e.preventDefault();
-              setEmailError("Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed.");
-              toast.error("Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed.");
+              setEmailError("Only Gmail, Hotmail, or Outlook are allowed.");
+              toast.error("Only Gmail, Hotmail, or Outlook are allowed.");
               input.focus();
               return false;
             } else {
@@ -137,7 +137,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Sign In / Sign Up</DialogTitle>
           <DialogDescription>
-            Enter your email and password to sign in or create an account. Only Gmail, Hotmail, Outlook, or admin@dropskey.com are allowed for registration.
+            Enter your email and password to sign in or create an account. Only Gmail, Hotmail, or Outlook are allowed for registration.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-6">
