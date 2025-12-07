@@ -172,7 +172,7 @@ export default function AccountPage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
               <p className="text-muted-foreground mt-2">
-                Welcome back, {session?.user?.email || 'User'}
+                Welcome back, {userProfile?.first_name || session?.user?.email || 'User'}
               </p>
             </div>
           </div>

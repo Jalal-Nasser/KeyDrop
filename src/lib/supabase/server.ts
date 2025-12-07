@@ -152,7 +152,7 @@ export const updateProfile = async (profileData: Partial<Profile>, cookieStore?:
   try {
     const user = await getCurrentUser(cookieStore);
     if (!user) return { data: null, error: 'User not authenticated' };
-    
+
     const supabase = await createSupabaseServerClientComponent(); // Use the consistent client
     const { data, error } = await supabase
       .from('profiles')
@@ -167,12 +167,26 @@ export const updateProfile = async (profileData: Partial<Profile>, cookieStore?:
       console.error('Error updating profile:', error);
       return { data: null, error: error.message };
     }
-    
+
+    // Update user metadata with display name if first_name or last_name is provided
+    if (data && (profileData.first_name || profileData.last_name)) {
+      const displayName = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+      if (displayName) {
+        await supabase.auth.updateUser({
+          data: {
+            full_name: displayName,
+            first_name: data.first_name,
+            last_name: data.last_name
+          }
+        });
+      }
+    }
+
     return { data, error: null };
   } catch (error) {
     console.error('Error in updateProfile:', error);
-    return { 
-      data: null, 
+    return {
+      data: null,
       error: error instanceof Error ? error.message : 'An unexpected error occurred'
     };
   }
