@@ -55,12 +55,11 @@ export async function POST(request: Request) {
     const { error } = await supabase
       .from('profiles')
       .insert([
-        { 
+        {
           id: userId,
           email: email,
           first_name: '',
-          last_name: '',
-          created_at: new Date().toISOString()
+          last_name: ''
         }
       ])
 

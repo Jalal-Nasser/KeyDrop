@@ -91,12 +91,11 @@ export async function createUserProfile(userId: string, email: string) {
   const { error } = await supabase
     .from('profiles')
     .insert([
-      { 
+      {
         id: userId,
         email: email,
         first_name: '',
-        last_name: '',
-        created_at: new Date().toISOString()
+        last_name: ''
       }
     ])
 

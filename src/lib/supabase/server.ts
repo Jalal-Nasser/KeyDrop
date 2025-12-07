@@ -118,10 +118,9 @@ export const getCurrentUserProfile = async (cookieStore?: ReturnType<typeof cook
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert([
-            { 
+            {
               id: user.id,
-              email: user.email,
-              created_at: new Date().toISOString()
+              email: user.email
             }
           ])
           .select()
