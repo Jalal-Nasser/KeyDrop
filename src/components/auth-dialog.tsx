@@ -171,6 +171,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 }
                 return ''; // Final fallback to empty string
               })()}/auth/callback`}
+              view="sign_in"
+              additionalData={{
+                emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : ''
+              }}
             />
           )}
           {emailError && (

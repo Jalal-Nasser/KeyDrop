@@ -22,9 +22,15 @@ export function Header({ className }: { className?: string }) {
   const [hovered, setHovered] = useState(false)
   const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
   const navRef = useRef<HTMLElement>(null)
-  const { session, isLoading: isLoadingSession } = useSession() // Get isLoading
+  const { session, isLoading: isLoadingSession, supabase } = useSession() // Get isLoading and supabase
   const { cartCount, cartTotal, isLoadingCart } = useCart() // Get isLoadingCart
   const { wishlistCount, isLoadingWishlist } = useWishlist() // Use wishlist hook and get isLoadingWishlist
+
+  const handleLogout = async () => {
+    if (!supabase) return
+    await supabase.auth.signOut()
+    window.location.href = '/' // Redirect to home after logout
+  }
 
   const baseNavLinks = [
     { href: "/", label: "Home" },
@@ -115,14 +121,14 @@ export function Header({ className }: { className?: string }) {
                       <span className="hidden sm:inline animate-pulse">Loading...</span>
                     </div>
                   ) : session ? (
-                    <Link href="/account" className="flex items-center gap-x-1 text-red-600 hover:text-primary">
+                    <button onClick={handleLogout} className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                       <User className="w-4 h-4" />
-                      <span className="hidden sm:inline">Account</span>
-                    </Link>
+                      <span className="hidden sm:inline">Logout</span>
+                    </button>
                   ) : (
                     <button onClick={() => setIsAuthSheetOpen(true)} className="flex items-center gap-x-1 text-red-600 hover:text-primary">
                       <User className="w-4 h-4" />
-                      <span className="hidden sm:inline">Sign In</span>
+                      <span className="hidden sm:inline">Login</span>
                     </button>
                   )}
                   <span className="text-border">|</span>
@@ -221,8 +227,18 @@ export function Header({ className }: { className?: string }) {
                   {link.label}
                 </Link>
               ))}
-              {/* Add Sign In button for mobile menu if not authenticated */}
-              {!session && (
+              {/* Add Login/Logout button for mobile menu */}
+              {session ? (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false); // Close mobile menu when logging out
+                  }}
+                  className="block w-full text-left px-3 py-2 text-white font-medium rounded hover:bg-[#ff7300]"
+                >
+                  Logout
+                </button>
+              ) : (
                 <button
                   onClick={() => {
                     setIsAuthSheetOpen(true);
@@ -230,7 +246,7 @@ export function Header({ className }: { className?: string }) {
                   }}
                   className="block w-full text-left px-3 py-2 text-white font-medium rounded hover:bg-[#ff7300]"
                 >
-                  Sign In
+                  Login
                 </button>
               )}
             </div>
