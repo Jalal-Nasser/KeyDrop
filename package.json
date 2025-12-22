@@ -1,0 +1,25 @@
+{
+    "name": "vendure-backend",
+    "version": "1.0.0",
+    "description": "Vendure backend for Dropskey",
+    "private": true,
+    "scripts": {
+        "start": "ts-node src/index.ts",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@vendure/admin-ui-plugin": "^3.0.0",
+        "@vendure/asset-server-plugin": "^3.0.0",
+        "@vendure/core": "^3.0.0",
+        "@vendure/email-plugin": "^3.0.0",
+        "better-sqlite3": "^9.0.0",
+        "dotenv": "^17.2.3",
+        "graphql-tag": "^2.12.6",
+        "pg": "^8.16.3"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.3.0"
+    }
+}
