@@ -55,6 +55,7 @@ export const config: VendureConfig = {
         // EmailPlugin is temporarily disabled
         AdminUiPlugin.init({
             route: 'admin',
+            port: +(process.env.ADMIN_UI_PORT || 3002),
         }),
     ],
 };
