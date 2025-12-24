@@ -8,7 +8,7 @@ import 'dotenv/config';
 export const config: VendureConfig = {
     apiOptions: {
         port: +(process.env.PORT || 3001),
-        adminApiPath: 'admin',
+        adminApiPath: 'admin-api',
         shopApiPath: '', // Shop API at root domain
         cors: {
             origin: [
