@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClientComponent } from '@/lib/supabase/server'; // Updated import
-import { getPaypalClient } from '@/lib/paypal';
-import paypal from '@paypal/checkout-server-sdk';
+export const runtime = "edge";
+export const dynamic = 'force-dynamic';
+import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
+import { callPaypalApi } from '@/lib/paypal';
 import { capturePayPalOrderSchema } from '@/lib/schemas';
 import { sendOrderConfirmation } from '@/lib/email-actions';
-import { createClient } from '@supabase/supabase-js'; // Import for admin client
+import { createClient } from '@supabase/supabase-js';
 import { notifyAdminNewOrder } from '@/lib/whatsapp';
-import { TablesUpdate, Tables } from '@/types/supabase'; // Import TablesUpdate
-
-export const runtime = "nodejs";
+import { TablesUpdate, Tables } from '@/types/supabase';
 
 export async function POST(req: NextRequest) {
-  const supabase = await createSupabaseServerClientComponent(); // Await the client
+  const supabase = await createSupabaseServerClientComponent();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -40,11 +39,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Order not found or not accessible.' }, { status: 404 });
     }
 
-    const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
-    request.requestBody({} as any);
-
-  const capture = await getPaypalClient().execute(request);
-    const captureData = capture.result;
+    const captureData = await callPaypalApi(`/v2/checkout/orders/${paypalOrderId}/capture`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
 
     if (captureData.status === 'COMPLETED') {
       // Mark payment captured and set order status to completed
@@ -61,15 +59,15 @@ export async function POST(req: NextRequest) {
         // Continue to send email as payment was successful, but log the DB error.
       }
 
-  // Optional: send order confirmation (receipt). This does NOT deliver product keys.
-  await sendOrderConfirmation({ orderId, userEmail: user.email! });
+      // Optional: send order confirmation (receipt). This does NOT deliver product keys.
+      await sendOrderConfirmation({ orderId, userEmail: user.email! });
 
       // Send Discord notification for new order
       const supabaseAdmin = createClient(
         (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
-      
+
       // Determine the product image/name for the notification (use first available)
       const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
       const firstProductName = (order.order_items.find(item => item.product_name)?.product_name)

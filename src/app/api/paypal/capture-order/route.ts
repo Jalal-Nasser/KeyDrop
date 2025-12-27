@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = "edge";
+export const dynamic = 'force-dynamic';
 import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
-import { getPaypalClient } from '@/lib/paypal';
-import paypal from '@paypal/checkout-server-sdk';
+import { callPaypalApi } from '@/lib/paypal';
 import { sendOrderConfirmation } from '@/lib/email-actions';
 import { createAdminClient } from '@/lib/supabase/server';
 import { notifyAdminNewOrder } from '@/lib/whatsapp';
 import { TablesUpdate, Tables } from '@/types/supabase';
-
-export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServerClientComponent();
@@ -25,11 +24,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const request = new paypal.orders.OrdersCaptureRequest(orderID);
-    request.requestBody({} as any); // Empty body is fine for capture
-
-    const capture = await getPaypalClient().execute(request);
-    const captureData = capture.result;
+    const captureData = await callPaypalApi(`/v2/checkout/orders/${orderID}/capture`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
 
     if (captureData.status === 'COMPLETED') {
       // Find the order in your DB using the PayPal order ID
@@ -64,7 +62,7 @@ export async function POST(req: NextRequest) {
 
       // Send Discord notification for new order
       const supabaseAdmin = await createAdminClient(); // Await the admin client
-      
+
       const firstProductImage = dbOrder.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
       const firstProductName = (dbOrder.order_items.find(item => item.product_name)?.product_name)
         || (dbOrder.order_items.find(item => item.products?.[0]?.name)?.products?.[0]?.name)
