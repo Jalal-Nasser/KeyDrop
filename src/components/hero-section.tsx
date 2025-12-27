@@ -23,13 +23,13 @@ export function HeroSection() {
                             100% secure and guaranteed.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Button asChild size="lg" className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg rounded-full shadow-lg shadow-blue-900/50 transition-all hover:scale-105">
+                            <Button asChild className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg rounded-full shadow-lg shadow-blue-900/50 transition-all hover:scale-105 h-11">
                                 <Link href="/shop">
                                     <ShoppingCart className="mr-2 h-5 w-5" />
                                     Shop Now
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline" size="lg" className="border-blue-400 text-blue-100 hover:bg-blue-900/50 hover:text-white px-8 py-6 text-lg rounded-full ">
+                            <Button asChild className="border border-blue-400 text-blue-100 hover:bg-blue-900/50 hover:text-white px-8 py-6 text-lg rounded-full h-11 bg-transparent">
                                 <Link href="#features">
                                     Learn More
                                     <ArrowRight className="ml-2 h-5 w-5" />

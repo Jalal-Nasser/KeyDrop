@@ -71,8 +71,7 @@ export function ProductCard({ product }: { product: Product }) {
                         )}
                     </div>
                     <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 h-9"
                         onClick={(e) => {
                             e.preventDefault()
                             addToCart({
