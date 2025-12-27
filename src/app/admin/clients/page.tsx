@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Users, Mail, User } from 'lucide-react'
+import Link from 'next/link'
+import { getGravatarUrl } from '@/lib/gravatar'
 
 export default async function AdminClientsPage() {
     const users = await prisma.user.findMany({
@@ -30,16 +32,20 @@ export default async function AdminClientsPage() {
                         {users.map((user) => (
                             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                 <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                    <div className="flex items-center gap-2">
-                                        <User size={16} className="text-gray-400" />
+                                    <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2 hover:text-purple-600 transition-colors">
+                                        <img
+                                            src={user.image || getGravatarUrl(user.email, 40)}
+                                            alt=""
+                                            className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                                        />
                                         {user.name || 'N/A'}
-                                    </div>
+                                    </Link>
                                 </td>
                                 <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                    <div className="flex items-center gap-2">
+                                    <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2 hover:text-purple-600 transition-colors">
                                         <Mail size={16} className="text-gray-400" />
                                         {user.email}
-                                    </div>
+                                    </Link>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
