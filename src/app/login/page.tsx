@@ -61,13 +61,13 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-indigo-300 uppercase tracking-wider ml-1">Email Address</label>
+                        <label className="text-xs font-semibold text-indigo-300 uppercase tracking-wider ml-1">Email</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            placeholder="admin@dropskey.com"
+                            placeholder="Email"
                             className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all duration-200"
                         />
                     </div>
