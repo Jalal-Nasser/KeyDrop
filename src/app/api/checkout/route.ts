@@ -1,3 +1,4 @@
+// Deployment trigger
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendOrderStatusEmail } from '@/lib/email';
