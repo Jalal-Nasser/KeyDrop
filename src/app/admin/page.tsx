@@ -30,7 +30,7 @@ async function getStats() {
 
     // Process data for charts
     const revenueByDay: Record<string, number> = {};
-    orders.forEach(order => {
+    orders.forEach((order: any) => {
         const date = order.createdAt.toISOString().split('T')[0];
         revenueByDay[date] = (revenueByDay[date] || 0) + Number(order.total);
     });
@@ -45,7 +45,7 @@ async function getStats() {
         _count: { status: true }
     });
 
-    const chartStatusData = statusGroups.map(group => ({
+    const chartStatusData = statusGroups.map((group: any) => ({
         name: group.status,
         value: group._count.status
     }));
@@ -128,7 +128,7 @@ export default async function AdminDashboard() {
                         <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-medium">{stats.pendingOrders.length} Pending</span>
                     </div>
                     <div className="p-6 overflow-y-auto space-y-4 flex-1">
-                        {stats.pendingOrders.map(order => (
+                        {stats.pendingOrders.map((order: any) => (
                             <Link href={`/admin/orders`} key={order.id} className="block group">
                                 <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors cursor-pointer">
                                     <AlertCircle className="text-yellow-500 mt-1 flex-shrink-0" size={18} />
@@ -188,7 +188,7 @@ export default async function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                            {stats.recentOrders.map((order) => {
+                            {stats.recentOrders.map((order: any) => {
                                 const statusColor = order.status === 'PAID' ? 'bg-green-100 text-green-700' :
                                     order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
                                         order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :

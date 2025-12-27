@@ -120,7 +120,7 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                                    {client.orders.map((order) => {
+                                    {client.orders.map((order: any) => {
                                         const statusColor = order.status === 'PAID' ? 'bg-green-100 text-green-700' :
                                             order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
                                                 order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700';
@@ -142,7 +142,7 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
-                                                        {order.items.map(item => (
+                                                        {order.items.map((item: any) => (
                                                             <span key={item.id} className="text-xs text-gray-600 dark:text-gray-300">
                                                                 {item.quantity}x {item.product.name}
                                                             </span>

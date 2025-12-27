@@ -15,10 +15,10 @@ export async function getOrders() {
     })
 
     // Convert Decimals to numbers
-    return orders.map(order => ({
+    return orders.map((order: any) => ({
         ...order,
         total: Number(order.total),
-        items: order.items.map(item => ({
+        items: order.items.map((item: any) => ({
             ...item,
             price: Number(item.price),
             product: {
@@ -81,7 +81,7 @@ export async function fulfillOrderItem(orderItemId: string, licenseKey: string) 
         where: { orderId: item.orderId }
     })
 
-    const allFulfilled = orderItems.every(i => i.isFulfilled)
+    const allFulfilled = orderItems.every((i: any) => i.isFulfilled)
 
     if (allFulfilled) {
         await prisma.order.update({

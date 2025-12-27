@@ -29,7 +29,7 @@ export async function getProducts() {
     })
 
     // Convert Decimals to numbers for client components
-    return products.map(p => ({
+    return products.map((p: any) => ({
         ...p,
         price: Number(p.price),
         sale_price: (p as any).sale_price ? Number((p as any).sale_price) : null,

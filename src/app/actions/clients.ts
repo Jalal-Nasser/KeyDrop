@@ -25,7 +25,7 @@ export async function getUserProfile(id: string) {
     if (!user) return null
 
     // Calculate generic stats
-    const totalSpent = user.orders.reduce((sum, order) => {
+    const totalSpent = user.orders.reduce((sum: number, order: any) => {
         return sum + Number(order.total)
     }, 0)
 
@@ -35,10 +35,10 @@ export async function getUserProfile(id: string) {
         ...user,
         totalSpent,
         lastActive,
-        orders: user.orders.map(order => ({
+        orders: user.orders.map((order: any) => ({
             ...order,
             total: Number(order.total),
-            items: order.items.map(item => ({
+            items: order.items.map((item: any) => ({
                 ...item,
                 price: Number(item.price)
             }))
@@ -54,7 +54,7 @@ export async function deleteUser(userId: string) {
             select: { id: true }
         })
 
-        const orderIds = orders.map(o => o.id)
+        const orderIds = orders.map((o: any) => o.id)
 
         // 2. Delete all OrderItems for these orders
         if (orderIds.length > 0) {

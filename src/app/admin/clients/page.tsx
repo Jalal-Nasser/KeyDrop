@@ -29,7 +29,7 @@ export default async function AdminClientsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {users.map((user) => (
+                        {users.map((user: any) => (
                             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                 <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                     <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2 hover:text-purple-600 transition-colors">
