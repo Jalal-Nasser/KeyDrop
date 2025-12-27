@@ -27,14 +27,15 @@ function getDbConfig() {
     }
 
     return {
-        type: (process.env.DB_TYPE as any) || 'better-sqlite3',
-        synchronize: true,
+        type: (process.env.DB_TYPE as any) || 'postgres',
+        synchronize: process.env.DB_SYNCHRONIZE === 'true',
         logging: false,
-        database: process.env.DB_NAME || path.join(__dirname, '../vendure.sqlite'),
-        host: process.env.DB_HOST,
-        port: +(process.env.DB_PORT || 3306),
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME || 'neondb',
+        host: process.env.DB_HOST || 'localhost',
+        port: +(process.env.DB_PORT || 5432),
+        username: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     };
 }
 
