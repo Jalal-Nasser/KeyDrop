@@ -7,7 +7,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
+
   env: { // Re-adding the env block
     // Publicly exposed variables (NEXT_PUBLIC_ prefix)
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -37,7 +37,6 @@ const nextConfig = {
 
   experimental: {
     serverComponentsExternalPackages: [
-      '@paypal/checkout-server-sdk',
       '@vonage/server-sdk',
     ],
   },
