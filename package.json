@@ -19,6 +19,7 @@
     "@vendure/core": "^3.0.0",
     "@vendure/email-plugin": "^3.0.0",
     "bcrypt": "^6.0.0",
+    "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "graphql-tag": "^2.12.6",
     "jspdf": "^3.0.4",
@@ -30,7 +31,8 @@
     "postmark": "^4.0.5",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "recharts": "^3.6.0"
+    "recharts": "^3.6.0",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.27",
