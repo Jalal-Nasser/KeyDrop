@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Save, Building2, CreditCard, Mail, Globe, Hash, FileText, Image as ImageIcon } from 'lucide-react'
+import { Save, Building2, CreditCard, Mail, Globe, Hash, FileText, Image as ImageIcon, Lock } from 'lucide-react'
 import { getSettings, updateSettings } from '@/app/actions/settings'
+import { changePassword } from '@/app/actions/auth'
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(false)
@@ -189,6 +190,74 @@ export default function SettingsPage() {
                     </button>
                 </div>
             </form>
+
+            {/* Security Section */}
+            <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-12">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center space-x-3">
+                    <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
+                        <Lock size={20} />
+                    </div>
+                    <div>
+                        <h2 className="font-semibold text-gray-900 dark:text-white">Security Settings</h2>
+                        <p className="text-sm text-gray-500">Update your account password.</p>
+                    </div>
+                </div>
+                <form action={async (formData) => {
+                    setLoading(true)
+                    try {
+                        const result = await changePassword(formData)
+                        if (result.success) {
+                            alert('Password changed successfully!')
+                            // @ts-ignore
+                            document.getElementById('password-form')?.reset()
+                        }
+                    } catch (err: any) {
+                        alert(err.message || 'Failed to change password.')
+                    } finally {
+                        setLoading(false)
+                    }
+                }} id="password-form" className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
+                            <input
+                                name="currentPassword"
+                                type="password"
+                                required
+                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
+                            <input
+                                name="newPassword"
+                                type="password"
+                                required
+                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm New Password</label>
+                            <input
+                                name="confirmPassword"
+                                type="password"
+                                required
+                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="bg-red-600 hover:bg-red-700 text-white font-medium px-8 py-3 rounded-xl shadow-lg shadow-red-500/30 flex items-center transition-all transform hover:-translate-y-0.5"
+                        >
+                            <Lock size={20} className="mr-2" />
+                            {loading ? 'Updating...' : 'Update Password'}
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
     )
 }
