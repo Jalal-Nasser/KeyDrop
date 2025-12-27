@@ -5,9 +5,13 @@
         "allowJs": true,
         "checkJs": false,
         "module": "commonjs",
-        "target": "es2019"
+        "target": "es2019",
+        "types": [
+            "node"
+        ]
     },
     "include": [
-        "*.js"
+        "*.js",
+        "*.ts"
     ]
 }
