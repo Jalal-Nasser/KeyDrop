@@ -1,11 +1,11 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useCart } from "@/context/cart-context"
-// import { Product } from "@/types/product" // Types are missing, defining locally or using any
 import Image from "next/image"
 import Link from "next/link"
+import { ShoppingCart } from "lucide-react"
 
 export interface Product {
     id: string
@@ -24,63 +24,71 @@ export interface Product {
 export function ProductCard({ product }: { product: Product }) {
     const { addToCart } = useCart()
 
-    const handleAddToCart = (e: React.MouseEvent) => {
-        e.preventDefault()
-        addToCart({
-            id: product.id,
-            name: product.name,
-            price: product.sale_price ?? product.price,
-            image: product.image,
-        })
-    }
-
     return (
-        <Card className="h-full flex flex-col overflow-hidden group">
-            <Link href={`/product/${product.id}`} className="flex-grow">
-                <CardHeader className="p-0">
-                    <div className="aspect-square relative overflow-hidden bg-white">
-                        {product.image ? (
-                            <Image
-                                src={product.image}
-                                alt={product.name}
-                                fill
-                                className="object-contain transition-transform group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                                No Image
-                            </div>
-                        )}
-                        {product.sale_percent && (
-                            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                -{product.sale_percent}%
-                            </div>
-                        )}
+        <div
+            key={product.id}
+            className="bg-white border border-gray-200 rounded-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
+        >
+            <Link href={`/product/${product.id}`} className="block relative aspect-square bg-gray-50 overflow-hidden">
+                {product.image ? (
+                    <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        No Image
                     </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                    <div className="text-sm text-muted-foreground mb-2">{product.category || "Uncategorized"}</div>
-                    <h3 className="font-semibold text-lg line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                )}
+                {product.sale_percent && (
+                    <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                        -{product.sale_percent}%
+                    </div>
+                )}
+            </Link>
+
+            <div className="p-4 flex flex-col flex-grow">
+                <div className="mb-2 text-xs font-medium text-blue-600 uppercase tracking-wide">
+                    {product.category || "Software"}
+                </div>
+                <Link href={`/product/${product.id}`} className="hover:text-blue-600 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                         {product.name}
                     </h3>
-                    <div className="flex items-baseline gap-2">
+                </Link>
+                <div className="mt-auto flex items-center justify-between pt-4">
+                    <div className="flex flex-col">
                         {product.sale_price ? (
                             <>
-                                <span className="text-lg font-bold text-red-500">${product.sale_price.toFixed(2)}</span>
-                                <span className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</span>
+                                <span className="text-gray-400 line-through text-sm">${product.price.toFixed(2)}</span>
+                                <span className="text-xl font-bold text-blue-600">${product.sale_price.toFixed(2)}</span>
                             </>
                         ) : (
-                            <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+                            <span className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
                         )}
                     </div>
-                </CardContent>
-            </Link>
-            <CardFooter className="p-4 pt-0 mt-auto">
-                <Button className="w-full" onClick={handleAddToCart} disabled={product.stock <= 0}>
-                    {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
-                </Button>
-            </CardFooter>
-        </Card>
+                    <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            addToCart({
+                                id: product.id,
+                                name: product.name,
+                                price: product.sale_price ?? product.price,
+                                image: product.image
+                            })
+                        }}
+                        disabled={product.stock <= 0}
+                    >
+                        <ShoppingCart className="w-4 h-4" />
+                        <span className="sr-only">Add to Cart</span>
+                    </Button>
+                </div>
+            </div>
+        </div>
     )
 }
