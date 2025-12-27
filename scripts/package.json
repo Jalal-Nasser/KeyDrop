@@ -1,0 +1,12 @@
+{
+  "name": "keydrop-scripts",
+  "version": "1.0.0",
+  "description": "Build and check scripts for KeyDrop",
+  "type": "module",
+  "scripts": {
+    "check": "node check-case-sensitivity.js"
+  },
+  "dependencies": {
+    "glob": "^10.3.10"
+  }
+}

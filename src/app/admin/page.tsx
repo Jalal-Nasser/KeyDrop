@@ -1,253 +1,305 @@
-import { prisma } from "@/lib/prisma";
-import { DollarSign, ShoppingBag, Package, Users, TrendingUp, AlertCircle, ArrowRight } from "lucide-react";
-import { DashboardCharts } from "./DashboardCharts";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import Link from "next/link"
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
+import { DollarSign, Package, ShoppingCart, Users, Tag, TrendingUp, Clock, CheckCircle2, AlertCircle } from "lucide-react" // Import Tag icon
+import { format, subDays } from "date-fns"
+import { IncomeChart } from "@/components/admin/income-chart" // Import the new component
+import { Tables } from "@/types/supabase" // Import Tables type
+import { Badge } from "@/components/ui/badge"
 
-async function getStats() {
-    const [orderCount, productCount, userCount, revenueData, orders, pendingOrders] = await Promise.all([
-        prisma.order.count(),
-        prisma.product.count(),
-        prisma.user.count({ where: { role: "CUSTOMER" } }),
-        prisma.order.aggregate({
-            _sum: { total: true },
-            where: { status: "PAID" }
-        }),
-        prisma.order.findMany({
-            take: 10,
-            orderBy: { createdAt: 'desc' },
-            include: { user: true }
-        }),
-        // Fetch REAL pending orders
-        prisma.order.findMany({
-            where: { status: 'PENDING' },
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            include: { user: true }
-        })
-    ]);
+export default async function AdminDashboardPage() {
+  const supabase = await createSupabaseServerClientComponent() // Await the client
 
-    const totalRevenue = Number(revenueData._sum.total) || 0;
+  // Fetch product count
+  const { count: productCount, error: productCountError } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true })
 
-    // Process data for charts
-    const revenueByDay: Record<string, number> = {};
-    orders.forEach((order: any) => {
-        const date = order.createdAt.toISOString().split('T')[0];
-        revenueByDay[date] = (revenueByDay[date] || 0) + Number(order.total);
-    });
+  // Fetch order statistics
+  const { data: orderStats, error: orderStatsError } = await supabase
+    .from("orders")
+    .select("total, status, created_at", { count: "exact" }) as { data: Pick<Tables<'orders'>, 'total' | 'status' | 'created_at'>[] | null, error: any }; // Explicitly type orderStats
 
-    const chartRevenueData = Object.keys(revenueByDay).map(date => ({
-        name: date,
-        total: revenueByDay[date]
-    })).slice(-7);
+  const totalRevenue = orderStats?.reduce((sum, order) => sum + order.total, 0) || 0 // Removed parseFloat
+  const orderCount = orderStats?.length || 0
 
-    const statusGroups = await prisma.order.groupBy({
-        by: ['status'],
-        _count: { status: true }
-    });
+  // Calculate pending orders
+  const pendingOrderCount = orderStats?.filter(order => order.status === 'pending').length || 0
 
-    const chartStatusData = statusGroups.map((group: any) => ({
-        name: group.status,
-        value: group._count.status
-    }));
+  // Calculate completed orders
+  const completedOrderCount = orderStats?.filter(order => order.status === 'completed').length || 0
 
-    return {
-        orderCount,
-        productCount,
-        userCount,
-        totalRevenue,
-        chartRevenueData,
-        chartStatusData,
-        recentOrders: orders,
-        pendingOrders
-    };
-}
+  // Calculate new customers (profiles created in last 30 days)
+  const thirtyDaysAgo = subDays(new Date(), 30).toISOString()
+  const { count: newCustomerCount } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", thirtyDaysAgo)
 
-export default async function AdminDashboard() {
-    const stats = await getStats();
+  // Calculate revenue from last 30 days
+  const recentRevenue = orderStats?.filter(order =>
+    new Date(order.created_at) >= subDays(new Date(), 30)
+  ).reduce((sum, order) => sum + order.total, 0) || 0
 
-    return (
-        <div className="space-y-8 animate-fade-in-up">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Control Center</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Overview of your billing and store performance.</p>
-                </div>
-                <div className="flex space-x-3">
-                    <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                        System Operational
-                    </div>
-                </div>
-            </div>
+  // Fetch recent orders
+  const { data: recentOrders, error: recentOrdersError } = await supabase
+    .from("orders")
+    .select(`
+      id,
+      created_at,
+      total,
+      status,
+      profiles (first_name, last_name)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(5)
 
-            {/* Metric Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard
-                    title="Total Revenue"
-                    value={`$${stats.totalRevenue.toFixed(2)}`}
-                    icon={DollarSign}
-                    color="text-emerald-600"
-                    bgColor="bg-emerald-100/50"
-                    trend="+12.5% vs last mo"
-                />
-                <MetricCard
-                    title="Active Orders"
-                    value={stats.orderCount.toString()}
-                    icon={ShoppingBag}
-                    color="text-blue-600"
-                    bgColor="bg-blue-100/50"
-                    trend="+5 new today"
-                />
-                <MetricCard
-                    title="Total Clients"
-                    value={stats.userCount.toString()}
-                    icon={Users}
-                    color="text-purple-600"
-                    bgColor="bg-purple-100/50"
-                    trend="Active now: 2"
-                />
-                <MetricCard
-                    title="Products"
-                    value={stats.productCount.toString()}
-                    icon={Package}
-                    color="text-orange-600"
-                    bgColor="bg-orange-100/50"
-                    trend="Stock healthy"
-                />
-            </div>
-
-            {/* Analytics Section */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2">
-                    <DashboardCharts revenueData={stats.chartRevenueData} statusData={stats.chartStatusData} />
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[400px]">
-                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Pending Actions</h3>
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-medium">{stats.pendingOrders.length} Pending</span>
-                    </div>
-                    <div className="p-6 overflow-y-auto space-y-4 flex-1">
-                        {stats.pendingOrders.map((order: any) => (
-                            <Link href={`/admin/orders`} key={order.id} className="block group">
-                                <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors cursor-pointer">
-                                    <AlertCircle className="text-yellow-500 mt-1 flex-shrink-0" size={18} />
-                                    <div>
-                                        <p className="text-sm font-medium dark:text-white group-hover:text-purple-600 transition-colors">Order #{order.id.slice(0, 8)}</p>
-                                        <p className="text-xs text-gray-500 flex items-center gap-1 relative z-20">
-                                            Client:
-                                            {order.user ? (
-                                                <Link href={`/admin/clients/${order.userId}`} className="hover:text-purple-600 hover:underline" onClick={(e) => e.stopPropagation()}>
-                                                    {order.user.email}
-                                                </Link>
-                                            ) : 'Guest'}
-                                            • ${Number(order.total).toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-
-                        {stats.pendingOrders.length === 0 && (
-                            <div className="flex flex-col items-center justify-center h-full text-center">
-                                <p className="text-gray-400 text-sm">No pending actions.</p>
-                                <p className="text-gray-400 text-xs">You're all caught up!</p>
-                            </div>
-                        )}
-                    </div>
-                    <div className="p-4 border-t border-gray-100 dark:border-gray-700">
-                        <Link href="/admin/orders" className="block w-full py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-colors text-center">
-                            Manage All Orders
-                        </Link>
-                    </div>
-                </div>
-            </div>
-
-            {/* Recent Transactions Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Recent Transactions</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Latest financial activity from your store.</p>
-                    </div>
-                    <Link href="/admin/orders" className="text-xs flex items-center text-purple-600 hover:text-purple-700 font-medium">
-                        View All <ArrowRight size={14} className="ml-1" />
-                    </Link>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
-                            <tr>
-                                <th className="px-6 py-4">Transaction ID</th>
-                                <th className="px-6 py-4">Client</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Amount</th>
-                                <th className="px-6 py-4 text-right">Date</th>
-                                <th className="px-6 py-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                            {stats.recentOrders.map((order: any) => {
-                                const statusColor = order.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                                    order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                        order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
-                                            order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700';
-
-                                return (
-                                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                            <Link href={`/admin/orders`} className="hover:text-purple-600 underline decoration-dotted">
-                                                #{order.id.slice(-8).toUpperCase()}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4 font-medium dark:text-gray-200">
-                                            {order.user ? (
-                                                <Link href={`/admin/clients/${order.userId}`} className="hover:text-purple-600 hover:underline">
-                                                    {order.user.email}
-                                                </Link>
-                                            ) : 'Guest'}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColor}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">${Number(order.total).toFixed(2)}</td>
-                                        <td className="px-6 py-4 text-right text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Link href="/admin/orders" className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Manage</Link>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                            {stats.recentOrders.length === 0 && (
-                                <tr><td colSpan={6} className="p-8 text-center text-gray-500">No transactions yet.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Welcome back! Here's what's happening with your store.</p>
         </div>
-    );
-}
+        <Badge variant="outline" className="text-sm">
+          <Clock className="h-3 w-3 mr-1" />
+          Last updated: {format(new Date(), 'MMM dd, HH:mm')}
+        </Badge>
+      </div>
 
-function MetricCard({ title, value, icon: Icon, color, bgColor, trend }: any) {
-    return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between h-32 transition-all hover:shadow-md">
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-                    <h3 className="text-2xl font-bold dark:text-white mt-1">{value}</h3>
-                </div>
-                <div className={`p-3 rounded-xl ${bgColor}`}>
-                    <Icon className={color} size={20} />
-                </div>
+      {/* Main Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Revenue
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
-            <div className="flex items-center text-xs font-medium text-emerald-600 mt-2">
-                <TrendingUp size={14} className="mr-1" />
-                {trend}
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              from {orderCount} total orders
+            </p>
+            <div className="flex items-center mt-2 text-xs text-green-600 dark:text-green-400">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              ${recentRevenue.toFixed(2)} last 30 days
             </div>
-        </div>
-    )
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Products
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+              <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{productCount || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              available in your store
+            </p>
+            <Link href="/admin/products" className="text-xs text-blue-600 hover:underline mt-2 inline-block">
+              Manage products →
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              New Customers
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+              <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">+{newCustomerCount || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              joined in last 30 days
+            </p>
+            <Link href="/admin/clients" className="text-xs text-purple-600 hover:underline mt-2 inline-block">
+              View all clients →
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pending Orders
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+              <ShoppingCart className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingOrderCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              awaiting processing
+            </p>
+            {pendingOrderCount > 0 && (
+              <div className="flex items-center mt-2 text-xs text-orange-600 dark:text-orange-400">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Action required
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Secondary Stats Row */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completedOrderCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {orderCount > 0 ? `${((completedOrderCount / orderCount) * 100).toFixed(1)}%` : '0%'} completion rate
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${orderCount > 0 ? (totalRevenue / orderCount).toFixed(2) : '0.00'}
+            </div>
+            <p className="text-xs text-muted-foreground">per order</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orderCount}</div>
+            <p className="text-xs text-muted-foreground">all time</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Income Chart */}
+      <div className="mb-8">
+        <IncomeChart />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-md">
+          <CardHeader className="border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Orders</CardTitle>
+                <CardDescription className="mt-1">Latest 5 orders from your store</CardDescription>
+              </div>
+              <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline">
+                View all →
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {recentOrders && recentOrders.length > 0 ? (
+              <div className="space-y-4">
+                {recentOrders.map((order: any) => (
+                  <div key={order.id} className="flex justify-between items-start p-3 rounded-lg hover:bg-muted/50 transition-colors border">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">Order #{order.id.substring(0, 8)}...</p>
+                        <Badge variant={
+                          order.status === 'completed' ? 'default' :
+                          order.status === 'pending' ? 'secondary' :
+                          'destructive'
+                        } className="text-xs">
+                          {order.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {order.profiles?.first_name} {order.profiles?.last_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}
+                      </p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className="font-bold text-lg">${parseFloat(order.total).toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground">No recent orders.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader className="border-b">
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription className="mt-1">Manage your store content and settings</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid gap-3">
+              <Link href="/admin/products" className="flex items-center gap-3 p-3 rounded-lg border hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors group">
+                <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                  <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Manage Products</p>
+                  <p className="text-xs text-muted-foreground">Add, edit or remove products</p>
+                </div>
+              </Link>
+
+              <Link href="/admin/orders" className="flex items-center gap-3 p-3 rounded-lg border hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors group">
+                <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+                  <ShoppingCart className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Manage Orders</p>
+                  <p className="text-xs text-muted-foreground">Process and fulfill orders</p>
+                </div>
+              </Link>
+
+              <Link href="/admin/coupons" className="flex items-center gap-3 p-3 rounded-lg border hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-colors group">
+                <div className="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+                  <Tag className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Manage Coupons</p>
+                  <p className="text-xs text-muted-foreground">Create and manage discount codes</p>
+                </div>
+              </Link>
+
+              <Link href="/admin/clients" className="flex items-center gap-3 p-3 rounded-lg border hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors group">
+                <div className="h-10 w-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+                  <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">View Clients</p>
+                  <p className="text-xs text-muted-foreground">Manage customer accounts</p>
+                </div>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }

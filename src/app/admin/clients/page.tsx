@@ -1,72 +1,115 @@
-import { prisma } from '@/lib/prisma'
-import { Users, Mail, User } from 'lucide-react'
-import Link from 'next/link'
-import { getGravatarUrl } from '@/lib/gravatar'
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
+import Link from "next/link"
+import { Tables } from "@/types/supabase"
+
+interface Client {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  company_name: string | null
+  created_at: string
+}
 
 export default async function AdminClientsPage() {
-    const users = await prisma.user.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            _count: {
-                select: { orders: true }
-            }
-        }
-    })
+  const supabase = await createSupabaseServerClientComponent()
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
+  if (!session) {
+    redirect("/login")
+  }
+
+  // Check admin status
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any };
+
+  if (profileError || !profile?.is_admin) {
+    console.error('Admin check failed:', profileError)
+    redirect("/account")
+  }
+
+  let clients: Client[] = []
+  
+  try {
+    // Fetch clients with error handling
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, company_name, created_at')
+      .order('created_at', { ascending: false }) as { data: Client[] | null, error: any };
+
+    if (error) throw error
+    clients = data || []
+  } catch (error) {
+    console.error('Error fetching clients:', error)
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">Clients</h1>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Role</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Total Orders</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Joined</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {users.map((user: any) => (
-                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                    <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2 hover:text-purple-600 transition-colors">
-                                        <img
-                                            src={user.image || getGravatarUrl(user.email, 40)}
-                                            alt=""
-                                            className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                                        />
-                                        {user.name || 'N/A'}
-                                    </Link>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                    <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2 hover:text-purple-600 transition-colors">
-                                        <Mail size={16} className="text-gray-400" />
-                                        {user.email}
-                                    </Link>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                                        }`}>
-                                        {user.role}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                    {user._count.orders}
-                                </td>
-                                <td className="px-6 py-4 text-gray-500 text-sm">
-                                    {new Date(user.createdAt).toLocaleDateString()}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {users.length === 0 && (
-                    <div className="text-center py-10 text-gray-500">No clients found.</div>
-                )}
-            </div>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Error Loading Clients</CardTitle>
+          <CardDescription>
+            There was an error loading the clients list. Please check your database permissions.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Clients</CardTitle>
+        <CardDescription>
+          {clients.length === 0 
+            ? 'No clients found or you do not have permission to view them.'
+            : 'List of registered clients with details.'
+          }
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Full Name</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Joined Date</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {clients?.map((client) => (
+              <TableRow key={client.id}>
+                <TableCell>{(client.first_name || '') + ' ' + (client.last_name || '')}</TableCell>
+                <TableCell>{client.company_name || 'N/A'}</TableCell>
+                <TableCell>{client.created_at ? format(new Date(client.created_at), 'PPP') : 'N/A'}</TableCell>
+                <TableCell>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/admin/clients/${client.id}/orders`}>View Client Orders</Link>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
 }

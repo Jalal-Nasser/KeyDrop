@@ -1,55 +1,63 @@
-import Link from 'next/link';
-import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut } from 'lucide-react';
+import { redirect } from "next/navigation"
+import { createSupabaseServerClientComponent } from "@/lib/supabase/server" // Updated import
+import { AdminLayoutClient } from "@/components/admin/admin-layout-client" // Import the new client component
+import { Tables } from "@/types/supabase" // Import Tables type
 
-export default function AdminLayout({
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route segment
+
+export default async function AdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
-        <div className="p-6">
-          <Link href="/admin">
-            <img src="/logo.png" alt="Dropskey Admin" className="h-12 w-auto" />
-          </Link>
+  const supabase = await createSupabaseServerClientComponent() // Await the client
+
+  // 1. Check session and redirect if not authenticated
+  const { data: { user }, error: sessionError } = await supabase.auth.getUser();
+  if (sessionError || !user) {
+    console.log("AdminLayout: No active session or session error, redirecting to /account");
+    redirect("/account"); // This throws an error internally, stopping execution
+  }
+
+  // 2. Check admin status and deny access if not admin
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single() as { data: Pick<Tables<'profiles'>, 'is_admin'> | null, error: any }; // Explicitly type profile
+
+    if (profileError || !profile?.is_admin) { // Check for is_admin
+      console.log("AdminLayout: User is not admin or profile error, showing access denied.");
+      return (
+        <div className="container mx-auto py-20 text-center">
+          <h1 className="text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground">
+            You do not have permission to view this page.
+          </p>
         </div>
+      );
+    }
 
-        <nav className="flex-1 px-4 space-y-2">
-          <NavLink href="/admin" icon={<LayoutDashboard size={20} />} label="Overview" />
-          <NavLink href="/admin/orders" icon={<ShoppingCart size={20} />} label="Orders" />
-          <NavLink href="/admin/products" icon={<Package size={20} />} label="Products" />
-          <NavLink href="/admin/clients" icon={<Users size={20} />} label="Clients" />
-          <NavLink href="/admin/settings" icon={<Settings size={20} />} label="Settings" />
-        </nav>
-
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <button className="flex items-center w-full px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors">
-            <LogOut size={20} className="mr-3" />
-            Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors"
-    >
-      <span className="mr-3">{icon}</span>
-      <span className="font-medium">{label}</span>
-    </Link>
-  );
+    // If we reach here, the user is authenticated and is an "admin"
+    return (
+      <AdminLayoutClient>
+        {children}
+      </AdminLayoutClient>
+    );
+  } catch (e: any) {
+    console.error("AdminLayout: Unexpected error during admin check:", e);
+    // This catch block is for errors during the profile fetch, not for redirects
+    return (
+      <div className="container mx-auto py-20 text-center">
+        <h1 className="text-2xl font-bold text-red-500">An unexpected error occurred.</h1>
+        <p className="text-muted-foreground">
+          We are unable to load the admin panel at this time. Please try again later.
+        </p>
+        {process.env.NODE_ENV === 'development' && (
+          <p className="text-sm text-red-400 mt-4">{e.message}</p>
+        )}
+      </div>
+    );
+  }
 }
