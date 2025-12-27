@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
-// import { Product } from "@/types/product"
 import { Product } from "./product-card"
+import { useCart } from "@/context/cart-context" // Restored import
 // import { Database } from "@/types/supabase"
 
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
-import { ProductCard } from "./product-card" // New import
+import { ProductCard } from "./product-card"
 
 export default function WeeklyProducts({ title }: { title: string }) {
   const { addToCart } = useCart()
