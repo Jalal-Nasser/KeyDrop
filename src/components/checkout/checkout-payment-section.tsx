@@ -55,7 +55,7 @@ export function CheckoutPaymentSection({
         return;
       }
       setIsLoadingWallet(true);
-      
+
       // For admin users, ensure they have at least $150 balance
       if (isAdmin) {
         const { data, error } = await supabase
@@ -76,7 +76,7 @@ export function CheckoutPaymentSection({
               .from('profiles')
               .update({ wallet_balance: 150 })
               .eq('id', currentUserId);
-            
+
             if (updateError) {
               console.error('Error updating admin wallet balance:', updateError);
               setWalletBalance(150); // Use default even if update fails
@@ -128,13 +128,13 @@ export function CheckoutPaymentSection({
       }
 
       const result = await response.json();
-      
+
       // Store the PayPal order ID for later use
       setPaypalOrderId(result.paypalOrderId);
-      
+
       // Update the parent component with the new order ID
       onOrderCreated(result.orderId, new Date().toISOString());
-      
+
       return result.paypalOrderId; // Return the PayPal order ID
     } catch (error: any) {
       console.error("Error creating PayPal order:", error);
@@ -148,13 +148,13 @@ export function CheckoutPaymentSection({
     try {
       // Clear cart from localStorage
       localStorage.removeItem('cart');
-      
+
       // Clear cart from context if available
       const { clearCart } = useCart();
       if (clearCart) {
         clearCart();
       }
-      
+
       // Also call the API to clear server-side cart
       await fetch('/api/cart/clear', {
         method: 'POST',
@@ -162,7 +162,7 @@ export function CheckoutPaymentSection({
           'Content-Type': 'application/json',
         },
       });
-      
+
       return true;
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -229,20 +229,20 @@ export function CheckoutPaymentSection({
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to clear cart');
       }
-      
+
       // Clear cart from local storage
       localStorage.removeItem('cart');
-      
+
       // Clear cart from context
       const { clearCart } = useCart();
       if (clearCart) {
         clearCart();
       }
-      
+
       return true;
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -255,7 +255,7 @@ export function CheckoutPaymentSection({
       toast.error('Please agree to the terms and conditions.')
       return
     }
-    
+
     setIsProcessingPayment(true);
 
     if (isAdmin && !selectedClientId) {
@@ -271,7 +271,7 @@ export function CheckoutPaymentSection({
     try {
       // First create the order in our database
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       const createOrderResponse = await fetch("/api/paypal/create-order-with-cart", {
         method: "POST",
         headers: {
@@ -313,7 +313,7 @@ export function CheckoutPaymentSection({
       if (response.ok) {
         // Clear the cart after successful payment
         await clearUserCart();
-        
+
         toast.success('Payment successful!');
         router.push(`/account/orders/${newOrderId}/invoice`);
       } else {
@@ -358,7 +358,7 @@ export function CheckoutPaymentSection({
               <SelectTrigger className="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
                 <SelectValue placeholder="For Myself" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[9999] bg-white">
                 <SelectItem value={currentUserId || ""}>For Myself</SelectItem>
                 {users
                   .filter(user => user.id !== currentUserId)
