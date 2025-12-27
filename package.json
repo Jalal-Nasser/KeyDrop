@@ -1,4 +1,6 @@
 {
+  "name": "dropskey",
+  "version": "1.0.0",
   "type": "module",
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
