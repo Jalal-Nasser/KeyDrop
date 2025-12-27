@@ -12,6 +12,8 @@ import { PayPalProvider } from "@/context/paypal-provider"
 // Import client components
 import ClientLayout from "./client-layout"
 
+export const runtime = 'edge'
+
 const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({
@@ -35,7 +37,7 @@ export default function RootLayout({
             gtag('config', '${gaMeasurementId}');
           `}
         </Script>
-        
+
         {/* Facebook Pixel Code */}
         <Script id="facebook-pixel" strategy="afterInteractive">
           {`
@@ -63,7 +65,7 @@ export default function RootLayout({
             />
           </noscript>
         )}
-        
+
         <SessionProvider>
           <WishlistProvider>
             <CartProvider>
@@ -75,7 +77,7 @@ export default function RootLayout({
             </CartProvider>
           </WishlistProvider>
         </SessionProvider>
-        
+
         <SpeedInsights />
       </body>
     </html>

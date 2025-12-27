@@ -79,6 +79,7 @@
     "@babel/parser": "^7.23.9",
     "@babel/traverse": "^7.23.9",
     "@babel/types": "^7.23.9",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/babel__traverse": "^7.20.6",
     "@types/node": "20.11.28",
     "@types/react": "18.3.23",
@@ -90,13 +91,16 @@
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.54.0"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "build:prod": "NODE_OPTIONS='--max-old-space-size=4096' next build",
     "start": "next start",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:preview": "wrangler pages dev .vercel/output/static --compatibility-flag=nodejs_compat",
     "check": "node scripts/check-case-sensitivity.js"
   },
   "overrides": {
