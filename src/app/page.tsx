@@ -12,7 +12,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to KeyDrop</h1>
           <p className="text-xl mb-8 text-gray-300">Premium Software Keys at Unbeatable Prices</p>
           <div className="flex justify-center gap-4">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+            <Button asChild className="bg-blue-600 hover:bg-blue-700 h-11 px-8 text-lg">
               <Link href="/shop">Browse Shop</Link>
             </Button>
           </div>
