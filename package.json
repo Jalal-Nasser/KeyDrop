@@ -2,7 +2,6 @@
   "type": "module",
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
-    "@netlify/neon": "^0.1.0",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/react-paypal-js": "^8.8.3",
     "@radix-ui/react-accordion": "1.2.2",
@@ -53,7 +52,6 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^3.0.0",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.44.3",
     "embla-carousel-react": "8.5.1",
     "graphql": "latest",
     "graphql-request": "latest",
@@ -85,7 +83,6 @@
     "@types/node": "20.11.28",
     "@types/react": "18.3.23",
     "@types/react-dom": "18.3.0",
-    "drizzle-kit": "^0.31.4",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.10",
     "ignore": "^6.0.1",
