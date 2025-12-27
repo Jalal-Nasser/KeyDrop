@@ -1,13 +1,15 @@
-import { Vonage } from '@vonage/server-sdk';
-
 const useSandbox = process.env.VONAGE_USE_SANDBOX === 'true';
 
-const vonage = new Vonage({
-  apiKey: process.env.VONAGE_API_KEY || '',
-  apiSecret: process.env.VONAGE_API_SECRET || '',
-  applicationId: process.env.VONAGE_APPLICATION_ID,
-  privateKey: process.env.VONAGE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-});
+// Helper to get Vonage client only when needed to avoid top-level Node.js initialization
+function getVonageClient() {
+  const { Vonage } = require('@vonage/server-sdk');
+  return new Vonage({
+    apiKey: process.env.VONAGE_API_KEY || '',
+    apiSecret: process.env.VONAGE_API_SECRET || '',
+    applicationId: process.env.VONAGE_APPLICATION_ID,
+    privateKey: process.env.VONAGE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  });
+}
 
 export async function sendWhatsAppMessage(to: string, message: string) {
   try {
@@ -15,7 +17,7 @@ export async function sendWhatsAppMessage(to: string, message: string) {
       // Send via Messages Sandbox using Basic Auth
       const apiKey = process.env.VONAGE_API_KEY ?? '';
       const apiSecret = process.env.VONAGE_API_SECRET ?? '';
-      const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+      const auth = btoa(`${apiKey}:${apiSecret}`);
       const from = (process.env.VONAGE_WHATSAPP_NUMBER ?? '14157386102').replace(/^\+/, '');
 
       const res = await fetch('https://messages-sandbox.nexmo.com/v1/messages', {
@@ -45,6 +47,7 @@ export async function sendWhatsAppMessage(to: string, message: string) {
       return { success: true, data };
     } else {
       // Send via Production Messages API using Vonage SDK (JWT)
+      const vonage = getVonageClient();
       const response = await vonage.messages.send({
         to,
         from: process.env.VONAGE_WHATSAPP_NUMBER ?? '',

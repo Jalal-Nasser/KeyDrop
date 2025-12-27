@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { createSupabaseServerClientComponent } from '@/lib/supabase/server';
 import { sendOrderConfirmation } from '@/lib/email-actions';
 import { createClient } from '@supabase/supabase-js';
@@ -41,14 +42,14 @@ export async function POST(request: NextRequest) {
     // Check wallet balance
     if ((profile.wallet_balance || 0) < amount) { // Added nullish coalescing operator
       return NextResponse.json(
-        { error: 'Insufficient wallet balance' }, 
+        { error: 'Insufficient wallet balance' },
         { status: 400 }
       );
     }
 
     // Process wallet payment directly
     const newBalance = (profile.wallet_balance || 0) - amount;
-    
+
     // Update admin's wallet balance
     const { error: balanceError } = await supabase
       .from('profiles')
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       .select('total, user_id, order_items(product_name, products(name, image))')
       .eq('id', orderId)
       .single() as { data: OrderDetailsForNotification | null, error: any }; // Explicitly cast here
-      
+
     // Send WhatsApp notification to admin
     try {
       const { data: orderItems } = await supabase
@@ -97,9 +98,7 @@ export async function POST(request: NextRequest) {
 
       const message = `${purchaseType}\n\nOrder ID: ${orderId}\nPaid by: Admin (Wallet)\nAmount: $${amount.toFixed(2)}\n\nItems:\n${itemsList}`;
 
-      const authString = Buffer.from(
-        `${process.env.VONAGE_API_KEY}:${process.env.VONAGE_API_SECRET}`
-      ).toString('base64');
+      const authString = btoa(`${process.env.VONAGE_API_KEY}:${process.env.VONAGE_API_SECRET}`);
 
       const whatsappResponse = await fetch('https://api.nexmo.com/v1/messages', {
         method: 'POST',
@@ -137,14 +136,14 @@ export async function POST(request: NextRequest) {
             .select('id')
             .eq('id', clientId)
             .single();
-          
+
           if (clientProfile) {
             // Get the client's auth email
             const supabaseAdmin = createClient(
               (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
               process.env.SUPABASE_SERVICE_ROLE_KEY!
             );
-            
+
             const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(clientId);
             if (authUser?.user?.email) {
               clientEmail = authUser.user.email;
@@ -168,7 +167,7 @@ export async function POST(request: NextRequest) {
           (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
-        
+
         // Determine the product image/name for the notification (use first available)
         const firstProductImage = order.order_items.find(item => item.products?.[0]?.image)?.products?.[0]?.image || null;
         const firstProductName = (order.order_items.find(item => item.product_name)?.product_name)
@@ -215,7 +214,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       newBalance,
       message: 'Payment completed successfully'

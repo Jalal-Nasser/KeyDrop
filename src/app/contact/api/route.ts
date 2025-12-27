@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-import crypto from 'crypto'
 import { sendMail } from '@/lib/postmark'
+
+// Helper function to generate SHA-256 hash using Web Crypto API (Edge Runtime compatible)
+async function sha256(message: string) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Zod schema for validating the request body
 const contactSchema = z.object({
@@ -47,7 +55,7 @@ export async function POST(req: NextRequest) {
     // Fall back to req.ip or undefined
     return req.ip || undefined;
   };
-  
+
   const ip = getClientIp(req);
   const supabaseAdmin = createClient(
     (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)!,
@@ -91,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Duplicate Submission Guard (same email + message from same IP within 2 minutes)
-    const messageHash = crypto.createHash('sha256').update(`${email}:${message}`).digest('hex')
+    const messageHash = await sha256(`${email}:${message}`)
     const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString()
 
     const { data: existingMessage, error: duplicateCheckError } = await supabaseAdmin
@@ -136,8 +144,8 @@ export async function POST(req: NextRequest) {
           <p><strong>Message:</strong></p>
           <p>${message}</p>
         `,
-  from: fromAddress,
-  replyTo: email,
+        from: fromAddress,
+        replyTo: email,
       })
     } catch (emailError) {
       console.error("Failed to send contact notification email:", emailError)

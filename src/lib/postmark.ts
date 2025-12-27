@@ -49,7 +49,10 @@ export async function sendMail({ to, subject, html, attachments, from, replyTo }
 
     // If it's HTML, force base64 encoding for reliability
     if (att.ContentType === 'text/html' && encodingType === 'None') {
-      encodedContent = Buffer.from(att.Content).toString('base64');
+      // In Edge Runtime, we use btoa for basic strings. 
+      // For more complex binary data, we'd need a different approach, 
+      // but for email HTML content, btoa is usually sufficient if it's UTF-8.
+      encodedContent = btoa(unescape(encodeURIComponent(att.Content)));
       encodingType = 'base64';
     }
 
@@ -70,7 +73,7 @@ export async function sendMail({ to, subject, html, attachments, from, replyTo }
     To: to,
     Subject: subject,
     HtmlBody: html,
-  ...(replyTo ? { ReplyTo: replyTo } : {}),
+    ...(replyTo ? { ReplyTo: replyTo } : {}),
     Attachments: postmarkAttachments,
     MessageStream: "outbound"
   });
