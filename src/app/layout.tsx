@@ -12,7 +12,7 @@ import { PayPalProvider } from "@/context/paypal-provider"
 // Import client components
 import ClientLayout from "./client-layout"
 
-export const runtime = 'edge'
+
 
 const inter = Inter({ subsets: ["latin"] })
 

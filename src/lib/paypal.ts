@@ -20,9 +20,15 @@ export async function getPaypalAccessToken() {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    console.error("PayPal Auth Error:", error)
-    throw new Error("Failed to authenticate with PayPal.")
+    const errorText = await response.text();
+    console.error("PayPal Auth Error Status:", response.status);
+    console.error("PayPal Auth Error Body:", errorText);
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(`PayPal Auth Failed: ${errorJson.error_description || errorJson.error || 'Unknown error'}`);
+    } catch (e) {
+      throw new Error(`PayPal Auth Failed with status ${response.status}`);
+    }
   }
 
   const data = await response.json()
@@ -43,9 +49,16 @@ export async function callPaypalApi(endpoint: string, options: RequestInit = {})
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }));
-    console.error(`PayPal API Error (${endpoint}):`, error);
-    throw new Error(error.message || `PayPal API responded with status ${response.status}`);
+    const errorText = await response.text();
+    console.error(`PayPal API Error (${endpoint}) Status:`, response.status);
+    console.error(`PayPal API Error (${endpoint}) Body:`, errorText);
+
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.message || errorJson.name || `PayPal API responded with status ${response.status}`);
+    } catch (e) {
+      throw new Error(`PayPal API responded with status ${response.status} (HTML/Non-JSON response)`);
+    }
   }
 
   if (response.status === 204) return null;
