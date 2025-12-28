@@ -12,11 +12,17 @@ function getVonageClient() {
 }
 
 export async function sendWhatsAppMessage(to: string, message: string) {
+  const apiKey = process.env.VONAGE_API_KEY;
+  const apiSecret = process.env.VONAGE_API_SECRET;
+
+  if (!apiKey || !apiSecret) {
+    console.warn('VONAGE_API_KEY or VONAGE_API_SECRET is not set. Skipping WhatsApp message.');
+    return { success: false, skipped: true };
+  }
+
   try {
     if (useSandbox) {
       // Send via Messages Sandbox using Basic Auth
-      const apiKey = process.env.VONAGE_API_KEY ?? '';
-      const apiSecret = process.env.VONAGE_API_SECRET ?? '';
       const auth = btoa(`${apiKey}:${apiSecret}`);
       const from = (process.env.VONAGE_WHATSAPP_NUMBER ?? '14157386102').replace(/^\+/, '');
 
